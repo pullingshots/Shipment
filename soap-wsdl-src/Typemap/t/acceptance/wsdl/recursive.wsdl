@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions targetNamespace="http://test.webservices.bat.mathworks.com"
+	xmlns:impl="http://test.webservices.bat.mathworks.com" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+	xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+	</wsdl:documentation>
+	<wsdl:types>
+		<xsd:schema targetNamespace="http://test.webservices.bat.mathworks.com"
+			xmlns="http://test.webservices.bat.mathworks.com" xmlns:tns="http://test.webservices.bat.mathworks.com"
+			elementFormDefault="qualified">
+
+			<xsd:complexType name="Process">
+				<xsd:sequence>
+					<!-- Unique process id -->
+					<xsd:element name="id" nillable="true" type="xsd:int" />
+					<!-- The name of the process -->
+					<xsd:element name="name" type="xsd:string" />
+					<!-- The type of process -->
+					<xsd:element name="type" type="xsd:string" />
+					<!-- The start date of the process -->
+					<xsd:element name="startDate" type="xsd:dateTime" />
+					<!-- How long the process ran for; could be null if it died didn't finish cleanly -->
+					<xsd:element name="elapsedTime" nillable="true" type="xsd:double" />
+					<!-- Any additional bit of information about the process -->
+					<xsd:element name="details" nillable="true" type="xsd:string" />
+					<!-- Attributes that were used in the scheduling/allocation of resources for this process -->
+					<xsd:element maxOccurs="unbounded" name="attributes" nillable="true" type="xsd:string" />
+					<!-- Child processes -->
+					<xsd:element name="children"  maxOccurs="unbounded"  nillable="true" type="tns:Process"/>
+				</xsd:sequence>
+			</xsd:complexType>
+
+			<xsd:element name="getProcessRequest">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="id" type="xsd:int" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="getProcessResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="result" type="tns:Process" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<xsd:element name="saveProcessRequest">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="process" type="tns:Process" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="saveProcessResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="processId" type="xsd:int" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:schema>
+	</wsdl:types>
+
+	<wsdl:message name="getProcessRequest">
+		<wsdl:part name="parameters" element="impl:getProcessRequest" />
+	</wsdl:message>
+	<wsdl:message name="getProcessResponse">
+		<wsdl:part name="parameters" element="impl:getProcessResponse" />
+	</wsdl:message>
+	<wsdl:message name="saveProcessRequest">
+		<wsdl:part name="parameters" element="impl:saveProcessRequest" />
+	</wsdl:message>
+	<wsdl:message name="saveProcessResponse">
+		<wsdl:part name="parameters" element="impl:saveProcessResponse" />
+	</wsdl:message>
+
+	<wsdl:portType name="TestServicePortType">
+		<wsdl:operation name="getProcess">
+			<wsdl:input name="getProcessRequest" message="impl:getProcessRequest" />
+			<wsdl:output name="getProcessResponse" message="impl:getProcessResponse" />
+		</wsdl:operation>
+		<wsdl:operation name="saveProcess">
+			<wsdl:input name="saveProcessRequest" message="impl:saveProcessRequest" />
+			<wsdl:output name="saveProcessResponse" message="impl:saveProcessResponse" />
+		</wsdl:operation>
+	</wsdl:portType>
+
+	<wsdl:binding name="TestServiceSOAPBinding" type="impl:TestServicePortType">
+		<wsdlsoap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
+		<wsdl:operation name="getProcess">
+			<wsdlsoap:operation soapAction="" style="document" />
+			<wsdl:input name="getProcessRequest">
+				<wsdlsoap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output name="getProcessResponse">
+				<wsdlsoap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="saveProcess">
+			<wsdlsoap:operation soapAction="" style="document" />
+			<wsdl:input name="saveProcessRequest">
+				<wsdlsoap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output name="saveProcessResponse">
+				<wsdlsoap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+	</wsdl:binding>
+
+	<wsdl:service name="TestService">
+		<wsdl:port name="TestService" binding="impl:TestServiceSOAPBinding">
+			<wsdlsoap:address location="http://decostae.dhcp.mathworks.com:8123/edecosta.bdcs/services/TestService" />
+		</wsdl:port>
+	</wsdl:service>
+</wsdl:definitions>

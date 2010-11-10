@@ -1,0 +1,34 @@
+***edit .wsdl to include***
+
+<xsd:schema elementFormDefault="qualified">
+
+***run***
+
+/usr/local/bin/wsdl2perl.pl -use_typemap -p Shipment::UPS::WSDL::Prefix -b /path/to/Shipment/basedir file:/path/to/....wsdl
+
+***edit Elements/UPSSecurity.pm***
+
+add 
+
+sub get_xmlns { 'http://www.ups.com/XMLSchema/XOLTWS/UPSS/v1.0' }
+
+to each package # BLOCK to scope variables
+
+***edit  Elements/VoidShipmentRequest.pm***
+
+add
+
+sub get_xmlns { 'http://www.ups.com/XMLSchema/XOLTWS/Void/v1.1' }
+
+to second package # BLOCK to scope variables
+
+
+***add Elements/FaultDetail.pm***
+
+also modify Typemap
+
+details in commit id fdd06f50f
+
+
+
+

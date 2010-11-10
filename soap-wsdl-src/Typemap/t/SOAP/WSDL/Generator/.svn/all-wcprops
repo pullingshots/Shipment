@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svnroot/soap-wsdl/!svn/ver/860/SOAP-WSDL/branches/Typemap/t/SOAP/WSDL/Generator
+END
+XSD.t
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svnroot/soap-wsdl/!svn/ver/860/SOAP-WSDL/branches/Typemap/t/SOAP/WSDL/Generator/XSD.t
+END
+Visitor.t
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/t/SOAP/WSDL/Generator/Visitor.t
+END
+XSD_recursive.t
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/svnroot/soap-wsdl/!svn/ver/860/SOAP-WSDL/branches/Typemap/t/SOAP/WSDL/Generator/XSD_recursive.t
+END
+XSD_unsupported.t
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/svnroot/soap-wsdl/!svn/ver/838/SOAP-WSDL/branches/Typemap/t/SOAP/WSDL/Generator/XSD_unsupported.t
+END
+XSD_dot_names.t
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/svnroot/soap-wsdl/!svn/ver/849/SOAP-WSDL/branches/Typemap/t/SOAP/WSDL/Generator/XSD_dot_names.t
+END
+XSD_custom_resolver.t
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/svnroot/soap-wsdl/!svn/ver/838/SOAP-WSDL/branches/Typemap/t/SOAP/WSDL/Generator/XSD_custom_resolver.t
+END
+XSD_nested_complextype.t
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/svnroot/soap-wsdl/!svn/ver/838/SOAP-WSDL/branches/Typemap/t/SOAP/WSDL/Generator/XSD_nested_complextype.t
+END
+Template.t
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/t/SOAP/WSDL/Generator/Template.t
+END

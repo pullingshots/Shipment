@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svnroot/soap-wsdl/!svn/ver/861/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/Factory
+END
+Generator.pm
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/svnroot/soap-wsdl/!svn/ver/861/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/Factory/Generator.pm
+END
+Serializer.pm
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/svnroot/soap-wsdl/!svn/ver/861/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/Factory/Serializer.pm
+END
+Transport.pm
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/svnroot/soap-wsdl/!svn/ver/861/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/Factory/Transport.pm
+END
+Deserializer.pm
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/svnroot/soap-wsdl/!svn/ver/861/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/Factory/Deserializer.pm
+END

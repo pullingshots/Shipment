@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://www.example.org/ComplexTypeNamespaces/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="ComplexTypeNamespaces" targetNamespace="http://www.example.org/ComplexTypeNamespaces/">
+  <wsdl:types xmlns:test="http://www.example.org/ElementNamespaces/">
+    <xsd:schema targetNamespace="http://www.example.org/ComplexTypeNamespaces/"
+    elementFormDefault="qualified"
+    >
+        <xsd:import namespace="http://www.example.org/ElementNamespaces/"
+            schemaLocation="MultipleNamespaces.xsd"></xsd:import>
+      <xsd:element name="TestOperation" type="tns:TestOperationType">
+      </xsd:element>
+      <xsd:element name="TestOperationResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="out" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    
+      <xsd:complexType name="TestOperationType">
+      <xsd:annotation>
+        <xsd:documentation>A complexType including a element from a different
+        namespace. Used to test whether elements from different namespaces are
+        serialized correctly.</xsd:documentation>
+      </xsd:annotation>
+          <xsd:sequence>
+              <xsd:element name="LocalElement" type="xsd:string"></xsd:element>
+              <xsd:element name="NamespacedElement" type="test:complexTest"></xsd:element>
+          </xsd:sequence>
+      </xsd:complexType>
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="TestOperationRequest">
+    <wsdl:part element="tns:TestOperation" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="TestOperationResponse">
+    <wsdl:part element="tns:TestOperationResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:portType name="ComplexTypeNamespaces">
+    <wsdl:operation name="TestOperation">
+      <wsdl:input message="tns:TestOperationRequest"/>
+      <wsdl:output message="tns:TestOperationResponse"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="ComplexTypeNamespacesSOAP" type="tns:ComplexTypeNamespaces">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="TestOperation">
+      <soap:operation soapAction="http://www.example.org/ComplexTypeNamespaces/TestOperation"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="ComplexTypeNamespaces">
+    <wsdl:port binding="tns:ComplexTypeNamespacesSOAP" name="ComplexTypeNamespacesSOAP">
+      <soap:address location="http://www.example.org/"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

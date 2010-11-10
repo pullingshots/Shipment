@@ -1,0 +1,12 @@
+[% IF (complexType.get_derivation == 'restriction');
+    INCLUDE complexType/POD/restriction.tt(complexType = complexType);
+ELSIF (complexType.get_derivation == 'extension');
+    #THROW NOT_IMPLEMENTED, "${ complexType.get_name } - complexType complexContent extension not implemented yet";
+%]
+ # No documentation generated for complexContent / extension yet
+[%
+ELSE;
+    THROW UNKNOWN, "unknown derivation ${ complexType.get_derivation }";
+END;
+
+%]

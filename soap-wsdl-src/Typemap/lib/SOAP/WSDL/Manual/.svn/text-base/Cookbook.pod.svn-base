@@ -1,0 +1,276 @@
+=pod
+
+=head1 NAME
+
+SOAP::WSDL::Manual::Cookbook - SOAP::WSDL recipes
+
+=head2 Accessing HTTPS webservices
+
+You need Crypt::SSLeay installed to access HTTPS webservices.
+
+=head2 Accessing protected web services
+
+Passing a username and password, or a client certificate and key, to the
+transport layer is highly dependent on the transport backend. The descriptions
+below are for HTTP(S) transport using LWP::UserAgent
+
+=head3 Accessing HTTP(S) webservices with basic/digest authentication
+
+When using SOAP::WSDL::Transport::HTTP (SOAP::Lite not installed), add a
+method called "get_basic_credentials" to SOAP::WSDL::Transport::HTTP:
+
+ *SOAP::WSDL::Transport::HTTP::get_basic_credentials = sub {
+    return ($user, $password);
+ };
+
+When using SOAP::Transport::HTTP (SOAP::Lite is installed), do the same to
+this backend:
+
+ *SOAP::Transport::HTTP::Client::get_basic_credentials = sub {
+     return ($user, $password);
+ };
+
+=head3 Accessing HTTP(S) webservices protected by NTLM authentication
+
+If you want to connect to a windows server using some Windows Domain Login, please
+consider using Kerberos instead of the (older) NTLM mechanism - see below.
+
+Kerberos and NTLM are (currently) mutually exclusive - when LWP::Authen::Negotiate
+is installed, it will always be queried (and will always raise an error), even
+if you don't want to use it. See http://rt.cpan.org/Public/Bug/Display.html?id=32826 
+for details. 
+
+You need the L<NTLM|NTLM> distribution installed to access webservices protected
+by NTLM authentication. More specifically, you need the Authen::NTLM module
+from this distribution. Note that this is different from the Authen::NTML
+distribution by Yee Man Chan also available from CPAN.
+
+Your user credentials usually need to include the windows domain or the 
+windows hostname like this:
+
+ testdomain\testuser
+
+or 
+
+ \\testhost\testuser
+
+Besides passing user credentials as when accessing a web service protected
+by basic or digest authentication, you also need to enforce connection
+keep_alive on the transport backens.
+
+To do so, pass a I<proxy> argument to the new() method of the generated
+class. This unfortunately means that you have to set the endpoint URL, too:
+
+ my $interface = MyInterfaces::SERVICE_NAME::PORT_NAME->new({
+     proxy => [ $url, keep_alive => 1 ]
+ });
+
+You may, of course, decide to just hack the generated class. Be advised that
+subclassing might be a more appropriate solution - re-generating overwrites
+changes in interface classes.
+
+=head3 Accessing HTTP(S) webservices protected by NTLMv2
+
+There are different variants of NTLM, and by default Authen::NTLM uses the v1 variant.
+
+NTLM is a connection-based handshake authentication protocol, which requires
+three or more requests on the same connection: 
+
+    Request    POST
+    Response   401 Unauthorized
+               WWW-Authenticate: NTLM
+
+    Request    Authorization: NTLM <base64-encoded type-1-message>
+    Response   401 Unauthorized
+               WWW-Authenticate: NTLM <base64-encoded type-2-message>
+
+    Request    Authorization: NTLM <base64-encoded type-3-message>
+    Response   200 Ok
+
+If you try to access a NTLMv2 protected web service and switch on LWP::Debug by
+saying
+
+ use LWP::Debug qw(+);
+
+you should see at least two lines containing something like 
+
+ Authorization NTLM TlRMTVNTUAABAAAAB7IAAAAAAAAAAAAAAwADACAAAABmb28=
+ ...
+ Authorization NTLM TlRMTVNTUAABAAAAB7IAAAAAAAAAAAAAAw ... much longer ... ADACAAAABmb28=
+
+If you're talking to a Server using NTLMv2 exclusively, you will only the first line 
+in the debug output, and then an error.
+
+To explicitely enable NTLMv2, do the following in your client:
+
+ use Authen::NTLM;
+ ntlmv2(1);
+
+This globally enables the use of NTLMv2. Note that this is a global setting: All
+clients running in the same perl interpreter will be affected. This can
+cause unexpected issues when running under mod_perl.
+
+=head3 Accessing webservices protected by HTTP Kerberos Authentication
+
+Use the L<LWP::Authen::Negotiate|LWP::Authen::Negotiate> plugin from CPAN. You 
+need to set up GSSAPI to perform the Kerberos authentication, though. How to do 
+this is implementation specific (MIT or Heimdahl). See your Kerberos/GSSAPI 
+documentation for details.
+
+(Newer) Windows Web Services usually allow to use both the Negotiate (Kerberos) 
+and NTLM authentication scheme. 
+
+=head3 Accessing HTTPS webservices protected by certificate authentication
+
+You need Crypt::SSLeay installed to access HTTPS webservices.
+
+See L<Crypt::SSLeay> on how to configure client certificate authentication.
+
+=head1 XML OUTPUT
+
+=head2 Outputting namespaces as prefixes
+
+Q: I need to interface with a SOAP server which doesn't accept the following
+format:
+
+ <SOAP-ENV:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+     <SOAP-ENV:Body>
+         <getElement xmlns="http://services.company.com/">
+             <elementId>12345</elementId>
+         </getElement>
+     </SOAP-ENV:Body>
+ </SOAP-ENV:Envelope>
+
+Instead, it requires this:
+
+ <SOAP-ENV:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xmlns:ns2="http://services.company.com/"
+     xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+     <SOAP-ENV:Body>
+         <ns2:getElement>
+             <ns2:elementId>12345</ns2:elementId>
+         </ns2:getElement>
+     </SOAP-ENV:Body>
+ </SOAP-ENV:Envelope>
+
+How do I do this using SOAP::WSDL?
+
+A: The following steps are neccessary to achieve this result:
+
+First, you would need to write a new serializer, which is quite easy, as it
+just creates the envelope and calls ->serialize_qualified() on $header and
+$body to fill them in. The new serializer has to declare all namespace
+prefixes used, the rest is just the same as the original XSD serializer.
+
+Second, you'd need to overwrite the start_tag method in
+L<SOAP::WSDL::XSD::Typelib::Element|SOAP::WSDL::XSD::Typelib::Element> to use
+the appropriate prefixes for the body elements.
+
+In contrast to the original method, it would probably look up the appropriate
+prefix from some data set in the serializer class, so this could be the
+appropriate place to load SOAP::WSDL::XSD::Typelib::Element and override the
+method.
+
+Something like this should do (without the handling of specialties like empty
+or nil elements):
+
+ %PREFIX_OF = { 'http://services.company.com/' => 'ns2' };
+
+ *SOAP::WSDL::XSD::Typelib::Element::start_tag = sub {
+     # use prefix instead of xmlns attribute and copy the rest from
+     # SOAP::WSDL::XSD::Typelib::Element::start_tag
+     my $prefix = $PREFIX_OF{ $_[0]->get_xmlns() };
+     my $name = $_[1]->{ name } || $self->__get_name();
+     return "<$prefix:$name>";
+ }
+
+=head1 Skipping unknown XML elements - "lax" XML processing
+
+SOAP::WSDL's default serializer
+L<SOAP::WSDL::Deserializer::XSD|SOAP::WSDL::Deserializer::XSD> is a "strict"
+XML processor in the sense that it throws an exception on encountering unknown
+XML elements.
+
+L<SOAP::WSDL::Deserializer::XSD|SOAP::WSDL::Deserializer::XSD> allows
+switching off the stric XML processing by passing the C<strict =E<gt> 0>
+option.
+
+=head2 Disabling strict XML processing in a Client
+
+Pass the following as C<deserializer_args>:
+
+ { strict => 0 }
+
+Example: The generated SOAP client is assumed to be "MyInterface::Test".
+
+ use MyInterface::Test;
+
+ my $soap = MyInterface::Test->new({
+     deserializer_args => { strict => 0 }
+ });
+
+ my $result = $soap->SomeMethod();
+
+=head2 Disabling strict XML processing in a CGI based server
+
+You have to set the deserializer in the transport class explicitely to
+a L<SOAP::WSDL::Deserializer|SOAP::WSDL::Deserializer> object with the
+C<strict> option set to 0.
+
+Example: The generated SOAP server is assumed to be "MyServer::Test".
+
+ use strict;
+ use MyServer::Test;
+ use SOAP::WSDL::Deserializer::XSD;
+
+ my $soap = MyServer::Test->new({
+     transport_class => 'SOAP::WSDL::Server::CGI',
+     dispatch_to => 'main',
+ });
+ $soap->get_transport()->set_deserializer(
+    SOAP::WSDL::Deserializer::XSD->new({ strict => 0 })
+ );
+
+ $soap->handle();
+
+=head2 Disabling strict XML processing in a mod_perl based server
+
+Sorry, this is not implemented yet - you'll have to write your own handler
+class based on L<SOAP::WSDL::Server::Mod_Perl2|SOAP::WSDL::Server::Mod_Perl2>.
+
+=head1 Changing the encoding of a SOAP request
+
+SOAP::WSDL uses utf-8 per default: utf-8
+is the de-facto standard for webservice ommunication.
+
+However, you can change the encoding the transport layer announces by calling
+C<set_encoding($encoding)> on a client object.
+
+You probably have to write your own serializer class too, because the default
+serializer has the utf-8 encoding hardcoded in the envelope.
+
+Just look into SOAP::WSDL::Serializer on how to do that.
+
+Don't forget to register your serializer at the serializer factory
+SOAP::WSDL::Factory::Serializer.
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright 2008, 2009 Martin Kutter.
+
+This file is part of SOAP-WSDL. You may distribute/modify it under
+the same terms as perl itself.
+
+=head1 AUTHOR
+
+Martin Kutter E<lt>martin.kutter fen-net.deE<gt>
+
+=head1 REPOSITORY INFORMATION
+
+ $Rev: 583 $
+ $LastChangedBy: kutterma $
+ $Id: $
+ $HeadURL: $
+
+=cut

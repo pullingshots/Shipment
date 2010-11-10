@@ -1,0 +1,175 @@
+<?xml version="1.0"?>
+<definitions name="email_account"
+	targetNamespace="email_account"
+	xmlns:tns="email_account"
+	xmlns:xsd="http://www.w3c.org/2001/XMLSchema"
+	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap"
+	xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+>
+	<types>
+		<xsd:schema targetNamespace="email_account">
+		<xsd:complexType name="imapAccount">
+			<xsd:annotation>
+				<xsd:documentation>
+					Ein (evtl. unvollständiger) Account-Datensatz.
+					Alle Felder des Datensatzes können, müssen aber nicht
+					gefüllt sein.
+				</xsd:documentation>
+			</xsd:annotation>
+			<xsd:any>
+				<xsd:element name="email" type="xsd:string" />
+				<xsd:element name="uid" type="xsd:string" />
+				<xsd:element name="password" type="xsd:string" />
+				<xsd:element name="host" type="xsd:string" />
+				<xsd:element name="sendQuota" type="xsd:int" />
+				<xsd:element name="receiveQuota" type="xsd:int" />
+				<xsd:element name="enabled" type="xsd:boolean" default="true"/>
+			</xsd:any>
+		</xsd:complexType>
+		<xsd:complexType name="imapAccountList">
+			<xsd:annotation>
+				<xsd:documentation>
+					Eine Liste von Account-Datensätzen. Die Liste kann leer sein.
+				</xsd:documentation>
+			</xsd:annotation>
+
+			<xsd:any maxOccurs="unbounded">
+				<xsd:element name="account" type="tns:imapAccount"/>
+			</xsd:any>
+		</xsd:complexType>
+		</xsd:schema>
+	</types>
+	<message name="getRequest">
+		<part name="account" type="tns:imapAccount"/>
+	</message>
+	<message name="getResponse">
+		<part name="account" type="tns:imapAccount"/>
+	</message>
+	<message name="createRequest">
+		<part name="account" type="tns:imapAccount"/>
+	</message>
+	<message name="createResponse">
+		<part name="account" type="tns:imapAccount"/>
+	</message>
+	<message name="modifyRequest">
+		<part name="account" type="tns:imapAccount"/>
+	</message>
+	<message name="modifyResponse">
+		<part name="account" type="tns:imapAccount"/>
+	</message>
+	<message name="searchRequest">
+		<part name="account" type="tns:imapAccount"/>
+	</message>
+	<message name="searchResponse">
+		<part name="accountList" type="tns:imapAccountList"/>
+	</message>
+	<message name="deleteRequest">
+		<part name="account" type="tns:imapAccount"/>
+	</message>
+	<message name="deleteResponse">
+		<part name="accountList" type="tns:imapAccountList"/>
+	</message>
+	<portType name="email_account">
+		<operation name="get">
+			<documentation>
+				Methode zum Anzeigen eines Account-Datensatzes.
+				Erwartet als Input einen (potentiell unvollständigen)
+				Account-Datensatz und liefert den (vollständigen)
+				Datensatz zurück.
+			</documentation>
+
+			<input message="getRequest"/>
+			<output message="getResponse"/>
+		</operation>
+		<operation name="create">
+			<documentation>
+				Methode zum Anlegen eines Account-Datensatzes.
+				Erwartet als Input einen (potentiell unvollständigen)
+				Account-Datensatz und liefert den (vollständigen)
+				Datensatz zurück.
+			</documentation>
+			<input message="createRequest"/>
+			<output message="createResponse"/>
+		</operation>
+		<operation name="modify">
+			<documentation>
+				Methode zum Ändern eines Account-Datensatzes.
+				Erwartet als Input einen (potentiell unvollständigen)
+				Account-Datensatz und liefert den (vollständigen)
+				Datensatz zurück.
+			</documentation>
+			<input message="modifyRequest"/>
+			<output message="modifyResponse"/>
+		</operation>
+		<operation name="delete">
+			<documentation>
+				Methode zum Löschen eines Account-Datensatzes.
+				Erwartet als Input einen (potentiell unvollständigen)
+				Account-Datensatz und liefert den (vollständigen)
+				Datensatz zurück.
+			</documentation>
+			<input message="deleteRequest"/>
+			<output message="deleteResponse"/>
+		</operation>
+		<operation name="search">
+			<documentation>
+				Methode zum Suchen eines oder mehrerer Account-Datensätze.
+				Erwartet als Input einen (potentiell unvollständigen)
+				Account-Datensatz und liefert eine Liste an (vollständigen)
+				passenden Datensätzen zurück. Die Liste kann leer sein.
+			</documentation>
+			<input message="searchRequest"/>
+			<output message="searchResponse"/>
+		</operation>
+	</portType>
+	<binding type="email_account" name="soap">
+		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+		<soap:operation soapAction="email_account/get">
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+		</soap:operation>
+		<soap:operation soapAction="email_account/create">
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+		</soap:operation>
+		<soap:operation soapAction="email_account/modify">
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+		</soap:operation>
+		<soap:operation soapAction="email_account/delete">
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+		</soap:operation>
+
+		<soap:operation soapAction="email_account/search">
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+		</soap:operation>
+	</binding>
+	<service name="email_account">
+		<port name="email_account" binding="soap">
+			<address location="https://127.0.0.1/email_account" />
+		</port>
+	</service>
+</definitions>

@@ -1,0 +1,107 @@
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svnroot/soap-wsdl/!svn/ver/861/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL
+END
+Types.pm
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svnroot/soap-wsdl/!svn/ver/861/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/Types.pm
+END
+Part.pm
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svnroot/soap-wsdl/!svn/ver/861/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/Part.pm
+END
+Server.pm
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svnroot/soap-wsdl/!svn/ver/861/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/Server.pm
+END
+Binding.pm
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svnroot/soap-wsdl/!svn/ver/861/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/Binding.pm
+END
+Base.pm
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svnroot/soap-wsdl/!svn/ver/861/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/Base.pm
+END
+Definitions.pm
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svnroot/soap-wsdl/!svn/ver/861/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/Definitions.pm
+END
+TypeLookup.pm
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svnroot/soap-wsdl/!svn/ver/861/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/TypeLookup.pm
+END
+Client.pm
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svnroot/soap-wsdl/!svn/ver/861/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/Client.pm
+END
+OpMessage.pm
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svnroot/soap-wsdl/!svn/ver/861/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/OpMessage.pm
+END
+Manual.pod
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svnroot/soap-wsdl/!svn/ver/660/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/Manual.pod
+END
+Starter.pm
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svnroot/soap-wsdl/!svn/ver/849/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/Starter.pm
+END
+Port.pm
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svnroot/soap-wsdl/!svn/ver/861/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/Port.pm
+END
+Message.pm
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svnroot/soap-wsdl/!svn/ver/861/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/Message.pm
+END
+PortType.pm
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svnroot/soap-wsdl/!svn/ver/861/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/PortType.pm
+END
+Build.pm
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svnroot/soap-wsdl/!svn/ver/849/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/Build.pm
+END
+Operation.pm
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svnroot/soap-wsdl/!svn/ver/861/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/Operation.pm
+END
+Service.pm
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svnroot/soap-wsdl/!svn/ver/861/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/Service.pm
+END

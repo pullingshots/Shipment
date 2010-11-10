@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svnroot/soap-wsdl/!svn/ver/828/SOAP-WSDL/branches/Typemap/example/lib/MyTypemaps
+END
+HelloWorld.pm
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/example/lib/MyTypemaps/HelloWorld.pm
+END
+BarCode.pm
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/example/lib/MyTypemaps/BarCode.pm
+END
+FullerData_x0020_Fortune_x0020_Cookie.pm
+K 25
+svn:wc:ra_dav:version-url
+V 122
+/svnroot/soap-wsdl/!svn/ver/828/SOAP-WSDL/branches/Typemap/example/lib/MyTypemaps/FullerData_x0020_Fortune_x0020_Cookie.pm
+END
+GlobalWeather.pm
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/example/lib/MyTypemaps/GlobalWeather.pm
+END
+TestService.pm
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/example/lib/MyTypemaps/TestService.pm
+END

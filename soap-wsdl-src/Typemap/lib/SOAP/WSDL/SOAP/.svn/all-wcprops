@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svnroot/soap-wsdl/!svn/ver/861/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/SOAP
+END
+HeaderFault.pm
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svnroot/soap-wsdl/!svn/ver/861/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/SOAP/HeaderFault.pm
+END
+Address.pm
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svnroot/soap-wsdl/!svn/ver/861/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/SOAP/Address.pm
+END
+Header.pm
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svnroot/soap-wsdl/!svn/ver/861/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/SOAP/Header.pm
+END
+Body.pm
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svnroot/soap-wsdl/!svn/ver/861/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/SOAP/Body.pm
+END
+Operation.pm
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svnroot/soap-wsdl/!svn/ver/861/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/SOAP/Operation.pm
+END

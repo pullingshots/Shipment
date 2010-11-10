@@ -1,0 +1,12 @@
+This clase is derived from [%-
+IF (name = simpleType.get_base);
+    type = definitions.get_types.0.find_type(simpleType.expand(name)); %]
+   [% XSD.create_xsd_name(type); %]
+[% ELSE;
+    # THROW NOT_IMPLEMENTED "atomic simpleType restriction not implemented yet in $simpleType.get_name";
+    %] a atomic base type. Unfortunately there's no documenatation generation for atomic base types yet. [%
+END -%]
+. SOAP::WSDL's schema implementation does not validate data, so you can use it exactly
+like it's base type.
+
+# Description of restrictions not implemented yet.

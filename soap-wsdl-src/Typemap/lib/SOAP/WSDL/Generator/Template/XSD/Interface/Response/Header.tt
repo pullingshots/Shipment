@@ -1,0 +1,45 @@
+[%
+    RETURN IF NOT item;
+    message_name = item.get_message;
+    IF NOT message_name;
+        THROW BAD_WSDL "missing <message> attribute in header for operation ${operation.get_name}";
+    END;
+    message = definitions.find_message( item.expand( message_name ) );
+    PERL %]
+    my $message = $stash->{ message };
+    my $item = $stash->{ item };
+    my $def = $stash->{ definitions };
+    my $type_prefix = $stash->{ type_prefix };
+    my $element_prefix = $stash->{ element_prefix };
+    #my ($ns, $lname) = $def->expand( $item->get_part() );
+    my $part_name = $item->get_part();
+    my ($part) = grep {
+        $_->get_name eq $part_name
+        } @{ $message->get_part( ) };
+    my $part_class = do {
+        my $name;
+        ($name = $part->get_element)
+            ? do {
+                    my $element = $def->first_types->find_element($part->expand($name));
+                    my $resolver = $context->plugin('XSD');
+                    $resolver->create_xsd_name($element);
+                }
+            : ($name = $part->get_type)
+                ? do {
+                        my $element = $def->first_types->find_type($part->expand($name));
+                        my $resolver = $context->plugin('XSD');
+                        $resolver->create_xsd_name($element);
+                }
+                : die "output must have either type or element"
+            };
+    $stash->{ part_class } = $part_class;
+    [% END;
+%]
+[% IF item.get_use != 'literal';
+    THROW NOT_SUPPORTED "Header: SOAP::WSDL supports literal encoding only - ${ item.get_use } found";
+END %]
+
+           'use' => '[% item.get_use %]',
+            namespace => '[% item.get_namespace %]',
+            encodingStyle => '[% item.get_encodingStyle %]',
+            parts => [qw( [% part_class %] )],

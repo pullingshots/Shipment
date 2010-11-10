@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/t/acceptance/wsdl/contributed
+END
+OITest.wsdl
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/t/acceptance/wsdl/contributed/OITest.wsdl
+END
+gasquery.wsdl
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/t/acceptance/wsdl/contributed/gasquery.wsdl
+END
+tools.wsdl
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/t/acceptance/wsdl/contributed/tools.wsdl
+END
+Axis.wsdl
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/t/acceptance/wsdl/contributed/Axis.wsdl
+END
+ETest.wsdl
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/t/acceptance/wsdl/contributed/ETest.wsdl
+END

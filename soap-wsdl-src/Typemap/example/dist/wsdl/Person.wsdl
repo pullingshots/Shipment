@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions name="benchmark"
+    targetNamespace="http://www.example.org/benchmark/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:tns="http://www.example.org/benchmark/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+    <wsdl:types>
+        <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://www.example.org/benchmark/"
+            elementFormDefault="qualified">
+
+            <xsd:element name="ListPerson">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="in" type="tns:Person"
+                            maxOccurs="1" minOccurs="0" />
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <xsd:element name="ListPersonResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="out" type="tns:ArrayOfPerson" />
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:complexType name="Person">
+
+                <xsd:sequence>
+                    <xsd:element name="PersonID" type="tns:PersonID" />
+                    <xsd:element name="Salutation" type="xsd:string" />
+                    <xsd:element name="Name" type="xsd:string" />
+                    <xsd:element name="GivenName" type="xsd:string" />
+                    <xsd:element name="DateOfBirth" type="xsd:date" />
+                    <xsd:element name="HomeAddress" type="tns:Address"
+                        maxOccurs="1" minOccurs="1" />
+                    <xsd:element name="WorkAddress" type="tns:Address"
+                        maxOccurs="1" minOccurs="0" />
+                    <xsd:element name="Contracts"
+                        type="tns:ArrayOfContract" />
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <xsd:simpleType name="PhoneNumber">
+                <xsd:restriction base="xsd:string"></xsd:restriction>
+            </xsd:simpleType>
+
+            <xsd:complexType name="ArrayOfPerson">
+                <xsd:sequence minOccurs="0" maxOccurs="unbounded">
+                    <xsd:element name="NewElement" type="tns:Person"
+                        maxOccurs="unbounded" minOccurs="0" />
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <xsd:complexType name="PersonID">
+                <xsd:sequence>
+                    <xsd:element name="ID" type="xsd:int"></xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <xsd:complexType name="Address">
+                <xsd:sequence>
+                    <xsd:element name="Street" type="xsd:string" />
+                    <xsd:element name="ZIP" type="xsd:string" />
+                    <xsd:element name="City" type="xsd:string" />
+                    <xsd:element name="Country" type="xsd:string" />
+                    <xsd:element name="PhoneNumber" type="tns:PhoneNumber" />
+                    <xsd:element name="MobilePhoneNumber" type="tns:PhoneNumber" />
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <xsd:complexType name="ArrayOfContract">
+                <xsd:sequence>
+                    <xsd:element name="Contract" type="tns:Contract"
+                        maxOccurs="unbounded" minOccurs="0">
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <xsd:complexType name="Contract">
+                <xsd:sequence>
+                    <xsd:element name="ContractID" type="xsd:long" />
+                    <xsd:element name="ContractName" type="xsd:string" />
+                </xsd:sequence>
+            </xsd:complexType>
+        </xsd:schema>
+    </wsdl:types>
+    <wsdl:message name="ListPersonRequest">
+        <wsdl:part name="parameters" element="tns:ListPerson" />
+    </wsdl:message>
+    <wsdl:message name="ListPersonResponse">
+        <wsdl:part name="parameters" element="tns:ListPersonResponse" />
+    </wsdl:message>
+    <wsdl:portType name="NewPortType">
+        <wsdl:operation name="ListPerson">
+            <wsdl:input message="tns:ListPersonRequest"></wsdl:input>
+            <wsdl:output message="tns:ListPersonResponse"></wsdl:output>
+        </wsdl:operation>
+    </wsdl:portType>
+    <wsdl:binding name="NewBinding" type="tns:NewPortType">
+        <soap:binding style="document"
+            transport="http://schemas.xmlsoap.org/soap/http" />
+        <wsdl:operation name="ListPerson">
+            <soap:operation
+                soapAction="http://www.example.org/benchmark/ListPerson" />
+            <wsdl:input>
+                <soap:body use="literal" />
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal" />
+            </wsdl:output>
+        </wsdl:operation>
+    </wsdl:binding>
+    <wsdl:service name="TestService">
+        <wsdl:port name="TestPort" binding="tns:NewBinding">
+            <soap:address
+                location="http://localhost:81/soap-wsdl-test/person.pl"></soap:address>
+        </wsdl:port>
+    </wsdl:service>
+</wsdl:definitions>

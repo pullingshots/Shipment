@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svnroot/soap-wsdl/!svn/ver/861/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/Expat
+END
+WSDLParser.pm
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svnroot/soap-wsdl/!svn/ver/861/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/Expat/WSDLParser.pm
+END
+Base.pm
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svnroot/soap-wsdl/!svn/ver/861/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/Expat/Base.pm
+END
+Message2Hash.pm
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/svnroot/soap-wsdl/!svn/ver/861/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/Expat/Message2Hash.pm
+END
+MessageStreamParser.pm
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/svnroot/soap-wsdl/!svn/ver/861/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/Expat/MessageStreamParser.pm
+END
+MessageParser.pm
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svnroot/soap-wsdl/!svn/ver/840/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/Expat/MessageParser.pm
+END

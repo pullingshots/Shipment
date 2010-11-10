@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+<definitions name="Test" targetNamespace="urn:Test" xmlns:tns="urn:Test"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns="http://schemas.xmlsoap.org/wsdl/">
+    <types>
+        <xsd:schema targetNamespace="urn:Test">
+            <xsd:simpleType name="testSimpleType1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        SimpleType: List with an integer and a string
+                    </xsd:documentation>
+                </xsd:annotation>
+                <xsd:union memberTypes="xsd:int xsd:string" />
+            </xsd:simpleType>
+            <xsd:simpleType name="testSimpleType2">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        SimpleType: List with an integer and a string
+                    </xsd:documentation>
+                </xsd:annotation>
+                <xsd:union>
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:int">
+                            <xsd:minInclusive value="1" />
+                            <xsd:maxInclusive value="3" />
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                            <xsd:enumeration value="union" />
+                            <xsd:enumeration value="test" />
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:union>
+            </xsd:simpleType>
+        </xsd:schema>
+    </types>
+    <message name="testRequest">
+        <part name="testAll" type="tns:testSimpleType1" />
+    </message>
+    <message name="testResponse">
+        <part name="testAll" type="tns:testSimpleType2" />
+    </message>
+    <message name="testRequest2">
+        <part name="testAll" type="tns:testSimpleType2" />
+    </message>
+    <message name="testResponse2">
+        <part name="testAll" type="tns:testSimpleType2" />
+    </message>
+
+    <portType name="testPort">
+        <operation name="test">
+            <documentation>Test-Methode</documentation>
+
+            <input message="tns:testRequest" />
+            <output message="tns:testResponse" />
+        </operation>
+        <operation name="test2">
+            <documentation>Test-Methode</documentation>
+
+            <input message="tns:testRequest2" />
+            <output message="tns:testResponse2" />
+        </operation>
+
+    </portType>
+
+    <binding type="tns:testPort" name="testBinding">
+        <soap:binding style="document"
+            transport="http://schemas.xmlsoap.org/soap/http" />
+        <operation name="test">
+            <soap:operation soapAction="test" />
+            <input>
+                <soap:body use="literal" />
+            </input>
+            <output>
+                <soap:body use="literal" />
+            </output>
+
+        </operation>
+        <operation name="test2">
+            <soap:operation soapAction="test2" />
+            <input>
+                <soap:body use="literal" />
+            </input>
+            <output>
+                <soap:body use="literal" />
+            </output>
+
+        </operation>
+    </binding>
+    <service name="testService">
+        <port name="testPort" binding="tns:testBinding">
+            <soap:address location="http://127.0.0.1/testPort" />
+        </port>
+    </service>
+</definitions>

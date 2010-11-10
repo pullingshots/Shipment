@@ -1,0 +1,37 @@
+[% USE XSD %]
+package [% XSD.create_typemap_name(service) %];
+use strict;
+use warnings;
+
+our [% USE Dumper(varname = 'typemap_'); Dumper.dump( typemap ) %];
+
+sub get_class {
+  my $name = join '/', @{ $_[1] };
+  return $typemap_1->{ $name };
+}
+
+sub get_typemap {
+    return $typemap_1;
+}
+
+1;
+
+__END__
+
+__END__
+[%# work around for CPAN's indexer, which gets disturbed by pod in templates -%]
+[% pod = BLOCK %]=pod[% END -%]
+[% head1 = BLOCK %]=head1[% END -%]
+
+[% pod %]
+
+[% head1 %] NAME
+
+[% XSD.create_typemap_name(service) %] - typemap for [% service.get_name %]
+
+[% head1 %] DESCRIPTION
+
+Typemap created by SOAP::WSDL for map-based SOAP message parsers.
+
+=cut
+

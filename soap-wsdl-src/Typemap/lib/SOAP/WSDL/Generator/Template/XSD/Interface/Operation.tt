@@ -1,0 +1,31 @@
+sub [% operation.get_name %] {
+    my ($self, $body, $header) = @_;
+    die "[% operation.get_name %] must be called as object method (\$self is <$self>)" if not blessed($self);
+    return $self->SUPER::call({
+        operation => '[% operation.get_name %]',
+        soap_action => '[% operation.first_operation.get_soapAction %]',
+        style => [% style = operation.first_operation.get_style || binding.get_style;
+    IF style != "document";
+        THROW NOT_SUPPORTED "SOAP::WSDL supports document encoding only - $style found";
+    END;
+-%]
+'[% style %]',
+        body => {
+            [% INCLUDE Interface/Body.tt( item = operation.first_input.first_body ); %]
+        },
+        header => {
+            [% INCLUDE Interface/Header.tt( item = operation.first_input.get_header ); %]
+        },
+        headerfault => {
+            [% INCLUDE Interface/Header.tt( item = operation.first_input.first_headerfault ); %]
+        },
+        response => {
+            header => {
+                [% INCLUDE Interface/Response/Header.tt( item = operation.first_output.first_header ); %]
+            },
+            body => {
+                [% INCLUDE Interface/Response/Body.tt( item = operation.first_output.first_body ); %]
+            },
+        }
+    }, $body, $header);
+}

@@ -1,0 +1,2 @@
+[% node.get_annotation.0.get_documentation %]
+

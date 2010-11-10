@@ -1,0 +1,700 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions targetNamespace="http://stub.query.gasapiserver.esp.globalsign.com"
+xmlns:apachesoap="http://xml.apache.org/xml-soap"
+xmlns:impl="http://stub.query.gasapiserver.esp.globalsign.com"
+xmlns:intf="http://stub.query.gasapiserver.esp.globalsign.com"
+xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/"
+xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<!--WSDLはApache Axis version: 1.4
+Built on Apr 22, 2006 (06:55:48 PDT)によって生成されました / [en]-(WSDL created by Apache Axis version: 1.4
+Built on Apr 22, 2006 (06:55:48 PDT))-->
+ <wsdl:types>
+  <schema elementFormDefault="qualified" targetNamespace="http://stub.query.gasapiserver.esp.globalsign.com" xmlns="http://www.w3.org/2001/XMLSchema">
+   <element name="GetDVApproverList">
+    <complexType>
+     <sequence>
+      <element name="Request" type="impl:GetDVApproverListRequest"/>
+     </sequence>
+    </complexType>
+   </element>
+   <complexType name="AuthToken">
+    <sequence>
+     <element name="Password" nillable="true" type="xsd:string"/>
+     <element name="UserName" nillable="true" type="xsd:string"/>
+    </sequence>
+   </complexType>
+   <complexType name="QueryRequestHeader">
+    <sequence>
+     <element name="AuthToken" nillable="true" type="impl:AuthToken"/>
+    </sequence>
+   </complexType>
+   <complexType name="GetDVApproverListRequest">
+    <sequence>
+     <element name="FQDN" nillable="true" type="xsd:string"/>
+     <element name="QueryRequestHeader" nillable="true" type="impl:QueryRequestHeader"/>
+    </sequence>
+   </complexType>
+   <element name="GetDVApproverListResponse">
+    <complexType>
+     <sequence>
+      <element name="Response" type="impl:GetDVApproverListResponse"/>
+     </sequence>
+    </complexType>
+   </element>
+   <complexType name="Approver">
+    <sequence>
+     <element maxOccurs="1" minOccurs="0" name="ApproverEmail" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="ApproverType" nillable="true" type="xsd:string"/>
+    </sequence>
+   </complexType>
+   <complexType name="ArrayOfApprover">
+    <sequence>
+     <element maxOccurs="unbounded" minOccurs="0" name="Approver" type="impl:Approver"/>
+    </sequence>
+   </complexType>
+   <complexType name="Error">
+    <sequence>
+     <element maxOccurs="1" minOccurs="0" name="ErrorCode" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="ErrorField" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="ErrorMessage" nillable="true" type="xsd:string"/>
+    </sequence>
+   </complexType>
+   <complexType name="ArrayOfError">
+    <sequence>
+     <element maxOccurs="unbounded" minOccurs="0" name="Error" type="impl:Error"/>
+    </sequence>
+   </complexType>
+   <complexType name="QueryResponseHeader">
+    <sequence>
+     <element maxOccurs="1" minOccurs="0" name="Errors" nillable="true" type="impl:ArrayOfError"/>
+     <element maxOccurs="1" minOccurs="0" name="ReturnCount" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="SuccessCode" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="Timestamp" nillable="true" type="xsd:dateTime"/>
+    </sequence>
+   </complexType>
+   <complexType name="GetDVApproverListResponse">
+    <sequence>
+     <element maxOccurs="1" minOccurs="0" name="Approvers" nillable="true" type="impl:ArrayOfApprover"/>
+     <element maxOccurs="1" minOccurs="0" name="OrderID" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="QueryResponseHeader" nillable="true" type="impl:QueryResponseHeader"/>
+    </sequence>
+   </complexType>
+   <element name="GetApproverList">
+    <complexType>
+     <sequence>
+      <element name="Request" type="impl:GetApproverListRequest"/>
+     </sequence>
+    </complexType>
+   </element>
+   <complexType name="GetApproverListRequest">
+    <sequence>
+     <element name="FQDN" nillable="true" type="xsd:string"/>
+     <element name="QueryRequestHeader" nillable="true" type="impl:QueryRequestHeader"/>
+    </sequence>
+   </complexType>
+   <element name="GetApproverListResponse">
+    <complexType>
+     <sequence>
+      <element name="Response" type="impl:GetApproverListResponse"/>
+     </sequence>
+    </complexType>
+   </element>
+   <complexType name="GetApproverListResponse">
+    <sequence>
+     <element maxOccurs="1" minOccurs="0" name="Approvers" nillable="true" type="impl:ArrayOfApprover"/>
+     <element maxOccurs="1" minOccurs="0" name="QueryResponseHeader" nillable="true" type="impl:QueryResponseHeader"/>
+    </sequence>
+   </complexType>
+   <element name="GetOrderByOrderID">
+    <complexType>
+     <sequence>
+      <element name="Request" type="impl:GetOrderByOrderIDRequest"/>
+     </sequence>
+    </complexType>
+   </element>
+   <complexType name="OrderQueryOption">
+    <sequence>
+     <element maxOccurs="1" minOccurs="0" name="OrderStatus" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="ReturnCACerts" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="ReturnCertificateInfo" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="ReturnFulfillment" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="ReturnOrderOption" nillable="true" type="xsd:string"/>
+    </sequence>
+   </complexType>
+   <complexType name="GetOrderByOrderIDRequest">
+    <sequence>
+     <element name="OrderID" nillable="true" type="xsd:string"/>
+     <element name="OrderQueryOption" nillable="true" type="impl:OrderQueryOption"/>
+     <element name="QueryRequestHeader" nillable="true" type="impl:QueryRequestHeader"/>
+    </sequence>
+   </complexType>
+   <element name="GetOrderByOrderIDResponse">
+    <complexType>
+     <sequence>
+      <element name="Response" type="impl:GetOrderByOrderIDResponse"/>
+     </sequence>
+    </complexType>
+   </element>
+   <complexType name="CertificateInfo">
+    <sequence>
+     <element maxOccurs="1" minOccurs="0" name="DNSNames" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="CertificateStatus" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="CommonName" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="EndDate" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="SerialNumber" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="StartDate" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="SubjectName" nillable="true" type="xsd:string"/>
+    </sequence>
+   </complexType>
+   <complexType name="CACertificate">
+    <sequence>
+     <element maxOccurs="1" minOccurs="0" name="CACert" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="CACertType" nillable="true" type="xsd:string"/>
+    </sequence>
+   </complexType>
+   <complexType name="ArrayOfCACertificate">
+    <sequence>
+     <element maxOccurs="unbounded" minOccurs="0" name="CACertificate" type="impl:CACertificate"/>
+    </sequence>
+   </complexType>
+   <complexType name="ServerCertificate">
+    <sequence>
+     <element maxOccurs="1" minOccurs="0" name="PKCS7Cert" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="X509Cert" nillable="true" type="xsd:string"/>
+    </sequence>
+   </complexType>
+   <complexType name="Fulfillment">
+    <sequence>
+     <element maxOccurs="1" minOccurs="0" name="CACertificates" nillable="true" type="impl:ArrayOfCACertificate"/>
+     <element maxOccurs="1" minOccurs="0" name="ServerCertificate" nillable="true" type="impl:ServerCertificate"/>
+    </sequence>
+   </complexType>
+   <complexType name="ModificationEvent">
+    <sequence>
+     <element maxOccurs="1" minOccurs="0" name="ModificationEventName" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="ModificationEventTimestamp" nillable="true" type="xsd:dateTime"/>
+    </sequence>
+   </complexType>
+   <complexType name="ArrayOfModificationEvent">
+    <sequence>
+     <element maxOccurs="unbounded" minOccurs="0" name="ModificationEvent" type="impl:ModificationEvent"/>
+    </sequence>
+   </complexType>
+   <complexType name="ValidityPeriod">
+    <sequence>
+     <element maxOccurs="1" minOccurs="0" name="Months" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="NotAfter" nillable="true" type="xsd:dateTime"/>
+     <element maxOccurs="1" minOccurs="0" name="NotBefore" nillable="true" type="xsd:dateTime"/>
+    </sequence>
+   </complexType>
+   <complexType name="OrderInfo">
+    <sequence>
+     <element maxOccurs="1" minOccurs="0" name="GSSupportOption" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="BaseOption" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="Currency" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="DomainName" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="ExpressOption" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="InsuranceOption" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="Licenses" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="OrderCanceledDate" nillable="true" type="xsd:dateTime"/>
+     <element maxOccurs="1" minOccurs="0" name="OrderCompleteDate" nillable="true" type="xsd:dateTime"/>
+     <element maxOccurs="1" minOccurs="0" name="OrderDate" nillable="true" type="xsd:dateTime"/>
+     <element maxOccurs="1" minOccurs="0" name="OrderDeactivatedDate" nillable="true" type="xsd:dateTime"/>
+     <element maxOccurs="1" minOccurs="0" name="OrderID" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="OrderKind" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="OrderStatus" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="Price" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="ProductCode" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="RenewalExtentionOption" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="SpecialInstructions" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="ValidityPeriod" nillable="true" type="impl:ValidityPeriod"/>
+     <element maxOccurs="1" minOccurs="0" name="ValidityPeriodCustomizeOption" nillable="true" type="xsd:string"/>
+    </sequence>
+   </complexType>
+   <complexType name="ContactInfo">
+    <sequence>
+     <element maxOccurs="1" minOccurs="0" name="Email" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="FirstName" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="LastName" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="Phone" nillable="true" type="xsd:string"/>
+    </sequence>
+   </complexType>
+   <complexType name="OrganizationAddress">
+    <sequence>
+     <element maxOccurs="1" minOccurs="0" name="AddressLine1" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="AddressLine2" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="AddressLine3" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="City" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="Country" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="Fax" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="Phone" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="PostalCode" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="Region" nillable="true" type="xsd:string"/>
+    </sequence>
+   </complexType>
+   <complexType name="OrganizationInfo">
+    <sequence>
+     <element maxOccurs="1" minOccurs="0" name="CreditAgency" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="OrganizationAddress" nillable="true" type="impl:OrganizationAddress"/>
+     <element maxOccurs="1" minOccurs="0" name="OrganizationCode" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="OrganizationName" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="BusinessAssumedName" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="BusinessCategoryCode" nillable="true" type="xsd:string"/>
+    </sequence>
+   </complexType>
+   <complexType name="ApproverInfo">
+    <sequence>
+     <element maxOccurs="1" minOccurs="0" name="Email" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="FirstName" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="Function" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="LastName" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="OrganizationName" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="OrganizationUnit" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="Phone" nillable="true" type="xsd:string"/>
+    </sequence>
+   </complexType>
+   <complexType name="AuthorizedSignerInfo">
+    <sequence>
+     <element maxOccurs="1" minOccurs="0" name="Email" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="FirstName" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="Function" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="LastName" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="OrganizationName" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="OrganizationUnit" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="Phone" nillable="true" type="xsd:string"/>
+    </sequence>
+   </complexType>
+   <complexType name="JurisdictionInfo">
+    <sequence>
+     <element maxOccurs="1" minOccurs="0" name="Country" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="IncorporatingAgencyRegistrationNumber" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="Locality" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="StateOrProvince" nillable="true" type="xsd:string"/>
+    </sequence>
+   </complexType>
+   <complexType name="RequestorInfo">
+    <sequence>
+     <element maxOccurs="1" minOccurs="0" name="Email" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="FirstName" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="Function" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="LastName" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="OrganizationName" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="OrganizationUnit" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="Phone" nillable="true" type="xsd:string"/>
+    </sequence>
+   </complexType>
+   <complexType name="OrderOption">
+    <sequence>
+     <element maxOccurs="1" minOccurs="0" name="ApproverConfirmDate" nillable="true" type="xsd:dateTime"/>
+     <element maxOccurs="1" minOccurs="0" name="ApproverEmailAddress" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="ApproverNotifiedDate" nillable="true" type="xsd:dateTime"/>
+     <element maxOccurs="1" minOccurs="0" name="ContactInfo" nillable="true" type="impl:ContactInfo"/>
+     <element maxOccurs="1" minOccurs="0" name="OrganizationInfo" nillable="true" type="impl:OrganizationInfo"/>
+     <element maxOccurs="1" minOccurs="0" name="ApproverInfo" nillable="true" type="impl:ApproverInfo"/>
+     <element maxOccurs="1" minOccurs="0" name="AuthorizedSignerInfo" nillable="true" type="impl:AuthorizedSignerInfo"/>
+     <element maxOccurs="1" minOccurs="0" name="JurisdictionInfo" nillable="true" type="impl:JurisdictionInfo"/>
+     <element maxOccurs="1" minOccurs="0" name="RequestorInfo" nillable="true" type="impl:RequestorInfo"/>
+    </sequence>
+   </complexType>
+   <complexType name="OrderSubInfo">
+    <sequence>
+     <element maxOccurs="1" minOccurs="0" name="CSRSkipOrderFlag" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="DNSOrderFlag" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="P12DeleteDate" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="P12DeleteStatus" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="SubId" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="TrustedOrderFlag" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="VerificationUrl" nillable="true" type="xsd:string"/>
+    </sequence>
+   </complexType>
+   <complexType name="OrderDetail">
+    <sequence>
+     <element maxOccurs="1" minOccurs="0" name="CertificateInfo" nillable="true" type="impl:CertificateInfo"/>
+     <element maxOccurs="1" minOccurs="0" name="Fulfillment" nillable="true" type="impl:Fulfillment"/>
+     <element maxOccurs="1" minOccurs="0" name="ModificationEvents" nillable="true" type="impl:ArrayOfModificationEvent"/>
+     <element maxOccurs="1" minOccurs="0" name="OrderInfo" nillable="true" type="impl:OrderInfo"/>
+     <element maxOccurs="1" minOccurs="0" name="OrderOption" nillable="true" type="impl:OrderOption"/>
+     <element maxOccurs="1" minOccurs="0" name="OrderSubInfo" nillable="true" type="impl:OrderSubInfo"/>
+    </sequence>
+   </complexType>
+   <complexType name="GetOrderByOrderIDResponse">
+    <sequence>
+     <element maxOccurs="1" minOccurs="0" name="OrderDetail" nillable="true" type="impl:OrderDetail"/>
+     <element maxOccurs="1" minOccurs="0" name="OrderID" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="QueryResponseHeader" nillable="true" type="impl:QueryResponseHeader"/>
+     <element name="PKCS12File" nillable="true" type="xsd:string"/>
+    </sequence>
+   </complexType>
+   <element name="GetModifiedOrders">
+    <complexType>
+     <sequence>
+      <element name="Request" type="impl:GetModifiedOrdersRequest"/>
+     </sequence>
+    </complexType>
+   </element>
+   <complexType name="GetModifiedOrdersRequest">
+    <sequence>
+     <element name="FromDate" nillable="true" type="xsd:dateTime"/>
+     <element name="OrderQueryOption" nillable="true" type="impl:OrderQueryOption"/>
+     <element name="QueryRequestHeader" nillable="true" type="impl:QueryRequestHeader"/>
+     <element name="ToDate" nillable="true" type="xsd:dateTime"/>
+    </sequence>
+   </complexType>
+   <element name="GetModifiedOrdersResponse">
+    <complexType>
+     <sequence>
+      <element name="Response" type="impl:GetModifiedOrdersResponse"/>
+     </sequence>
+    </complexType>
+   </element>
+   <complexType name="ArrayOfOrderDetail">
+    <sequence>
+     <element maxOccurs="unbounded" minOccurs="0" name="OrderDetail" type="impl:OrderDetail"/>
+    </sequence>
+   </complexType>
+   <complexType name="GetModifiedOrdersResponse">
+    <sequence>
+     <element maxOccurs="1" minOccurs="0" name="FromDate" nillable="true" type="xsd:dateTime"/>
+     <element maxOccurs="1" minOccurs="0" name="OrderDetails" nillable="true" type="impl:ArrayOfOrderDetail"/>
+     <element maxOccurs="1" minOccurs="0" name="QueryResponseHeader" nillable="true" type="impl:QueryResponseHeader"/>
+     <element maxOccurs="1" minOccurs="0" name="ToDate" nillable="true" type="xsd:dateTime"/>
+    </sequence>
+   </complexType>
+   <element name="GetCertificateOrders">
+    <complexType>
+     <sequence>
+      <element name="Request" type="impl:GetCertificateOrdersRequest"/>
+     </sequence>
+    </complexType>
+   </element>
+   <complexType name="GetCertificateOrdersRequest">
+    <sequence>
+     <element maxOccurs="1" minOccurs="0" name="FQDN" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="FromDate" nillable="true" type="xsd:dateTime"/>
+     <element maxOccurs="1" minOccurs="0" name="OrderKind" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="OrderStatus" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="QueryRequestHeader" nillable="true" type="impl:QueryRequestHeader"/>
+     <element maxOccurs="1" minOccurs="0" name="SubID" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="ToDate" nillable="true" type="xsd:dateTime"/>
+    </sequence>
+   </complexType>
+   <element name="GetCertificateOrdersResponse">
+    <complexType>
+     <sequence>
+      <element name="Response" type="impl:GetCertificateOrdersResponse"/>
+     </sequence>
+    </complexType>
+   </element>
+   <complexType name="SearchOrderDetail">
+    <sequence>
+     <element maxOccurs="1" minOccurs="0" name="BaseOption" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="FQDN" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="Licenses" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="Months" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="OrderCanceledDate" nillable="true" type="xsd:dateTime"/>
+     <element maxOccurs="1" minOccurs="0" name="OrderIssueDate" nillable="true" type="xsd:dateTime"/>
+     <element maxOccurs="1" minOccurs="0" name="OrderKind" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="OrderRequestDate" nillable="true" type="xsd:dateTime"/>
+     <element maxOccurs="1" minOccurs="0" name="OrderStatus" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="Orderid" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="OrganizationName" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="RequestKind" nillable="true" type="xsd:string"/>
+     <element maxOccurs="1" minOccurs="0" name="SubId" nillable="true" type="xsd:string"/>
+    </sequence>
+   </complexType>
+   <complexType name="ArrayOfSearchOrderDetail">
+    <sequence>
+     <element maxOccurs="unbounded" minOccurs="0" name="SearchOrderDetail" type="impl:SearchOrderDetail"/>
+    </sequence>
+   </complexType>
+   <complexType name="GetCertificateOrdersResponse">
+    <sequence>
+     <element maxOccurs="1" minOccurs="0" name="FromDate" nillable="true" type="xsd:dateTime"/>
+     <element maxOccurs="1" minOccurs="0" name="QueryResponseHeader" nillable="true" type="impl:QueryResponseHeader"/>
+     <element maxOccurs="1" minOccurs="0" name="SearchOrderDetails" nillable="true" type="impl:ArrayOfSearchOrderDetail"/>
+     <element maxOccurs="1" minOccurs="0" name="ToDate" nillable="true" type="xsd:dateTime"/>
+    </sequence>
+   </complexType>
+   <element name="GetOrderByDataRange">
+    <complexType>
+     <sequence>
+      <element name="Request" type="impl:GetOrderByDataRangeRequest"/>
+     </sequence>
+    </complexType>
+   </element>
+   <complexType name="GetOrderByDataRangeRequest">
+    <sequence>
+     <element name="FromDate" nillable="true" type="xsd:dateTime"/>
+     <element name="OrderQueryOption" nillable="true" type="impl:OrderQueryOption"/>
+     <element name="QueryRequestHeader" nillable="true" type="impl:QueryRequestHeader"/>
+     <element name="ToDate" nillable="true" type="xsd:dateTime"/>
+    </sequence>
+   </complexType>
+   <element name="GetOrderByDataRangeResponse">
+    <complexType>
+     <sequence>
+      <element name="Response" type="impl:GetOrderByDataRangeResponse"/>
+     </sequence>
+    </complexType>
+   </element>
+   <complexType name="GetOrderByDataRangeResponse">
+    <sequence>
+     <element maxOccurs="1" minOccurs="0" name="FromDate" nillable="true" type="xsd:dateTime"/>
+     <element maxOccurs="1" minOccurs="0" name="OrderDetails" nillable="true" type="impl:ArrayOfOrderDetail"/>
+     <element maxOccurs="1" minOccurs="0" name="QueryResponseHeader" nillable="true" type="impl:QueryResponseHeader"/>
+     <element maxOccurs="1" minOccurs="0" name="ToDate" nillable="true" type="xsd:dateTime"/>
+    </sequence>
+   </complexType>
+  </schema>
+ </wsdl:types>
+
+   <wsdl:message name="GetDVApproverListResponse">
+
+      <wsdl:part element="impl:GetDVApproverListResponse" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="GetOrderByOrderIDResponse">
+
+      <wsdl:part element="impl:GetOrderByOrderIDResponse" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="GetModifiedOrdersRequest">
+
+      <wsdl:part element="impl:GetModifiedOrders" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="GetOrderByDataRangeResponse">
+
+      <wsdl:part element="impl:GetOrderByDataRangeResponse" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="GetApproverListResponse">
+
+      <wsdl:part element="impl:GetApproverListResponse" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="GetDVApproverListRequest">
+
+      <wsdl:part element="impl:GetDVApproverList" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="GetApproverListRequest">
+
+      <wsdl:part element="impl:GetApproverList" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="GetCertificateOrdersRequest">
+
+      <wsdl:part element="impl:GetCertificateOrders" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="GetOrderByDataRangeRequest">
+
+      <wsdl:part element="impl:GetOrderByDataRange" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="GetCertificateOrdersResponse">
+
+      <wsdl:part element="impl:GetCertificateOrdersResponse" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="GetModifiedOrdersResponse">
+
+      <wsdl:part element="impl:GetModifiedOrdersResponse" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="GetOrderByOrderIDRequest">
+
+      <wsdl:part element="impl:GetOrderByOrderID" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:portType name="GasQuery">
+
+      <wsdl:operation name="GetDVApproverList">
+
+         <wsdl:input message="impl:GetDVApproverListRequest" name="GetDVApproverListRequest"/>
+
+         <wsdl:output message="impl:GetDVApproverListResponse" name="GetDVApproverListResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="GetApproverList">
+
+         <wsdl:input message="impl:GetApproverListRequest" name="GetApproverListRequest"/>
+
+         <wsdl:output message="impl:GetApproverListResponse" name="GetApproverListResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="GetOrderByOrderID">
+
+         <wsdl:input message="impl:GetOrderByOrderIDRequest" name="GetOrderByOrderIDRequest"/>
+
+         <wsdl:output message="impl:GetOrderByOrderIDResponse" name="GetOrderByOrderIDResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="GetModifiedOrders">
+
+         <wsdl:input message="impl:GetModifiedOrdersRequest" name="GetModifiedOrdersRequest"/>
+
+         <wsdl:output message="impl:GetModifiedOrdersResponse" name="GetModifiedOrdersResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="GetCertificateOrders">
+
+         <wsdl:input message="impl:GetCertificateOrdersRequest" name="GetCertificateOrdersRequest"/>
+
+         <wsdl:output message="impl:GetCertificateOrdersResponse" name="GetCertificateOrdersResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="GetOrderByDataRange">
+
+         <wsdl:input message="impl:GetOrderByDataRangeRequest" name="GetOrderByDataRangeRequest"/>
+
+         <wsdl:output message="impl:GetOrderByDataRangeResponse" name="GetOrderByDataRangeResponse"/>
+
+      </wsdl:operation>
+
+   </wsdl:portType>
+
+   <wsdl:binding name="GasQuerySoapBinding" type="impl:GasQuery">
+
+      <wsdlsoap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+      <wsdl:operation name="GetDVApproverList">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="GetDVApproverListRequest">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="GetDVApproverListResponse">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="GetApproverList">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="GetApproverListRequest">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="GetApproverListResponse">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="GetOrderByOrderID">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="GetOrderByOrderIDRequest">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="GetOrderByOrderIDResponse">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="GetModifiedOrders">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="GetModifiedOrdersRequest">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="GetModifiedOrdersResponse">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="GetCertificateOrders">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="GetCertificateOrdersRequest">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="GetCertificateOrdersResponse">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="GetOrderByDataRange">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="GetOrderByDataRangeRequest">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="GetOrderByDataRangeResponse">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+   </wsdl:binding>
+
+   <wsdl:service name="GasQueryService">
+
+      <wsdl:port binding="impl:GasQuerySoapBinding" name="GasQuery">
+
+         <wsdlsoap:address location="http://localhost:8080/services/GasQuery"/>
+
+      </wsdl:port>
+
+   </wsdl:service>
+
+</wsdl:definitions>

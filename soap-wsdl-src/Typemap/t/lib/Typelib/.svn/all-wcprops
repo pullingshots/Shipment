@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/t/lib/Typelib
+END
+TMessage.pm
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/t/lib/Typelib/TMessage.pm
+END
+Base.pm
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/t/lib/Typelib/Base.pm
+END
+TEnqueueMessage.pm
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/t/lib/Typelib/TEnqueueMessage.pm
+END

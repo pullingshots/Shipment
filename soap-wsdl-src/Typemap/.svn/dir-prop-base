@@ -1,0 +1,30 @@
+K 9
+svk:merge
+V 196
+662ab66d-5931-0410-9760-8af722b24055:/SOAP-WSDL/trunk:653
+f0f7189e-8d22-4f26-8d95-a49008345314:/local/SOAP-WSDL/branches/Typemap:973
+f0f7189e-8d22-4f26-8d95-a49008345314:/local/SOAP-WSDL/trunk:972
+K 10
+svn:ignore
+V 228
+SOAP-WSDL-2.00_02.tar.gz
+SOAP-WSDL-*.tar.gz
+_build
+blib
+Build
+Build.bat
+.includepath
+Makefile
+patches
+test_perls.pl
+pm_to_blib
+pod2htmd.tmp
+pod2htmi.tmp
+SOAP-WSDL-*.ppd
+SOAP-WSDL-*.zip
+cover_db
+covered
+covered_by.pl
+covering.pl
+
+END

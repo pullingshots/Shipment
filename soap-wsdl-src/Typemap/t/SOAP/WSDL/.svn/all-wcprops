@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svnroot/soap-wsdl/!svn/ver/860/SOAP-WSDL/branches/Typemap/t/SOAP/WSDL
+END
+Client.t
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svnroot/soap-wsdl/!svn/ver/838/SOAP-WSDL/branches/Typemap/t/SOAP/WSDL/Client.t
+END
+Types.t
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/t/SOAP/WSDL/Types.t
+END
+PortType.t
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/t/SOAP/WSDL/PortType.t
+END
+Part.t
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/t/SOAP/WSDL/Part.t
+END
+Server.t
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svnroot/soap-wsdl/!svn/ver/661/SOAP-WSDL/branches/Typemap/t/SOAP/WSDL/Server.t
+END
+Base.t
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svnroot/soap-wsdl/!svn/ver/834/SOAP-WSDL/branches/Typemap/t/SOAP/WSDL/Base.t
+END
+Definitions.t
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/t/SOAP/WSDL/Definitions.t
+END

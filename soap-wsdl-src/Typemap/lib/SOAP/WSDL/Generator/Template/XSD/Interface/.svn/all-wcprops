@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/svnroot/soap-wsdl/!svn/ver/751/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/Generator/Template/XSD/Interface
+END
+Body.tt
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/Generator/Template/XSD/Interface/Body.tt
+END
+Operation.tt
+K 25
+svn:wc:ra_dav:version-url
+V 118
+/svnroot/soap-wsdl/!svn/ver/751/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/Generator/Template/XSD/Interface/Operation.tt
+END
+GetNameResolver.tt
+K 25
+svn:wc:ra_dav:version-url
+V 124
+/svnroot/soap-wsdl/!svn/ver/736/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/Generator/Template/XSD/Interface/GetNameResolver.tt
+END
+Header.tt
+K 25
+svn:wc:ra_dav:version-url
+V 115
+/svnroot/soap-wsdl/!svn/ver/751/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/Generator/Template/XSD/Interface/Header.tt
+END

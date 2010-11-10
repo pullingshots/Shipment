@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/t/acceptance/wsdl/WSDLParser
+END
+imported.xsd
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/t/acceptance/wsdl/WSDLParser/imported.xsd
+END
+import_xsd_cascade.wsdl
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/t/acceptance/wsdl/WSDLParser/import_xsd_cascade.wsdl
+END
+xsd_import_no_location.wsdl
+K 25
+svn:wc:ra_dav:version-url
+V 115
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/t/acceptance/wsdl/WSDLParser/xsd_import_no_location.wsdl
+END
+import_no_location.wsdl
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/t/acceptance/wsdl/WSDLParser/import_no_location.wsdl
+END
+import_cascade.xsd
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/t/acceptance/wsdl/WSDLParser/import_cascade.xsd
+END

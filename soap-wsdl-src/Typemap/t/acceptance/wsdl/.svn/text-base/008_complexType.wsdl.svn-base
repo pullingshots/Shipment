@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<definitions
+	targetNamespace="Test"
+	xmlns:tns="Test"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+	xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+>
+	<types>
+		<xsd:schema targetNamespace="Test">
+		<xsd:complexType name="testComplexTypeAll">
+			<xsd:annotation>
+				<xsd:documentation>
+				ComplexType Test
+				</xsd:documentation>
+			</xsd:annotation>
+			<xsd:all>
+				<xsd:element name="Test1" type="xsd:string"/>
+				<xsd:element name="Test2" type="xsd:string" minOccurs="1"/>
+			</xsd:all>
+		</xsd:complexType>
+
+        <xsd:complexType name="testComplexTypeSequence">
+            <xsd:annotation>
+                <xsd:documentation>
+                    ComplexType Test
+                </xsd:documentation>
+            </xsd:annotation>
+            <xsd:sequence>
+                <xsd:element name="Test1" type="xsd:string" minOccurs="1"/>
+                <xsd:element name="Test2" type="xsd:string" maxOccurs="1"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:schema>
+
+	</types>
+	<message name="testRequest">
+		<part name="testAll" type="tns:testComplexTypeAll"/>
+	</message>
+	<message name="testResponse">
+		<part name="testAll" type="tns:testComplexTypeSequence"/>
+	</message>
+	<portType name="testPort">
+		<operation name="test">
+			<documentation>
+				Test-Methode
+			</documentation>
+
+			<input message="tns:testRequest"/>
+			<output message="tns:testResponse"/>
+		</operation>
+	</portType>
+
+	<binding type="tns:testPort" name="testBinding">
+		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <operation name="test">
+        <soap:operation soapAction="test"/>
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+        </operation>
+	</binding>
+	<service name="testService">
+		<port name="testPort" binding="tns:testBinding">
+			<soap:address location="http://127.0.0.1/testPort" />
+		</port>
+	</service>
+</definitions>

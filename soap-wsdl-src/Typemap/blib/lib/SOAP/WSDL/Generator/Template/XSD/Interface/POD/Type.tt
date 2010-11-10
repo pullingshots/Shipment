@@ -1,0 +1,7 @@
+[%- indent = '  ';
+IF type.isa('SOAP::WSDL::XSD::ComplexType');
+    INCLUDE complexType/POD/structure.tt(complexType = type);
+ELSE;
+    INCLUDE simpleType/POD/structure.tt(simpleType = type);
+END;
+indent.replace('\s{2}$',''); %]

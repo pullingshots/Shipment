@@ -1,0 +1,49 @@
+=pod
+
+=head1 NAME
+
+SOAP::WSDL::Manual::Deserializer
+
+=head1 DESERIALIZER CLASSES
+
+Deserializer classes convert SOAP messages to perl data structures.
+
+SOAP::WSDL comes with several builtin serializer classes:
+
+=over
+
+=item * L<SOAP::WSDL::Deserializer::XSD|SOAP::WSDL::Deserializer::XSD>
+
+Creates SOAP::WSDL::XSD objects from SOAP messages. Default deserializer for
+generated interfaces and SOAP::WSDL::Client.
+
+=item * L<SOAP::WSDL::Deserializer::Hash|SOAP::WSDL::Deserializer::Hash>
+
+Creates perl hash structures from SOAP messages.
+
+=item * L<SOAP::WSDL::Deserializer::SOM|SOAP::WSDL::Deserializer::SOM>
+
+Creates SOAP::SOM objects from SOAP messages. Default deserializer for
+SOAP::WSDL.
+
+See L<SOAP::Lite> for more information on SOAP::SOM objects.
+
+=back
+
+=head1 WRITING YOUR OWN DESERIALIZER
+
+See L<SOAP::WSDL::Factory::Deserializer>.
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright 2007 Martin Kutter.
+
+This file is part of SOAP-WSDL. You may distribute/modify it under the same
+terms as perl itself
+
+=head1 AUTHOR
+
+Martin Kutter E<lt>martin.kutter fen-net.deE<gt>
+
+=cut
+ 

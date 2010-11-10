@@ -1,0 +1,368 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:s="http://www.w3.org/2001/XMLSchema"
+  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+  xmlns:tns="http://tempuri.org/Dijkalk_Webservice/Tools"
+  xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/"
+  xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/"
+  targetNamespace="http://tempuri.org/Dijkalk_Webservice/Tools"
+  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified"
+      targetNamespace="http://tempuri.org/Dijkalk_Webservice/Tools">
+      <s:element name="IrSzamValid">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="cIrszam" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="IrSzamValidResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="IrSzamValidResult"
+              type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="HelynevValid">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="cHelynev" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="HelynevValidResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="HelynevValidResult"
+              type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="KozterValid">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="cIrszam" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="cKozterNev" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="KozterValidResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="KozterValidResult"
+              type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetVersion">
+        <s:complexType />
+      </s:element>
+      <s:element name="GetVersionResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetVersionResult"
+              type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="string" nillable="true" type="s:string" />
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="IrSzamValidSoapIn">
+    <wsdl:part name="parameters" element="tns:IrSzamValid" />
+  </wsdl:message>
+  <wsdl:message name="IrSzamValidSoapOut">
+    <wsdl:part name="parameters" element="tns:IrSzamValidResponse" />
+  </wsdl:message>
+  <wsdl:message name="HelynevValidSoapIn">
+    <wsdl:part name="parameters" element="tns:HelynevValid" />
+  </wsdl:message>
+  <wsdl:message name="HelynevValidSoapOut">
+    <wsdl:part name="parameters" element="tns:HelynevValidResponse" />
+  </wsdl:message>
+  <wsdl:message name="KozterValidSoapIn">
+    <wsdl:part name="parameters" element="tns:KozterValid" />
+  </wsdl:message>
+  <wsdl:message name="KozterValidSoapOut">
+    <wsdl:part name="parameters" element="tns:KozterValidResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetVersionSoapIn">
+    <wsdl:part name="parameters" element="tns:GetVersion" />
+  </wsdl:message>
+  <wsdl:message name="GetVersionSoapOut">
+    <wsdl:part name="parameters" element="tns:GetVersionResponse" />
+  </wsdl:message>
+  <wsdl:message name="IrSzamValidHttpGetIn">
+    <wsdl:part name="cIrszam" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="IrSzamValidHttpGetOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="HelynevValidHttpGetIn">
+    <wsdl:part name="cHelynev" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="HelynevValidHttpGetOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="KozterValidHttpGetIn">
+    <wsdl:part name="cIrszam" type="s:string" />
+    <wsdl:part name="cKozterNev" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="KozterValidHttpGetOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="GetVersionHttpGetIn" />
+  <wsdl:message name="GetVersionHttpGetOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="IrSzamValidHttpPostIn">
+    <wsdl:part name="cIrszam" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="IrSzamValidHttpPostOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="HelynevValidHttpPostIn">
+    <wsdl:part name="cHelynev" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="HelynevValidHttpPostOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="KozterValidHttpPostIn">
+    <wsdl:part name="cIrszam" type="s:string" />
+    <wsdl:part name="cKozterNev" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="KozterValidHttpPostOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="GetVersionHttpPostIn" />
+  <wsdl:message name="GetVersionHttpPostOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:portType name="ToolsSoap">
+    <wsdl:operation name="IrSzamValid">
+      <documentation xmlns="http://schemas.xmlsoap.org/wsdl/">
+        Helység adatok lekérdezése irányítószám részlet alapján
+      </documentation>
+      <wsdl:input message="tns:IrSzamValidSoapIn" />
+      <wsdl:output message="tns:IrSzamValidSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="HelynevValid">
+      <documentation xmlns="http://schemas.xmlsoap.org/wsdl/">
+        Helység adatok lekérdezése helységnév részlet alapján
+      </documentation>
+      <wsdl:input message="tns:HelynevValidSoapIn" />
+      <wsdl:output message="tns:HelynevValidSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="KozterValid">
+      <documentation xmlns="http://schemas.xmlsoap.org/wsdl/">
+        Közterület adatok lekérdezése irányítószám és közterület név részlet alapján
+      </documentation>
+      <wsdl:input message="tns:KozterValidSoapIn" />
+      <wsdl:output message="tns:KozterValidSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetVersion">
+      <documentation xmlns="http://schemas.xmlsoap.org/wsdl/">
+        Verziószám lekérdezés
+      </documentation>
+      <wsdl:input message="tns:GetVersionSoapIn" />
+      <wsdl:output message="tns:GetVersionSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:portType name="ToolsHttpGet">
+    <wsdl:operation name="IrSzamValid">
+      <documentation xmlns="http://schemas.xmlsoap.org/wsdl/">
+        Helység adatok lekérdezése irányítószám részlet alapján
+      </documentation>
+      <wsdl:input message="tns:IrSzamValidHttpGetIn" />
+      <wsdl:output message="tns:IrSzamValidHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="HelynevValid">
+      <documentation xmlns="http://schemas.xmlsoap.org/wsdl/">
+        Helység adatok lekérdezése helységnév részlet alapján
+      </documentation>
+      <wsdl:input message="tns:HelynevValidHttpGetIn" />
+      <wsdl:output message="tns:HelynevValidHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="KozterValid">
+      <documentation xmlns="http://schemas.xmlsoap.org/wsdl/">
+        Közterület adatok lekérdezése irányítószám és közterület név részlet alapján
+      </documentation>
+      <wsdl:input message="tns:KozterValidHttpGetIn" />
+      <wsdl:output message="tns:KozterValidHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetVersion">
+      <documentation xmlns="http://schemas.xmlsoap.org/wsdl/">
+        Verziószám lekérdezés
+      </documentation>
+      <wsdl:input message="tns:GetVersionHttpGetIn" />
+      <wsdl:output message="tns:GetVersionHttpGetOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:portType name="ToolsHttpPost">
+    <wsdl:operation name="IrSzamValid">
+      <documentation xmlns="http://schemas.xmlsoap.org/wsdl/">
+        Helység adatok lekérdezése irányítószám részlet alapján
+      </documentation>
+      <wsdl:input message="tns:IrSzamValidHttpPostIn" />
+      <wsdl:output message="tns:IrSzamValidHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="HelynevValid">
+      <documentation xmlns="http://schemas.xmlsoap.org/wsdl/">
+        Helység adatok lekérdezése helységnév részlet alapján
+      </documentation>
+      <wsdl:input message="tns:HelynevValidHttpPostIn" />
+      <wsdl:output message="tns:HelynevValidHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="KozterValid">
+      <documentation xmlns="http://schemas.xmlsoap.org/wsdl/">
+        Közterület adatok lekérdezése irányítószám és közterület név részlet alapján
+      </documentation>
+      <wsdl:input message="tns:KozterValidHttpPostIn" />
+      <wsdl:output message="tns:KozterValidHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetVersion">
+      <documentation xmlns="http://schemas.xmlsoap.org/wsdl/">
+        Verziószám lekérdezés
+      </documentation>
+      <wsdl:input message="tns:GetVersionHttpPostIn" />
+      <wsdl:output message="tns:GetVersionHttpPostOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="ToolsSoap" type="tns:ToolsSoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document" />
+    <wsdl:operation name="IrSzamValid">
+      <soap:operation soapAction="http://tempuri.org/Dijkalk_Webservice/Tools/IrSzamValid"
+        style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="HelynevValid">
+      <soap:operation
+        soapAction="http://tempuri.org/Dijkalk_Webservice/Tools/HelynevValid"
+        style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="KozterValid">
+      <soap:operation soapAction="http://tempuri.org/Dijkalk_Webservice/Tools/KozterValid"
+        style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetVersion">
+      <soap:operation soapAction="http://tempuri.org/Dijkalk_Webservice/Tools/GetVersion"
+        style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="ToolsHttpGet" type="tns:ToolsHttpGet">
+    <http:binding verb="GET" />
+    <wsdl:operation name="IrSzamValid">
+      <http:operation location="/IrSzamValid" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="HelynevValid">
+      <http:operation location="/HelynevValid" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="KozterValid">
+      <http:operation location="/KozterValid" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetVersion">
+      <http:operation location="/GetVersion" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="ToolsHttpPost" type="tns:ToolsHttpPost">
+    <http:binding verb="POST" />
+    <wsdl:operation name="IrSzamValid">
+      <http:operation location="/IrSzamValid" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="HelynevValid">
+      <http:operation location="/HelynevValid" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="KozterValid">
+      <http:operation location="/KozterValid" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetVersion">
+      <http:operation location="/GetVersion" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="Tools">
+    <documentation xmlns="http://schemas.xmlsoap.org/wsdl/" />
+    <wsdl:port name="ToolsSoap" binding="tns:ToolsSoap">
+      <soap:address location="http://www.example.org/tools.asmx" />
+    </wsdl:port>
+    <wsdl:port name="ToolsHttpGet" binding="tns:ToolsHttpGet">
+      <http:address location="http://www.example.org/tools.asmx" />
+    </wsdl:port>
+    <wsdl:port name="ToolsHttpPost" binding="tns:ToolsHttpPost">
+      <http:address location="http://www.example.org/tools.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

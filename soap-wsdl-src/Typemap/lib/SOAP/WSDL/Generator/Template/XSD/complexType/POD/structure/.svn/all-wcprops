@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 121
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/Generator/Template/XSD/complexType/POD/structure
+END
+simpleContent.tt
+K 25
+svn:wc:ra_dav:version-url
+V 138
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/Generator/Template/XSD/complexType/POD/structure/simpleContent.tt
+END
+restriction.tt
+K 25
+svn:wc:ra_dav:version-url
+V 136
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/Generator/Template/XSD/complexType/POD/structure/restriction.tt
+END

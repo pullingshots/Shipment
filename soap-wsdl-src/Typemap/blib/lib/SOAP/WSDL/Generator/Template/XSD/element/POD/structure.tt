@@ -1,0 +1,30 @@
+[%- IF (name = element.get_type);
+    type_name = element.expand(name);
+    IF (type_name.0 == 'http://www.w3.org/2001/XMLSchema'); -%]
+ $some_value, # [% type_name.1 %]
+[%-
+        RETURN;
+    ELSIF (type = definitions.first_types.find_type( type_name ));
+        IF (type.isa('SOAP::WSDL::XSD::ComplexType') );
+            INCLUDE complexType/POD/structure.tt(complexType = type);
+            RETURN;
+        ELSE;
+            INCLUDE simpleType/POD/structure.tt(simpleType = type);
+        END;
+        RETURN;
+    END;
+    THROW NOT_FOUND, "no type found for {${type_name.0}}${type_name.1}";
+ELSIF (ref = element.get_ref);
+    ref_element = definitions.first_types.find_element( element.expand( ref ) );
+    INCLUDE element/POD/structure.tt(element = ref_element);
+    RETURN;
+ELSIF (type = element.first_simpleType);
+    INCLUDE simpleType/POD/structure.tt(simpleType = type);
+    RETURN;
+ELSIF (type = element.first_complexType);
+    INCLUDE complexType/POD/structure.tt(complexType = type);
+ELSE;
+    THROW NOT_FOUND, "no type found for ${element.get_name}";
+%]
+    NO TYPE FOUND FOR ELEMENT [% element.get_name %]
+[% END -%]

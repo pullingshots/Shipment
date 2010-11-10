@@ -1,0 +1,59 @@
+Memory footprints for example/ scripts comparing SOAP::WSDL, SOAP::Lite and
+XML::Compile::SOAP
+
+Results with perl-5.8.8 on Ubuntu 8.04 (x86):
+
+  PID %CPU %MEM    VSZ   RSS COMMAND
+10183 12.0  1.1  14292 11492 perl -I../lib hello.pl
+10554  7.2  0.9  12636  9828 perl hello_lite.pl
+10224 17.5  1.6  20780 17012 perl hello_compile.pl
+10287 25.0  1.1  14680 11776 perl -I../lib person.pl
+10313 24.0  1.6  21068 17312 perl person_compile.pl
+
+Summary of my perl5 (revision 5 version 8 subversion 8) configuration:
+  Platform:
+    osname=linux, osvers=2.6.15.7, archname=i486-linux-gnu-thread-multi
+    uname='linux palmer 2.6.15.7 #1 smp thu sep 7 19:42:20 utc 2006 i686 gnulinux '
+    config_args='-Dusethreads -Duselargefiles -Dccflags=-DDEBIAN -Dcccdlflags=-fPIC -Darchname=i486-linux-gnu -Dprefix=/usr -Dprivlib=/usr/share/perl/5.8 -Darchlib=/usr/lib/perl/5.8 -Dvendorprefix=/usr -Dvendorlib=/usr/share/perl5 -Dvendorarch=/usr/lib/perl5 -Dsiteprefix=/usr/local -Dsitelib=/usr/local/share/perl/5.8.8 -Dsitearch=/usr/local/lib/perl/5.8.8 -Dman1dir=/usr/share/man/man1 -Dman3dir=/usr/share/man/man3 -Dsiteman1dir=/usr/local/man/man1 -Dsiteman3dir=/usr/local/man/man3 -Dman1ext=1 -Dman3ext=3perl -Dpager=/usr/bin/sensible-pager -Uafs -Ud_csh -Ud_ualarm -Uusesfio -Uusenm -Duseshrplib -Dlibperl=libperl.so.5.8.8 -Dd_dosuid -des'
+    hint=recommended, useposix=true, d_sigaction=define
+    usethreads=define use5005threads=undef useithreads=define usemultiplicity=define
+    useperlio=define d_sfio=undef uselargefiles=define usesocks=undef
+    use64bitint=undef use64bitall=undef uselongdouble=undef
+    usemymalloc=n, bincompat5005=undef
+  Compiler:
+    cc='cc', ccflags ='-D_REENTRANT -D_GNU_SOURCE -DTHREADS_HAVE_PIDS -DDEBIAN -fno-strict-aliasing -pipe -I/usr/local/include -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64',
+    optimize='-O2',
+    cppflags='-D_REENTRANT -D_GNU_SOURCE -DTHREADS_HAVE_PIDS -DDEBIAN -fno-strict-aliasing -pipe -I/usr/local/include'
+    ccversion='', gccversion='4.2.3 20071123 (prerelease) (Ubuntu 4.2.2-3ubuntu4)', gccosandvers=''
+    intsize=4, longsize=4, ptrsize=4, doublesize=8, byteorder=1234
+    d_longlong=define, longlongsize=8, d_longdbl=define, longdblsize=12
+    ivtype='long', ivsize=4, nvtype='double', nvsize=8, Off_t='off_t', lseeksize=8
+    alignbytes=4, prototype=define
+  Linker and Libraries:
+    ld='cc', ldflags =' -L/usr/local/lib'
+    libpth=/usr/local/lib /lib /usr/lib
+    libs=-lgdbm -lgdbm_compat -ldb -ldl -lm -lpthread -lc -lcrypt
+    perllibs=-ldl -lm -lpthread -lc -lcrypt
+    libc=/lib/libc-2.6.1.so, so=so, useshrplib=true, libperl=libperl.so.5.8.8
+    gnulibc_version='2.6.1'
+  Dynamic Linking:
+    dlsrc=dl_dlopen.xs, dlext=so, d_dlsymun=undef, ccdlflags='-Wl,-E'
+    cccdlflags='-fPIC', lddlflags='-shared -L/usr/local/lib'
+
+
+Characteristics of this binary (from libperl):
+  Compile-time options: MULTIPLICITY PERL_IMPLICIT_CONTEXT
+                        PERL_MALLOC_WRAP THREADS_HAVE_PIDS USE_ITHREADS
+                        USE_LARGE_FILES USE_PERLIO USE_REENTRANT_API
+  Built under linux
+  Compiled at Nov 27 2007 10:44:36
+  @INC:
+    /etc/perl
+    /usr/local/lib/perl/5.8.8
+    /usr/local/share/perl/5.8.8
+    /usr/lib/perl5
+    /usr/share/perl5
+    /usr/lib/perl/5.8
+    /usr/share/perl/5.8
+    /usr/local/lib/site_perl
+    .

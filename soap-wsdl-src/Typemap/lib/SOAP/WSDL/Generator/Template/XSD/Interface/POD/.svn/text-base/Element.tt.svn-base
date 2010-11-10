@@ -1,0 +1,13 @@
+
+[% INDENT; %][% element.get_name %] => [%-
+    IF (element.get_ref);
+        element = element.get_ref();
+    END;
+    IF (type_name = element.get_type);
+ INCLUDE Interface/POD/Type.tt(type = definitions.first_types.find_type( element.expand(type_name) ) );
+    ELSIF (type = element.first_complexType);
+ INCLUDE Interface/POD/Type.tt(type = type );
+    ELSIF (type = element.first_simpleType);
+ INCLUDE Interface/POD/Type.tt(type = type );
+    END;
+%]

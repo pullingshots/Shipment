@@ -1,0 +1,16 @@
+This clase is derived from
+[%-
+IF (name = simpleType.get_itemType);
+    type = definitions.get_types.0.find_type(simpleType.expand( name )); %]
+    [% XSD.create_xsd_name(type) %]
+[% ELSE;
+    # THROW NOT_IMPLEMENTED "atomic simpleType list not implemented yet in $simpleType.get_name";
+    %] a atomic base type. Unfortunately there's no documenatation generation for atomic base types yet. [%
+END -%].
+
+You may pass the following structure to new():
+
+ [ $value_1, .. $value_n ]
+
+All elements of the list must be of the class' base type (or valid arguments
+to it's constructor).

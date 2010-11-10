@@ -1,0 +1,40 @@
+[% head2 = BLOCK %]=head2[% END -%]
+[% IF (complexType.get_attribute.size) %]
+
+[% head2 %] attr
+
+NOTE: Attribute documentation is experimental, and may be inaccurate.
+See the correspondent WSDL/XML Schema if in question.
+
+This class has additional attributes, accessibly via the C<attr()> method.
+
+attr() returns an object of the class [% XSD.create_xmlattr_name(complexType) %].
+
+The following attributes can be accessed on this object via the corresponding
+get_/set_ methods:
+
+=over
+
+[% FOREACH element = complexType.get_attribute;
+    WHILE element.get_ref;
+        element = definitions.first_types.find_attribute(element.expand( element.get_ref ));
+    END; -%]
+=item * [% element.get_name %]
+
+[%- IF (element.get_annotation && element.get_annotation.0.get_documentation) %]
+ [% element.get_annotation.0.get_documentation %]
+[% END; %]
+
+[% IF (type_name=element.get_type);
+    type = definitions.get_types.0.find_type(element.expand(type_name));
+    IF (! type);
+        THROW NOT_FOUND "type " _ type_name _ " for attribute " _ element.get_name _ " not found";
+    END; %]
+This attribute is of type L<[% XSD.create_xsd_name(type) %]|[% XSD.create_xsd_name(type) %]>.
+[% END %]
+
+[%- END -%]
+
+=back
+
+[% END %]

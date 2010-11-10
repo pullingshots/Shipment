@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns="urn:TestNamespace" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="urn:TestNamespace" targetNamespace="urn:TestNamespace">
+  <wsdl:types>
+    <xsd:schema targetNamespace="urn:TestNamespace" elementFormDefault="qualified" attributeFormDefault="unqualified">
+      <xsd:element name="helloWorldHeader" type="xsd:string"/>
+      <xsd:element name="helloWorldRequest" type="xsd:string"/>
+      <xsd:element name="helloWorldResponse" type="xsd:string"/>
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="helloWorldHeader">
+    <wsdl:part name="helloWorldHeader" element="tns:helloWorldHeader"/>
+  </wsdl:message>
+  <wsdl:message name="helloWorldRequest">
+    <wsdl:part name="helloWorldRequest" element="tns:helloWorldRequest"/>
+  </wsdl:message>
+  <wsdl:message name="helloWorldResponse">
+    <wsdl:part name="helloWorldResponse" element="tns:helloWorldResponse"/>
+  </wsdl:message>
+  <wsdl:portType name="TestInterface">
+    <wsdl:operation name="helloWorld">
+      <wsdl:input message="tns:helloWorldRequest"/>
+      <wsdl:output message="tns:helloWorldResponse"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="TestBinding" type="tns:TestInterface">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="helloWorld">
+      <soap:operation soapAction=""/>
+      <wsdl:input>
+        <soap:header use="literal" message="tns:helloWorldHeader" part="helloWorldHeader"/>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="TestService">
+    <wsdl:port binding="tns:TestBinding" name="TestPort">
+      <soap:address location="http://www.example.com/"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

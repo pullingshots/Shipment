@@ -1,0 +1,9 @@
+[%
+  message_name = port_op.first_output.get_message();
+  # message_name;
+
+  part_from = definitions.find_message( port_op.first_output.expand( message_name ) ).get_part;
+  FOREACH part = part_from;
+    INCLUDE Server/POD/OutPart.tt(part = part);
+  END;
+%]

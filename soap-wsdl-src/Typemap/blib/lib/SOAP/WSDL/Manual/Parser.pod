@@ -1,0 +1,247 @@
+=pod
+
+=head1 NAME
+
+SOAP::WSDL::Manual::Parser - How SOAP::WSDL parses XML messages
+
+=head1 Which XML message does SOAP::WSDL parse ?
+
+Naturally, there are two kinds of XML documents (or messages) SOAP::WSDL has
+to parse:
+
+=over
+
+=item * WSDL definitions
+
+=item * SOAP messages
+
+=back
+
+There are different parser implementations available for SOAP messages and
+WSDL definitions.
+
+=head1 WSDL definitions parser
+
+=head2 SOAP::WSDL::Expat::WSDLParser
+
+A parser for WSDL definitions based on L<XML::Parser::Expat|XML::Parser::Expat>.
+
+ my $parser = SOAP::WSDL::Expat::WSDLParser->new();
+ my $wsdl = $parser->parse_file( $filename );
+
+The WSDL parser creates a tree of perl objects, whose root is a
+L<SOAP::WSDL::Definitions|SOAP::WSDL::Definitions> element.
+
+=head1 SOAP messages parser
+
+=head2 SOAP::WSDL::Expat::MessageParser
+
+L<SOAP::WSDL::Expat::MessageParser|SOAP::WSDL::Expat::MessageParser> converts
+SOAP messages to SOAP::WSDL::XSD object trees.
+
+It uses a class resolvers for finding out which class
+a particular XML element should be of, and type libs containing these classes.
+
+=head3 Creating a class resolver
+
+The easiest way for creating a class resolver is to run SOAP::WSDL's generator.
+
+See L<wsdl2perl.pl>.
+
+The class resolver must implement a class method "get_class", which is passed
+a list ref of the current element's XPath (relative to Body), split by /.
+
+This method must return a class name appropriate for a XML element.
+
+A class resolver package might look like this:
+
+ package ClassResolver;
+
+ my %class_list = (
+    'EnqueueMessage' => 'Typelib::TEnqueueMessage',
+    'EnqueueMessage/MMessage' => 'Typelib::TMessage',
+    'EnqueueMessage/MMessage/MRecipientURI' => 'SOAP::WSDL::XSD::Builtin::anyURI',
+    'EnqueueMessage/MMessage/MMessageContent' => 'SOAP::WSDL::XSD::Builtin::string',
+ );
+
+ sub new { return bless {}, 'ClassResolver' };
+
+ sub get_class {
+    my $name = join('/', @{ $_[1] });
+    return ($class_list{ $name }) ? $class_list{ $name }
+        : warn "no class found for $name";
+ };
+ 1;
+
+=head3 Skipping unwanted items
+
+Sometimes there's unneccessary information transported in SOAP messages.
+
+To skip XML nodes (including all child nodes), just edit the type map for
+the message and set the type map entry to '__SKIP__'.
+
+In the example above, EnqueueMessage/StuffIDontNeed and all child elements
+are skipped.
+
+ my %class_list = (
+    'EnqueueMessage' => 'Typelib::TEnqueueMessage',
+    'EnqueueMessage/MMessage' => 'Typelib::TMessage',
+    'EnqueueMessage/MMessage/MRecipientURI' => 'SOAP::WSDL::XSD::Builtin::anyURI',
+    'EnqueueMessage/MMessage/MMessageContent' => 'SOAP::WSDL::XSD::Builtin::string',
+    'EnqueueMessage/StuffIDontNeed' => '__SKIP__',
+    'EnqueueMessage/StuffIDontNeed/Foo' => 'SOAP::WSDL::XSD::Builtin::string',
+    'EnqueueMessage/StuffIDontNeed/Bar' => 'SOAP::WSDL::XSD::Builtin::string',
+ );
+
+Note that only SOAP::WSDL::Expat::MessageParser implements skipping elements
+at the time of writing.
+
+=head3 Creating type lib classes
+
+Every element must have a correspondent one in the type library.
+
+Builtin types should be resolved as SOAP::WSDL::XSD::Builtin::* classes
+
+Creating a type lib is easy: Just run SOAP::WSDL's generator - it will
+create both a typemap and the type lib classes for a WSDL file.
+
+Sometimes it is nessecary to create type lib classes by hand - not all
+WSDL definitions are complete.
+
+For writing your own lib classes, see L<SOAP::WSDL::XSD::Typelib::Element>,
+L<SOAP::WSDL::XSD::Typelib::ComplexType> and L<SOAP::WSDL::XSD::Typelib::SimpleType>.
+
+=head2 SOAP::WSDL::Expat::Message2Hash
+
+Transforms a SOAP message into a perl hash refs. Using this parser is usually
+triggered by calling the C<outputhash> method of SOAP::WSDL, or by using
+L<SOAP::WSDL::Deserializer::Hash|SOAP::WSDL::Deserializer::Hash>.
+
+Acts somewhat like XML::Simple, but faster.
+
+The following restrictions apply:
+
+=over
+
+=item * Ignores all namespaces
+
+=item * Ignores all attributes
+
+=item * Does not handle mixed content
+
+=item * The SOAP header is ignored
+
+=back
+
+=cut
+
+=head1 OLD SAX HANDLER
+
+Historically, SOAP::WSDL used SAX for parsing XML. The SAX handlers were
+implemented as L<XML::LibXML|XML::LibXML> handlers, which also worked with
+L<XML::SAX::ParserFactory|XML::SAX::ParserFactory>.
+
+Support for SAX and L<XML::LibXML|XML::LibXML> in SOAP::WSDL is discontinued
+for the following reasons:
+
+=over
+
+=item * Speed
+
+L<XML::Parser::Expat|XML::Parser::Expat> is faster than
+L<XML::LibXML|XML::LibXML> - at least when optimized for speed.
+
+High parsing speed is one of the key requirements for a SOAP toolkit - if XML
+serializing and (more important) deserializing are not fast enough, the whole
+toolkit is unusable.
+
+=item * Availability
+
+L<XML::Parser|XML::Parser> is more popular than L<XML::LibXML|XML::LibXML>.
+
+=item * Stability
+
+XML::LibXML is based on the libxml2 library. Several versions of
+libxml2 are known to have specific bugs. As a workaround, there are
+often several versions of libxml2 installed on one system. This may
+lead to problems on operating systems which cannot load more than
+one version of a shared library simultaneously.
+
+XML::LibXML is also still under development, while XML::Parser has had time
+to stabilize.
+
+=item * SOAP::Lite uses XML::Parser
+
+L<SOAP::Lite|SOAP::Lite> uses L<XML::Parser|XML::Parser> if available.
+SOAP::WSDL should not require users to install both L<XML::Parser|XML::Parser>
+and L<XML::LibXML|XML::LibXML>.
+
+=back
+
+The old SAX handler historically used in SOAP::WSDL are not included in
+the SOAP::WSDL package any more.
+
+However, they may be obtained from the "attic" directory in
+SOAP::WSDL's SVN repository at
+
+https://soap-wsdl.svn.sourceforge.net/svnroot/soap-wsdl/SOAP-WSDL/trunk/attic
+
+=over
+
+=item * SOAP::WSDL::SAX::WSDLHandler
+
+This is a SAX handler for parsing WSDL files into object trees SOAP::WSDL
+works with.
+
+It's built as a native handler for XML::LibXML, but will also work with
+XML::SAX::ParserFactory.
+
+To parse a WSDL file, use one of the following variants:
+
+ my $parser = XML::LibXML->new();
+ my $handler = SOAP::WSDL::SAX::WSDLHandler->new();
+ $parser->set_handler( $handler );
+ $parser->parse( $xml );
+ my $data = $handler->get_data();
+ 
+ my $handler = SOAP::WSDL::SAX::WSDLHandler->new({
+        base => 'XML::SAX::Base'
+ });
+ my $parser = XML::SAX::ParserFactor->parser(
+    Handler => $handler
+ );
+ $parser->parse( $xml );
+ my $data = $handler->get_data();
+
+=item * SOAP::WSDL::SAX::MessageHandler
+
+This is a SAX handler for parsing WSDL files into object trees SOAP::WSDL
+works with.
+
+It's built as a native handler for XML::LibXML, but will also work with
+XML::SAX::ParserFactory.
+
+Can be used for parsing both streams (chunks) and documents.
+
+=back
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright 2007 Martin Kutter.
+
+This file is part of SOAP-WSDL. You may distribute/modify it under
+the same terms as perl itself.
+
+=head1 AUTHOR
+
+Martin Kutter E<lt>martin.kutter fen-net.deE<gt>
+
+=head1 REPOSITORY INFORMATION
+
+ $Rev: 391 $
+ $LastChangedBy: kutterma $
+ $Id: Parser.pod 391 2007-11-17 21:56:13Z kutterma $
+ $HeadURL: https://soap-wsdl.svn.sourceforge.net/svnroot/soap-wsdl/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/Manual/Parser.pod $
+
+=cut
+

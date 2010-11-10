@@ -1,0 +1,574 @@
+<?xml version="1.0"?>
+<!-- This file is used by t/SOAP/WSDL/Generator/XSD.t -->
+<definitions name="Test"
+    targetNamespace="urn:Test"
+    xmlns:tns="urn:Test"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:foobar="http://foo.bar"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/">
+    <types>
+        <xsd:schema targetNamespace="urn:Test" xmlns="urn:Test"
+        elementFormDefault="qualified">
+        <xsd:attribute name="TestAttribute" type="xsd:string"></xsd:attribute>
+
+        <xsd:simpleType name="testSimpleTypeList">
+            <xsd:annotation>
+                <xsd:documentation>
+                SimpleType: List with an integer
+                </xsd:documentation>
+            </xsd:annotation>
+            <xsd:list itemType="xsd:int">
+            </xsd:list>
+        </xsd:simpleType>
+
+        <xsd:simpleType name="testSimpleTypeListAtomic">
+            <xsd:annotation>
+                <xsd:documentation>
+                SimpleType: List with an integer (length 2)
+                </xsd:documentation>
+            </xsd:annotation>
+            <xsd:list>
+                <xsd:simpleType>
+                    <xsd:restriction base="xsd:int">
+                        <xsd:totalDigits value="2" fixed="1"/>
+                    </xsd:restriction>
+                </xsd:simpleType>
+            </xsd:list>
+        </xsd:simpleType>
+
+        <xsd:simpleType name="testRestriction">
+            <xsd:annotation>
+                <xsd:documentation>
+                SimpleType: Integer between 1 and 9 (Exclusive constrains)
+                </xsd:documentation>
+            </xsd:annotation>
+            <xsd:restriction base="xsd:int">
+                <xsd:minExclusive value="0"/>
+                <xsd:maxExclusive value="10"/>
+            </xsd:restriction>
+        </xsd:simpleType>
+
+        <xsd:simpleType name="testRestrictionAtomicType">
+            <xsd:annotation>
+                <xsd:documentation>
+                SimpleType: Integer between 1 and 9 (Exclusive constrains)
+                </xsd:documentation>
+            </xsd:annotation>
+            <xsd:restriction>
+                <xsd:simpleType>
+                    <xsd:restriction base="xsd:int">
+                        <xsd:minExclusive value="0"/>
+                        <xsd:maxExclusive value="10"/>
+                    </xsd:restriction>
+                </xsd:simpleType>
+            </xsd:restriction>
+        </xsd:simpleType>
+
+      <xsd:complexType name="testComplexTypeAll">
+        <xsd:annotation>
+          <xsd:documentation>ComplexType Test</xsd:documentation>
+        </xsd:annotation>
+        <xsd:all>
+          <xsd:element name="Test1" type="xsd:string" maxOccurs="1"/>
+          <xsd:element name="Test2" type="xsd:string" minOccurs="1" />
+        </xsd:all>
+      </xsd:complexType>
+
+      <xsd:complexType name="testComplexTypeSimpleRestriction">
+        <xsd:annotation>
+          <xsd:documentation>ComplexType Test</xsd:documentation>
+        </xsd:annotation>
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="test" type="xsd:string"></xsd:attribute>
+            </xsd:extension>
+        </xsd:simpleContent>
+      </xsd:complexType>
+
+
+      <xsd:complexType name="testComplexTypeRestriction">
+        <xsd:annotation>
+          <xsd:documentation>ComplexType Test</xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexContent>
+        <xsd:restriction base="tns:testComplexTypeAll">
+            <xsd:all>
+                <xsd:element name="Test1" type="xsd:string" minOccurs="1"/>
+                <xsd:element name="Test2" type="xsd:string" minOccurs="1" />
+            </xsd:all>
+        </xsd:restriction>
+        </xsd:complexContent>
+      </xsd:complexType>
+
+        <xsd:complexType name="testComplexTypeExtension">
+            <xsd:annotation>
+                  <xsd:documentation>complexType extension test</xsd:documentation>
+            </xsd:annotation>
+            <xsd:complexContent>
+                <xsd:extension base="tns:testComplexTypeSequence">
+                    <xsd:sequence>
+                        <xsd:element name="Test3" type="xsd:string" minOccurs="1"/>
+                    </xsd:sequence>
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+
+      <xsd:complexType name="testComplexNestedExtension">
+            <xsd:annotation>
+                  <xsd:documentation>complexType extension test</xsd:documentation>
+            </xsd:annotation>
+            <xsd:complexContent>
+                <xsd:extension base="tns:testComplexTypeExtension">
+                    <xsd:sequence>
+                        <xsd:element name="Test4" type="xsd:string" minOccurs="1"/>
+                    </xsd:sequence>
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+
+        <xsd:complexType name="testComplexTypeChoice">
+            <xsd:annotation>
+                <xsd:documentation>ComplexType choice test</xsd:documentation>
+            </xsd:annotation>
+            <xsd:choice>
+                <xsd:element name="Test1" type="xsd:string" minOccurs="1"/>
+                <xsd:element name="Test2" type="xsd:string" maxOccurs="1"/>
+            </xsd:choice>
+        </xsd:complexType>
+
+        <xsd:complexType name="testComplexTypeSequence">
+            <xsd:annotation>
+                <xsd:documentation>ComplexType Test</xsd:documentation>
+            </xsd:annotation>
+            <xsd:sequence>
+                <xsd:element name="Test1" type="xsd:string" minOccurs="1"/>
+                <xsd:element name="Test2" type="xsd:string" maxOccurs="1"/>
+            </xsd:sequence>
+        </xsd:complexType>
+
+        <xsd:complexType name="testComplexTypeSequenceWithAttribute">
+            <xsd:annotation>
+                <xsd:documentation>ComplexType Test</xsd:documentation>
+            </xsd:annotation>
+            <xsd:sequence>
+                <xsd:element name="Test1" type="xsd:string" minOccurs="1"/>
+                <xsd:element name="Test2" type="xsd:string" maxOccurs="1"/>
+            </xsd:sequence>
+            <xsd:attribute name="testAttr" type="xsd:string" use="optional">
+                <xsd:annotation>
+                    <xsd:documentation>Test Attribute good for nothing</xsd:documentation>
+                </xsd:annotation>
+            </xsd:attribute>
+        </xsd:complexType>
+
+        <xsd:complexType name="testComplexTypeSequence2">
+            <xsd:annotation>
+                <xsd:documentation>ComplexType test</xsd:documentation>
+            </xsd:annotation>
+            <xsd:sequence>
+                <xsd:element name="Test1" type="xsd:string" minOccurs="1"/>
+                <xsd:element name="Test2" type="tns:testComplexTypeSequence" maxOccurs="1"/>
+            </xsd:sequence>
+        </xsd:complexType>
+
+        <xsd:complexType name="testSimpleContentExtension">
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:string">
+                    <xsd:attribute name="testAttr" type="xsd:string" use="optional"/>
+                </xsd:extension>
+            </xsd:simpleContent>
+        </xsd:complexType>
+
+        <xsd:complexType name="testEmptyComplexExtension">
+            <xsd:complexContent>
+                <xsd:extension base="tns:testComplexTypeSequence" />
+            </xsd:complexContent>
+        </xsd:complexType>
+
+        <xsd:complexType name="testEmptySimpleExtension">
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:string" />
+            </xsd:simpleContent>
+        </xsd:complexType>
+
+      <xsd:element name="testReferencesExtension">
+        <xsd:complexType>
+          <xsd:sequence>
+              <xsd:element minOccurs="0" maxOccurs="1" name="data" type="tns:testReferencedExtension" />
+              <xsd:element minOccurs="1" maxOccurs="1" name="flags" type="xsd:int" />
+          </xsd:sequence>
+          </xsd:complexType>
+          </xsd:element>
+          <xsd:complexType name="testReferencedExtension">
+              <xsd:complexContent mixed="false">
+                  <xsd:extension base="tns:testExtensionBase">
+                      <xsd:sequence>
+                          <xsd:element minOccurs="0" maxOccurs="1"
+                              name="test1" type="xsd:int" />
+                          <xsd:element minOccurs="0" maxOccurs="1"
+                              name="test2" type="xsd:string" />
+                          <xsd:element minOccurs="0" maxOccurs="1" name="test3"
+                              type="xsd:string" />
+                          <xsd:element minOccurs="0" maxOccurs="1"
+                              name="test4" type="xsd:string" />
+                          <xsd:element minOccurs="0" maxOccurs="1"
+                              name="test5" type="xsd:boolean" />
+                          <xsd:element minOccurs="0" maxOccurs="1" name="test6"
+                              type="xsd:string" />
+                          <xsd:element minOccurs="0" maxOccurs="1" name="test7"
+                              type="xsd:int" />
+                      </xsd:sequence>
+                  </xsd:extension>
+              </xsd:complexContent>
+          </xsd:complexType>
+          <xsd:complexType name="testExtensionBase" abstract="true">
+              <xsd:sequence>
+                  <xsd:element minOccurs="0" maxOccurs="1" name="test"
+                      type="xsd:string" />
+              </xsd:sequence>
+          </xsd:complexType>
+
+
+        <xsd:element name="testElementNestedExtension" type="tns:testComplexNestedExtension" />
+        <xsd:element name="testElementString" type="xsd:string" />
+        <xsd:element name="testElementInt" type="xsd:int" />
+        <!-- unprefixed type - test wheter xmlns from schema is propagated -->
+        <xsd:element name="testElementSimpleTypeList" type="testSimpleTypeList"/>
+        <xsd:element name="testElementComplexTypeAll" type="tns:testComplexTypeAll"/>
+        <xsd:element name="testOutputElementComplexTypeSequence" type="tns:testComplexTypeSequence"/>
+        <xsd:element name="testElementComplexTypeSequenceWithAttribute" type="tns:testComplexTypeSequenceWithAttribute"/>
+        <xsd:element name="testElementAtomicSimpleTypeRestriction">
+            <xsd:simpleType>
+                <xsd:annotation>
+                    <xsd:documentation> SimpleType: Integer between 1 and 9
+                        (Inclusive constraints) </xsd:documentation>
+                </xsd:annotation>
+                <xsd:restriction base="xsd:int">
+                    <xsd:minInclusive>1</xsd:minInclusive>
+                    <xsd:maxInclusive>9</xsd:maxInclusive>
+                </xsd:restriction>
+            </xsd:simpleType>
+        </xsd:element>
+
+        <xsd:element name="testElementAtomicComplexTypeAll">
+            <xsd:complexType>
+                <xsd:annotation>
+                    <xsd:documentation> SimpleType: Integer between 1 and 9
+                        (Inclusive constraints) </xsd:documentation>
+                </xsd:annotation>
+                <xsd:all>
+                    <xsd:element name="test1" type="xsd:int"/>
+                    <xsd:element name="test2" type="xsd:string"/>
+                </xsd:all>
+            </xsd:complexType>
+        </xsd:element>
+
+        <xsd:element name="Header" type="tns:testComplexTypeSequence" nillable="false"/>
+        <xsd:element name="testHeader" type="tns:testComplexTypeSequence" nillable="0"/>
+        <xsd:element name="testChoice" type="tns:testComplexTypeChoice"/>
+
+
+        <xsd:complexType name="testComplexTypeElementAtomicSimpleType">
+          <xsd:sequence>
+            <xsd:element name="testString" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="testAtomicSimpleTypeElement" minOccurs="0">
+              <xsd:simpleType>
+                <xsd:restriction base="xsd:decimal">
+                  <xsd:minInclusive value="0"/>
+                </xsd:restriction>
+              </xsd:simpleType>
+            </xsd:element>
+            <xsd:element name="testAtomicSimpleTypeElement2" minOccurs="0">
+              <xsd:simpleType>
+                <xsd:restriction base="xsd:decimal">
+                  <xsd:minInclusive value="0"/>
+                </xsd:restriction>
+              </xsd:simpleType>
+            </xsd:element>
+          </xsd:sequence>
+        </xsd:complexType>
+
+        <xsd:complexType name="elementRefComplexType">
+            <xsd:sequence>
+                <xsd:element ref="testElementString"/>
+            </xsd:sequence>
+        </xsd:complexType>
+
+        <xsd:element name="testElementEmptyComplex" nillable="true">
+            <xsd:complexType>
+                <xsd:sequence/>
+            </xsd:complexType>
+        </xsd:element>
+        <xsd:complexType name="emptyComplexType">
+            <xsd:sequence></xsd:sequence>
+        </xsd:complexType>
+
+        <xsd:element name="testElementCompletelyEmptyComplex" nillable="1">
+            <xsd:complexType>
+            </xsd:complexType>
+        </xsd:element>
+
+        <xsd:complexType name="abstractComplexType" abstract="true">
+        </xsd:complexType>
+
+        <xsd:complexType name="intermediateComplexType">
+            <xsd:complexContent>
+            <xsd:extension base="abstractComplexType">
+                <xsd:sequence>
+                    <xsd:element name="Name" type="xsd:string"/>
+                    <xsd:element name="GivenName" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+
+        <xsd:complexType name="finalComplexType">
+            <xsd:complexContent>
+                <xsd:extension base="intermediateComplexType">
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+
+        <xsd:complexType name="completelyEmptyComplexType">
+        </xsd:complexType>
+
+        <xsd:element name="testRef" type="elementRefComplexType"/>
+        <xsd:element name="testAtomicRef">
+            <xsd:complexType>
+                <xsd:all>
+                    <xsd:element ref="in"/>
+                    <xsd:element ref="tns:out"/>
+                </xsd:all>
+            </xsd:complexType>
+        </xsd:element>
+        <xsd:element name="testComplexTypeRestriction" type="testComplexTypeRestriction"/>
+        <xsd:element name="testComplexTypeSimpleRestriction" type="testComplexTypeSimpleRestriction"/>
+        <xsd:element name="in" type="xsd:string"></xsd:element>
+        <xsd:element name="out" type="xsd:string"></xsd:element>
+
+        </xsd:schema>
+    </types>
+    <message name="testChoice">
+        <part name="parameters" element="tns:testChoice"/>
+    </message>
+    <message name="testRequest">
+        <part name="testAll" element="tns:testElementString"/>
+    </message>
+    <message name="testResponse">
+        <part name="testAll" element="tns:testElementEmptyComplex"/>
+    </message>
+    <message name="testMultiPartWarning">
+        <part name="testAll" element="tns:testElementString"/>
+        <part name="parameters" element="tns:testChoice"/>
+    </message>
+    <message name="testHeaderRequest">
+        <part name="testBody" element="tns:testHeader"/>
+        <part name="testHeader" element="tns:Header"/>
+    </message>
+    <message name="testHeaderResponse">
+        <part name="testAll" element="tns:testElementString"/>
+    </message>
+
+    <message name="testEmptyComplex">
+        <part name="testOutput"
+            element="tns:testElementNestedExtension" />
+    </message>
+
+    <message name="testAtomicSimple">
+        <part name="test"
+            element="tns:testElementAtomicSimpleTypeRestriction" />
+    </message>
+
+    <message name="testRef">
+        <part name="test" element="tns:testRef"/>
+    </message>
+
+    <message name="testAtomicRef">
+        <part name="test" element="tns:testAtomicRef"/>
+    </message>
+
+    <message name="testRestriction">
+        <wsdl:part name="test" element="tns:testComplexTypeRestriction"></wsdl:part>
+    </message>
+
+    <message name="testSimpleRestriction">
+        <wsdl:part name="test" element="tns:testComplexTypeSimpleRestriction"></wsdl:part>
+    </message>
+
+    <wsdl:message name="Request">
+        <wsdl:part name="Request" element="tns:in"></wsdl:part>
+    </wsdl:message>
+    <wsdl:message name="Response">
+        <wsdl:part name="Response" element="tns:out"></wsdl:part>
+    </wsdl:message>
+
+
+    <portType name="testPort">
+        <operation name="test">
+            <documentation>test method</documentation>
+            <input message="tns:testRequest"/>
+            <output message="tns:testResponse"/>
+        </operation>
+        <operation name="testHeader">
+            <documentation>Header test method</documentation>
+            <input message="tns:testHeaderRequest"/>
+            <output message="tns:testHeaderResponse"/>
+        </operation>
+        <operation name="testChoice">
+            <documentation>choice/restriction test method</documentation>
+            <input message="tns:testChoice"/>
+            <output message="tns:testRestriction"/>
+        </operation>
+        <operation name="testMultiPartWarning">
+            <documentation>multipart warning test method</documentation>
+            <input message="tns:testMultiPartWarning"/>
+            <output message="tns:testMultiPartWarning"/>
+        </operation>
+
+        <operation name="testEmptyComplex">
+            <documentation>empty complex type test method</documentation>
+            <input message="tns:testEmptyComplex"/>
+            <output message="tns:testAtomicSimple"/>
+        </operation>
+
+        <operation name="testRestriction">
+            <documentation>restriction complex type test method</documentation>
+            <input message="tns:testEmptyComplex"/>
+            <output message="tns:testSimpleRestriction"/>
+        </operation>
+
+        <operation name="testRef">
+                <input message="tns:testRef"/>
+                <output message="tns:testAtomicRef"/>
+        </operation>
+    </portType>
+
+    <binding type="tns:testPort" name="testBinding">
+        <soap:binding style="document"
+            transport="http://schemas.xmlsoap.org/soap/http" />
+        <operation name="testChoice">
+            <soap:operation soapAction="testChoice" style="document" />
+            <input>
+                <soap:body use="literal" />
+            </input>
+            <output>
+                <soap:body use="literal" />
+            </output>
+        </operation>
+
+        <operation name="test">
+            <soap:operation soapAction="test" style="document" />
+            <input>
+                <soap:body use="literal" />
+            </input>
+            <output>
+                <soap:body use="literal" />
+            </output>
+        </operation>
+        <operation name="testHeader">
+            <soap:operation soapAction="testHeader" />
+            <input>
+                <soap:body use="literal" parts="testBody" />
+                <soap:header use="literal" part="testHeader"
+                    message="tns:testHeaderRequest" />
+            </input>
+            <output>
+                <soap:body use="literal" />
+            </output>
+        </operation>
+        <operation name="testMultiPartWarning">
+            <soap:operation soapAction="testHeader" />
+            <input>
+                <soap:body use="literal" />
+            </input>
+            <output>
+                <soap:body use="literal" />
+            </output>
+        </operation>
+        <operation name="testRestriction">
+            <soap:operation soapAction="testRestriction" />
+            <input>
+                <soap:body use="literal" />
+            </input>
+            <output>
+                <soap:body use="literal" />
+            </output>
+        </operation>
+        <operation name="testRef">
+            <soap:operation soapAction="testRef" />
+            <input>
+                <soap:body use="literal" />
+            </input>
+            <output>
+                <soap:body use="literal" />
+            </output>
+        </operation>
+
+        <wsdl:operation name="testEmptyComplex" foobar:Action="testEmptyComplex">
+            <soap:operation soapAction="urn:Test/testEmptyComplex" />
+            <wsdl:input>
+                <soap:body use="literal" />
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal" />
+            </wsdl:output>
+        </wsdl:operation>
+    </binding>
+    <wsdl:binding name="HTTPBinding" type="tns:testPort">
+        <http:binding verb="GET" />
+        <wsdl:operation name="test">
+            <http:operation location="/test" />
+            <wsdl:input>
+                <http:urlEncoded />
+            </wsdl:input>
+            <wsdl:output></wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="testHeader">
+            <http:operation location="/testHeader" />
+            <wsdl:input>
+                <http:urlEncoded />
+            </wsdl:input>
+            <wsdl:output></wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="testChoice">
+            <http:operation location="/testChoice" />
+            <wsdl:input>
+                <http:urlEncoded />
+            </wsdl:input>
+            <wsdl:output></wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="testMultiPartWarning">
+            <http:operation location="/testMultiPartWarning" />
+            <wsdl:input>
+                <http:urlEncoded />
+            </wsdl:input>
+            <wsdl:output></wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="testRef">
+            <http:operation location="/testEmptyComplex" />
+            <wsdl:input>
+                <http:urlEncoded />
+            </wsdl:input>
+            <wsdl:output></wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="testEmptyComplex">
+            <http:operation location="/testEmptyComplex" />
+            <wsdl:input>
+                <http:urlEncoded />
+            </wsdl:input>
+            <wsdl:output>
+            </wsdl:output>
+        </wsdl:operation>
+    </wsdl:binding>
+    <service name="testService">
+        <port name="testPort" binding="tns:testBinding">
+            <soap:address location="http://127.0.0.1/testPort" />
+        </port>
+        <wsdl:port name="HTTPPort" binding="tns:HTTPBinding">
+            <http:address location="http://www.example.org/"></http:address>
+        </wsdl:port>
+    </service>
+</definitions>

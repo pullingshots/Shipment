@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<definitions
+    targetNamespace="urn:Test"
+    xmlns:tns="urn:Test"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+>
+    <types>
+        <xsd:schema targetNamespace="urn:Test">
+            <xsd:element name="testElement1" type="xsd:string" />
+            <xsd:element name="testElement2" type="xsd:int" />
+            <xsd:element name="testElementRef" ref="tns:testElement1" />
+        </xsd:schema>
+    </types>
+    <message name="testRequest">
+        <part name="testAll" element="tns:testElement1"/>
+    </message>
+    <message name="testRefRequest">
+      <part name="testAll" element="tns:testElementRef"/>
+    </message>
+
+    <message name="testResponse">
+        <part name="testAll" element="tns:testElement1"/>
+    </message>
+    <portType name="testPort">
+        <operation name="test">
+            <documentation>
+                Test-Methode
+            </documentation>
+
+            <input message="tns:testRequest"/>
+            <output message="tns:testResponse"/>
+        </operation>
+        <operation name="testRef">
+          <documentation>
+            Test-Methode
+          </documentation>
+
+          <input message="tns:testRefRequest"/>
+          <output message="tns:testResponse"/>
+        </operation>
+    </portType>
+
+    <binding type="tns:testPort" name="testBinding">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <operation name="test">
+        <soap:operation soapAction="test"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+      </operation>
+      <operation name="testRef">
+        <soap:operation soapAction="testRef"/>
+          <input>
+            <soap:body use="literal"/>
+          </input>
+          <output>
+            <soap:body use="literal"/>
+          </output>
+      </operation>
+    </binding>
+    <service name="testService">
+        <port name="testPort" binding="tns:testBinding">
+            <soap:address location="http://127.0.0.1/testPort" />
+        </port>
+    </service>
+</definitions>

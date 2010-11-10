@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions targetNamespace="http://order.soap.services"
+  xmlns:impl="http://order.soap.services" xmlns:intf="http://order.soap.services"
+  xmlns:apachesoap="http://xml.apache.org/xml-soap"
+  xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns1="http://database.services"
+  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <!--WSDL created by Apache Axis version: 1.2RC3
+    Built on Feb 28, 2005 (10:15:14 EST)-->
+  <wsdl:types>
+    <schema xmlns="http://www.w3.org/2001/XMLSchema"
+      targetNamespace="http://database.services">
+      <import namespace="http://schemas.xmlsoap.org/soap/encoding/" />
+      <complexType name="ProcedureResponse">
+        <sequence>
+          <element name="message" nillable="true" type="soapenc:string" />
+          <element name="status" type="xsd:int" />
+        </sequence>
+      </complexType>
+    </schema>
+  </wsdl:types>
+
+  <wsdl:message name="confirmRequest">
+    <wsdl:part name="language_id" type="soapenc:string" />
+    <wsdl:part name="user_id" type="soapenc:string" />
+    <wsdl:part name="supplier_code" type="soapenc:string" />
+    <wsdl:part name="customer_no" type="soapenc:string" />
+    <wsdl:part name="author" type="soapenc:string" />
+    <wsdl:part name="title" type="soapenc:string" />
+    <wsdl:part name="isbn" type="soapenc:string" />
+    <wsdl:part name="classification" type="soapenc:string" />
+    <wsdl:part name="purchase_note" type="soapenc:string" />
+    <wsdl:part name="article_no" type="soapenc:string" />
+    <wsdl:part name="price" type="xsd:double" />
+    <wsdl:part name="currency_id" type="soapenc:string" />
+    <wsdl:part name="delivery_date" type="xsd:dateTime" />
+    <wsdl:part name="info_note" type="soapenc:string" />
+    <wsdl:part name="no_of_copies" type="xsd:int" />
+    <wsdl:part name="order_no" type="soapenc:string" />
+    <wsdl:part name="order_date" type="xsd:dateTime" />
+    <wsdl:part name="title_no" type="soapenc:string" />
+  </wsdl:message>
+
+  <wsdl:message name="confirmResponse">
+    <wsdl:part name="confirmReturn" type="tns1:ProcedureResponse" />
+  </wsdl:message>
+
+  <wsdl:portType name="OrderImpl">
+    <wsdl:operation name="confirm"
+      parameterOrder="language_id user_id supplier_code customer_no author title isbn classification purchase_note article_no price currency_id delivery_date info_note no_of_copies order_no order_date title_no">
+      <wsdl:input name="confirmRequest" message="impl:confirmRequest" />
+      <wsdl:output name="confirmResponse" message="impl:confirmResponse" />
+    </wsdl:operation>
+  </wsdl:portType>
+
+  <wsdl:binding name="OrderSoapBinding" type="impl:OrderImpl">
+    <wsdlsoap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="confirm">
+      <wsdlsoap:operation soapAction="" />
+      <wsdl:input name="confirmRequest">
+        <wsdlsoap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://order.soap.services" />
+      </wsdl:input>
+
+      <wsdl:output name="confirmResponse">
+        <wsdlsoap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://order.soap.services" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+
+  <wsdl:service name="OrderImplService">
+    <wsdl:port name="Order" binding="impl:OrderSoapBinding">
+      <wsdlsoap:address location="http://example.com/services/services/Order" />
+    </wsdl:port>
+
+  </wsdl:service>
+</wsdl:definitions>

@@ -1,0 +1,7 @@
+[% element = definitions.first_types.find_element( part.expand( part.get_element ) );
+    #element.get_name();
+    #element;
+    #STOP;
+    type = element.first_complexType || element.first_simpleType || definitions.first_types.find_type(
+        element.expand( element.get_type ) );
+    INCLUDE Interface/POD/Type.tt;%],

@@ -1,0 +1,131 @@
+HACKING
+=======
+
+Development of SOAP::WSDL takes place on sourceforge.net.
+
+There's a svn repository available at 
+https://soap-wsdl.svn.sourceforge.net/svnroot/soap-wsdl
+
+Engagement in the further development of this module is highly encouraged - 
+many people have already contributed, and many more probably will.
+
+I'm sometimes a bit slow in answering e-mails or merging in changes - 
+so if you feel your changes are urgent, please set up a sourceforge account 
+and ask me for commit permissions on the repository - I will happily accept 
+you as co-author.
+
+TODO shows the current roadmap.
+
+SOAP-WSDL CODING GUIDELINES
+===========================
+
+DESIGN PRINCIPLES
+-----------------
+
+SOAP-WSDL is designed for the following principles:
+
+1. SPEED
+A SOAP toolkit is useless, if it's not fast enough. Therefore SOAP::WSDL aims
+at always being fast enough.
+
+Please benchmark any contributions - if they slow down SOAP-WSDL (especially
+the XML parsing part), you should have good reasons.
+
+2. USABILITY
+SOAP-WSDL is designed user-friendly. It tells the user whether it's
+capable of handling some WSDL or not, it gives friendly error messages, and
+if a user happens to call a non-existant method on XSD objects, they croak
+with a list of available methods to ease development.
+
+3. EXTENSIBILITY
+If you plan an extension, look if the extension itself should be extensible,
+and which extension points to use.
+
+Creating new extension points is highly appreciated.
+
+4. MAINTAINABILITY
+SOAP::Lite unfortunately shows where a toolkit can go without focus on
+maintainability. SOAP::WSDL tries to be highly maintainable and easy to
+understand.
+
+CODING STYLE
+------------
+
+The principles above dictate a clear, but not too lengthy coding style.
+
+SOAP::WSDL's coding style in principle follows Perl Best Practices by
+Damian Conway, but allows deviances for speed reasons
+
+The following guidelines apply:
+
+- Testing
+    * SOAP::WSDL has a test coverage of >95% and aims at 100%. Please write
+    a test first.
+    * Use author tests for testing guidelines. Disable author tests for
+    users - it's time consuming and of no use to have users run author tests.
+
+- Indentation and formatting
+    * indent with spaces.
+    * indent 4 characters per level
+    * use \n (LF) for newlines, not CRLF
+    * use blank lines to separate paragraphs
+    * Coding style is similar to K&R (opening brace on last line, closing
+    brace on new line. No cuddled else)
+    * No trailing spaces allowed (except to indicate a blank line in a POD
+    source block)
+
+- Flow control
+    * postfix if is allowed for single statements only. Preferably for flow
+    control only.
+    * postfix for, while, until are not allowed.
+    * unless is not allowed at all. Use if not.
+    * goto is only allowed for jumping into subs. Nothing else.
+    * redo, next, last etc. are preferred over goto.
+
+- Strictness and Warnings
+    * always use strict and warnings. Switch off for the smallest block
+    possible, but switch of if there's a reason (don't let tools like
+    perlcritic fool you: no strict qw(refs); is often required.
+
+- Naming
+    * variable names are lower case with _ separating words, except when
+    a XML Schema, SOAP, or WSDL name is name-giving (don't force portType to
+    become port_type)
+    * hashes should be named FOO_of, lists FOO_from, references FOO_ref.
+    * package names are CamelCase, except when a XML, SOAP or WSDL name is
+    name-giving (don't force 'int' to become 'Int'. However, simpleType 
+    becomes SimpleType).
+
+- Subroutines
+    * Subroutines shouldn't be more than around 50 lines long
+    * @_ should be unpacked. Deviances are allowed for speed reasons. If
+    you're not unpacking @_ in a sub of say, 5 lines or more, please comment
+    what you're doing.
+    * Always return. Always return. A single "return" allows perl to execute
+    the subroutine in question in void context, which saves it from putting
+    it's result in a temporary variable. Always return.
+
+- POD and comments
+    * Comment extensively. Comments are the maintainer (and core developer's)
+    documentation - aid them where possible (your're probably doing yourself
+    a favor by adding extensive comments).
+    * Comment either in blocks or as hanging side comments (especially when
+    commenting @_ access).
+    Example:
+
+    sub baz {
+        # @_ not unpacked for speed reasons. Read:
+        # my ($self, $something, %args_of) = @_;
+
+        $_[0]->bar($_[1]);      # read as $self->bar($something);
+        $_[0]->foo($_[2..$#]);  # read as $self->foo(%args_of);
+        return;
+    }
+    * POD is located at end of file, preferably after __END__
+    * Complete POD coverage is essential. However, if the package in question
+    is used internally only, it's better to omit the POD completely - too many
+    PODs to look at confuse the average CPAN user.
+
+July - November 2007,
+
+Martin Kutter

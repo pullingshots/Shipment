@@ -1,0 +1,113 @@
+<?xml version="1.0"?>
+<!-- This WSDL is broken on purpose: It's used to test error handling -->
+<definitions
+    targetNamespace="urn:simpleType"
+    xmlns:tns="urn:simpleType"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+
+>
+    <types>
+        <xsd:schema targetNamespace="urn:simpleType">
+        <xsd:simpleType name="testSimpleType">
+            <xsd:annotation>
+                <xsd:documentation>
+                SimpleType Test
+                </xsd:documentation>
+            </xsd:annotation>
+            <xsd:restriction base="xsd:int">
+
+            </xsd:restriction>
+        </xsd:simpleType>
+        </xsd:schema>
+    </types>
+    <message name="testRequest">
+    <!--  This one is broken on purpose: It's used to test error handling -->
+        <part name="test" type="tns:testSimpleType1"/>
+    </message>
+    <message name="testResponse">
+        <part name="test" type="tns:testSimpleType"/>
+    </message>
+    <portType name="testPort">
+        <operation name="test">
+            <documentation>
+                Test-Methode
+            </documentation>
+
+            <input message="tns:testRequest"/>
+            <output message="tns:testResponse"/>
+        </operation>
+    </portType>
+    <portType name="testPort2">
+        <operation name="test">
+            <documentation>
+                Test-Methode
+            </documentation>
+
+            <input message="tns:testRequest"/>
+            <output message="tns:testResponse"/>
+        </operation>
+    </portType>
+    <portType name="testPort3">
+        <operation name="test">
+            <documentation>
+                Test-Methode
+            </documentation>
+
+            <input message="tns:testRequest"/>
+            <output message="tns:testResponse"/>
+        </operation>
+    </portType>
+
+    <binding type="tns:testPort" name="testBinding">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+            <operation name="test">
+
+        <soap:operation soapAction="test"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+            </operation>
+    </binding>
+    <binding type="tns:testPort2" name="testBinding2">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+            <operation name="test">
+        <soap:operation soapAction="test"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+            </operation>
+    </binding>
+    <binding type="tns:testPort3" name="testBinding3">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+            <operation name="test">
+
+        <soap:operation soapAction="test"/>
+                <input>
+                  <soap:body use="literal"/>
+        </input>
+        <output>
+                  <soap:body use="literal"/>
+        </output>
+            </operation>
+    </binding>
+    <service name="testService">
+        <port name="testPort" binding="tns:testBinding">
+            <soap:address location="http://127.0.0.1/testPort" />
+        </port>
+        <port name="testPort2" binding="tns:testBinding2">
+            <soap:address location="http://127.0.0.1/testPort2" />
+        </port>
+        <port name="testPort3" binding="tns:testBinding3">
+            <soap:address location="http://127.0.0.1/testPort3" />
+        </port>
+
+    </service>
+</definitions>

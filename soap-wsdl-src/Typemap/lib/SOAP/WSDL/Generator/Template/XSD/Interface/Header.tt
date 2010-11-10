@@ -1,0 +1,48 @@
+[%  RETURN IF NOT item; RETURN IF NOT item.0;
+    message_name = item.0.get_message;
+
+    IF NOT message_name;
+        THROW BAD_WSDL "missing <message> attribute in header for operation ${operation.get_name}";
+    END;
+    message = definitions.find_message( item.0.expand( message_name ) ); PERL %]
+
+    # ToDo: support multiple messages
+
+    my $message        = $stash->{ message };
+    my $item           = $stash->{ item };
+    my $def            = $stash->{ definitions };
+    my $type_prefix    = $stash->{ type_prefix };
+    my $element_prefix = $stash->{ element_prefix };
+    #my ($ns, $lname) = $def->expand( $item->get_part() );
+
+    # find matching message parts
+    my %part_of = map { $_->get_part() => undef;  } @{$item};
+    my @parts   = grep {
+        exists $part_of{$_->get_name()};
+    } @{ $message->get_part( ) };
+
+    my $part_class = join q{ }, map {
+            my $part = $_;
+            my $name;
+            ( $name = $part->get_element() )
+                ? do {
+                        my $element = $def->first_types->find_element($part->expand($name));
+                        my $resolver = $context->plugin('XSD');
+                        $resolver->create_xsd_name($element);
+                  }
+                : ( $name = $part->get_type() )
+                    ? do {
+                          my $element = $def->first_types->find_type($part->expand($name));
+                          my $resolver = $context->plugin('XSD');
+                          $resolver->create_xsd_name($element);
+                      }
+                    : die "input must have either type or element"
+        } @parts;
+    $stash->{ part_class } = $part_class;
+    [% END; IF item.0.get_use != 'literal';
+                THROW NOT_SUPPORTED "Header: SOAP::WSDL supports literal encoding only - ${ item.get_use } found";
+       END; %]
+           'use' => '[% item.0.get_use %]',
+            namespace => '[% item.0.get_namespace %]',
+            encodingStyle => '[% item.0.get_encodingStyle %]',
+            parts => [qw( [% part_class %] )],

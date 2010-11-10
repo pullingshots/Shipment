@@ -1,0 +1,51 @@
+[%# work around for CPAN's indexer, which gets disturbed by pod in templates -%]
+[% head3 = BLOCK %]=head3[% END -%]
+
+[% head3 %] [% operation.get_name %]
+
+[%  type            = definitions.find_portType( binding.expand( binding.get_type ) );
+    port_op         = '';
+    FOREACH port_op = type.get_operation();
+        IF (port_op.get_name == operation.get_name);
+            LAST;
+        END;
+    END;
+
+    input_message_name  = port_op.first_input.get_message();
+    output_message_name = port_op.first_output.get_message();
+
+    input_message       = definitions.find_message(port_op.first_input.expand(input_message_name));
+    output_message      = definitions.find_message(port_op.first_output.expand(output_message_name));
+
+    input_parts         = input_message.get_part();
+    output_parts        = output_message.get_part();
+
+# port_op.get_documentation
+%]
+
+ sub [% operation.get_name %] {
+    my ($self, $body, $header) = @_;
+[%
+    IF (input_parts.size() > 1); -%]
+    # body is a list ref of the following objects:
+    # [
+    #     sorry - POD support not implemented yet
+    # ]
+    [% ELSE;
+        input_element = definitions.first_types.find_element(input_parts.0.expand(input_parts.0.get_element));
+        IF (input_element);
+            class = XSD.create_xsd_name( input_element );
+        ELSE;
+            input_type  = definitions.first_types.find_type(input_parts.0.expand(input_parts.0.get_type));
+            class       = XSD.create_xsd_name( input_type );
+        END;
+    -%]
+    # body is a [% class %] object
+    [%-
+    END;
+    %]
+    # header is a ??? object - sorry, POD support not implemented yet
+    # do something with body and header...
+
+    return [% INCLUDE Server/POD/Message.tt %]
+ }

@@ -1,0 +1,11 @@
+# derivation by union
+# union is not fully supported yet - value space constraints are not
+# checked yet.
+# This implementation of union resorts to the simplest possible base, which
+# is: "If the <list> or <union> alternative is chosen, then the
+# simple ur-type definition·."
+#
+
+use base qw(
+    SOAP::WSDL::XSD::Typelib::Builtin::anySimpleType
+);

@@ -1,0 +1,16 @@
+[% USE Dumper(Varname => 'prefix_') %]
+sub _get_name_resolver {
+
+    my [% Dumper.dump(XSD.get_prefix_resolver.get_prefix) %]
+
+    return SOAP::WSDL::Generator::Template::Plugin::XSD->new({
+        prefix_resolver => [% XSD.get_prefix_resolver_class %]->new({
+            namespace_prefix_map => {
+                'http://www.w3.org/2001/XMLSchema' => 'SOAP::WSDL::XSD::Typelib::Builtin',
+            },
+            namespace_map => {
+            },
+            prefix => $prefix_1,
+        })
+    });
+}

@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<definitions name="Test"
+    targetNamespace="urn:Test"
+    xmlns:tns="urn:Test"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+>
+    <types>
+        <xsd:schema targetNamespace="urn:Test" elementFormDefault="qualified" xmlns="urn:Test">
+            <xsd:element name="anyType" type="xsd:anyType" />
+            <xsd:complexType name="anyType">
+                <xsd:sequence>
+                    <xsd:element name="anyType" type="xsd:anyType"/>
+                </xsd:sequence>
+            </xsd:complexType>
+        </xsd:schema>
+    </types>
+    <message name="testRequest">
+    	<part name="input" type="tns:anyType"/>
+    </message>
+    <portType name="testPort">
+        <operation name="test">
+            <documentation>
+                Test-Method
+            </documentation>
+            <input message="tns:testRequest"/>
+            <output message="tns:testRequest"/>
+        </operation>
+    </portType>
+
+    <binding type="tns:testPort" name="testBinding">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <operation name="test">
+
+            <soap:operation soapAction="test" />
+            <input>
+                <soap:body use="literal" />
+            </input>
+            <output>
+                <soap:body use="literal" />
+            </output>
+        </operation>
+    </binding>
+    <service name="testService">
+        <port name="testPort" binding="tns:testBinding">
+            <soap:address location="http://127.0.0.1/testPort" />
+        </port>
+    </service>
+</definitions>

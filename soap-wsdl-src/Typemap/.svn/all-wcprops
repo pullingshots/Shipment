@@ -1,0 +1,125 @@
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svnroot/soap-wsdl/!svn/ver/864/SOAP-WSDL/branches/Typemap
+END
+MIGRATING
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/MIGRATING
+END
+LICENSE
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/LICENSE
+END
+.releaserc
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/.releaserc
+END
+.rpmdependencies
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/.rpmdependencies
+END
+.project
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/.project
+END
+.packageinfo
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/.packageinfo
+END
+META.yml
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svnroot/soap-wsdl/!svn/ver/863/SOAP-WSDL/branches/Typemap/META.yml
+END
+Makefile.PL
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svnroot/soap-wsdl/!svn/ver/854/SOAP-WSDL/branches/Typemap/Makefile.PL
+END
+TEST_COVERAGE
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svnroot/soap-wsdl/!svn/ver/834/SOAP-WSDL/branches/Typemap/TEST_COVERAGE
+END
+MYMETA.yml
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svnroot/soap-wsdl/!svn/ver/863/SOAP-WSDL/branches/Typemap/MYMETA.yml
+END
+README
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svnroot/soap-wsdl/!svn/ver/736/SOAP-WSDL/branches/Typemap/README
+END
+.perlcriticrc
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svnroot/soap-wsdl/!svn/ver/736/SOAP-WSDL/branches/Typemap/.perlcriticrc
+END
+HACKING
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/HACKING
+END
+TODO
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/TODO
+END
+MANIFEST
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svnroot/soap-wsdl/!svn/ver/859/SOAP-WSDL/branches/Typemap/MANIFEST
+END
+Changes
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svnroot/soap-wsdl/!svn/ver/861/SOAP-WSDL/branches/Typemap/Changes
+END
+Build.PL
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svnroot/soap-wsdl/!svn/ver/864/SOAP-WSDL/branches/Typemap/Build.PL
+END
+MANIFEST.SKIP
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svnroot/soap-wsdl/!svn/ver/854/SOAP-WSDL/branches/Typemap/MANIFEST.SKIP
+END
+trace.txt
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svnroot/soap-wsdl/!svn/ver/859/SOAP-WSDL/branches/Typemap/trace.txt
+END
+test_html.pl
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svnroot/soap-wsdl/!svn/ver/736/SOAP-WSDL/branches/Typemap/test_html.pl
+END

@@ -1,0 +1,281 @@
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svnroot/soap-wsdl/!svn/ver/861/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin
+END
+float.pm
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/float.pm
+END
+gYear.pm
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/gYear.pm
+END
+anyURI.pm
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/anyURI.pm
+END
+double.pm
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/double.pm
+END
+NMTOKEN.pm
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/NMTOKEN.pm
+END
+IDREFS.pm
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/svnroot/soap-wsdl/!svn/ver/736/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/IDREFS.pm
+END
+Name.pm
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/Name.pm
+END
+negativeInteger.pm
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/negativeInteger.pm
+END
+token.pm
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/token.pm
+END
+language.pm
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/language.pm
+END
+duration.pm
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/duration.pm
+END
+hexBinary.pm
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/hexBinary.pm
+END
+IDREF.pm
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/IDREF.pm
+END
+base64Binary.pm
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/base64Binary.pm
+END
+NOTATION.pm
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/NOTATION.pm
+END
+nonNegativeInteger.pm
+K 25
+svn:wc:ra_dav:version-url
+V 114
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/nonNegativeInteger.pm
+END
+gMonth.pm
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/gMonth.pm
+END
+ID.pm
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/ID.pm
+END
+unsignedLong.pm
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/unsignedLong.pm
+END
+decimal.pm
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/decimal.pm
+END
+unsignedByte.pm
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/unsignedByte.pm
+END
+anySimpleType.pm
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/svnroot/soap-wsdl/!svn/ver/849/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/anySimpleType.pm
+END
+string.pm
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/svnroot/soap-wsdl/!svn/ver/849/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/string.pm
+END
+list.pm
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/list.pm
+END
+ENTITY.pm
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/ENTITY.pm
+END
+gYearMonth.pm
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/gYearMonth.pm
+END
+date.pm
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/svnroot/soap-wsdl/!svn/ver/828/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/date.pm
+END
+boolean.pm
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/svnroot/soap-wsdl/!svn/ver/861/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/boolean.pm
+END
+positiveInteger.pm
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/positiveInteger.pm
+END
+gDay.pm
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/gDay.pm
+END
+unsignedInt.pm
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/unsignedInt.pm
+END
+anyType.pm
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/svnroot/soap-wsdl/!svn/ver/861/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/anyType.pm
+END
+int.pm
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/int.pm
+END
+gMonthDay.pm
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/gMonthDay.pm
+END
+nonPositiveInteger.pm
+K 25
+svn:wc:ra_dav:version-url
+V 114
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/nonPositiveInteger.pm
+END
+normalizedString.pm
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/normalizedString.pm
+END
+dateTime.pm
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/svnroot/soap-wsdl/!svn/ver/829/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/dateTime.pm
+END
+unsignedShort.pm
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/unsignedShort.pm
+END
+integer.pm
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/integer.pm
+END
+NMTOKENS.pm
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/NMTOKENS.pm
+END
+time.pm
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/svnroot/soap-wsdl/!svn/ver/861/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/time.pm
+END
+long.pm
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/long.pm
+END
+short.pm
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/short.pm
+END
+NCName.pm
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/NCName.pm
+END
+QName.pm
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/QName.pm
+END
+byte.pm
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/lib/SOAP/WSDL/XSD/Typelib/Builtin/byte.pm
+END

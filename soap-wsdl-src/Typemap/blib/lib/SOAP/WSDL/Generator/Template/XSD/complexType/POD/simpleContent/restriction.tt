@@ -1,0 +1,46 @@
+ {
+    value => $some_value,   # simple perl scalar. See below for restrictions
+ }
+
+NOTE: This type is derived by restriction as complexType with simpleContent.
+Documentation generation for this derivation method is experimental and may
+be erroneous/incomplete.
+
+This clase is derived from [%-
+IF (name = complexType.get_base);
+#    type_name = complexType.expand( name );
+-%]
+[% XSD.create_xsd_name(complexType) %]
+[% ELSE;
+    %] an atomic base type. Unfortunately there's no documentation generated
+on atomic base types' base type yet.[%
+END -%]
+
+SOAP::WSDL's schema implementation does not validate data yet - however, the
+following restrictions apply for this type's value:
+
+[%- FOREACH facet = [
+        'length',
+        'minLength',
+        'maxLength',
+        'totalDigits',
+        'fractionDigits',
+        'minInclusive',
+        'maxInclusive',
+        'minExclusive',
+        'maxExclusive',
+        'pattern',
+        'enumeration'
+    ];
+    IF (facet_method = complexType.can( "get_" _ facet ));
+        facet_value = facet_method( complexType );
+        IF (facet_value.size());
+%]
+ [%         IF (facet == 'enumeration');
+    %]valid values (enumeration)
+[%-         ELSE;
+      facet;
+            END -%]:[% FOREACH value = facet_value %] [% value.get_value; END -%]
+[%      END;
+    END;
+END %]

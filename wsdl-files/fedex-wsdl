@@ -1,0 +1,4 @@
+***run***
+
+/usr/local/bin/wsdl2perl.pl -use_typemap -p Shipment::FedEx::WSDL:: -b /path/to/Shipment/basedir file:/path/to/....wsdl
+

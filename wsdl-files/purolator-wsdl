@@ -1,0 +1,96 @@
+***modify wsdl***
+   * copy "xmlns:q1" into <definitions .. >
+
+***for ServiceAvailabilityService.wsdl, remove:***
+
+          <xsd:element minOccurs="0" name="ChildServiceOptions" nillable="true" type="tns:ArrayOfOption">
+            <xsd:annotation>
+              <xsd:appinfo/>
+              <xsd:documentation>ChildServiceOptions - Option[]</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+
+which causes the following errors:
+
+Deep recursion on subroutine "SOAP::WSDL::Base::_accept" at /usr/local/share/perl/5.10.1/SOAP/WSDL/Generator/Visitor/Typemap.pm line 60.
+Deep recursion on subroutine "SOAP::WSDL::Base::_accept" at /usr/local/share/perl/5.10.1/SOAP/WSDL/Generator/Visitor/Typemap.pm line 60.
+Deep recursion on subroutine "SOAP::WSDL::Base::_accept" at /usr/local/share/perl/5.10.1/SOAP/WSDL/Generator/Visitor/Typemap.pm line 60.
+Deep recursion on subroutine "SOAP::WSDL::Generator::Visitor::Typemap::visit_XSD_Element" at /usr/local/share/perl/5.10.1/SOAP/WSDL/Base.pm line 63.
+Deep recursion on subroutine "SOAP::WSDL::Generator::Visitor::Typemap::process_referenced_type" at /usr/local/share/perl/5.10.1/SOAP/WSDL/Generator/Visitor/Typemap.pm line 85.
+Deep recursion on subroutine "SOAP::WSDL::Generator::Visitor::Typemap::visit_XSD_Element" at /usr/local/share/perl/5.10.1/SOAP/WSDL/Base.pm line 63.
+Deep recursion on subroutine "SOAP::WSDL::Generator::Visitor::Typemap::process_referenced_type" at /usr/local/share/perl/5.10.1/SOAP/WSDL/Generator/Visitor/Typemap.pm line 85.
+Deep recursion on subroutine "SOAP::WSDL::Generator::Visitor::Typemap::visit_XSD_Element" at /usr/local/share/perl/5.10.1/SOAP/WSDL/Base.pm line 63.
+Deep recursion on subroutine "SOAP::WSDL::Generator::Visitor::Typemap::process_referenced_type" at /usr/local/share/perl/5.10.1/SOAP/WSDL/Generator/Visitor/Typemap.pm line 85.
+Deep recursion on subroutine "SOAP::WSDL::Generator::Visitor::Typemap::visit_XSD_Element" at /usr/local/share/perl/5.10.1/SOAP/WSDL/Base.pm line 63.
+Deep recursion on subroutine "SOAP::WSDL::Generator::Visitor::Typemap::process_referenced_type" at /usr/local/share/perl/5.10.1/SOAP/WSDL/Generator/Visitor/Typemap.pm line 85.
+Deep recursion on subroutine "SOAP::WSDL::Generator::Visitor::Typemap::visit_XSD_Element" at /usr/local/share/perl/5.10.1/SOAP/WSDL/Base.pm line 63.
+Deep recursion on subroutine "SOAP::WSDL::Generator::Visitor::Typemap::process_referenced_type" at /usr/local/share/perl/5.10.1/SOAP/WSDL/Generator/Visitor/Typemap.pm line 85.
+Deep recursion on subroutine "SOAP::WSDL::Generator::Visitor::Typemap::visit_XSD_Element" at /usr/local/share/perl/5.10.1/SOAP/WSDL/Base.pm line 63.
+Deep recursion on subroutine "SOAP::WSDL::Generator::Visitor::Typemap::process_referenced_type" at /usr/local/share/perl/5.10.1/SOAP/WSDL/Generator/Visitor/Typemap.pm line 85.
+Deep recursion on subroutine "SOAP::WSDL::Generator::Visitor::Typemap::visit_XSD_Element" at /usr/local/share/perl/5.10.1/SOAP/WSDL/Base.pm line 63.
+Deep recursion on subroutine "SOAP::WSDL::Generator::Visitor::Typemap::process_referenced_type" at /usr/local/share/perl/5.10.1/SOAP/WSDL/Generator/Visitor/Typemap.pm line 85.
+Deep recursion on subroutine "SOAP::WSDL::Generator::Visitor::Typemap::visit_XSD_ComplexType" at /usr/local/share/perl/5.10.1/SOAP/WSDL/Base.pm line 63.
+Deep recursion on subroutine "SOAP::WSDL::Generator::Visitor::Typemap::visit_XSD_Element" at /usr/local/share/perl/5.10.1/SOAP/WSDL/Base.pm line 63.
+Deep recursion on subroutine "SOAP::WSDL::Generator::Visitor::Typemap::process_referenced_type" at /usr/local/share/perl/5.10.1/SOAP/WSDL/Generator/Visitor/Typemap.pm line 85.
+Deep recursion on subroutine "SOAP::WSDL::Generator::Visitor::Typemap::visit_XSD_ComplexType" at /usr/local/share/perl/5.10.1/SOAP/WSDL/Base.pm line 63.
+
+
+***run***
+
+/usr/local/bin/wsdl2perl.pl -use_typemap -p Shipment::Purolator::WSDL:: -b /path/to/Shipment/basedir file:/path/to/....wsdl
+
+
+***Add the following to Typemaps/...pm***
+
+    ## Add missing
+    'ResponseContext' => 'Shipment::Purolator::WSDL::Elements::ResponseContext',
+    'ResponseContext/ResponseReference' => 'SOAP::WSDL::XSD::Typelib::Builtin::string',
+
+***for Typemaps/ServiceAvailabilityService.pm, add the following***
+
+    'GetServicesOptionsResponse/Services/Service/Options/Option/ChildServiceOptions' => 'Shipment::Purolator::WSDL::Types::ArrayOfOption',
+    'GetServicesOptionsResponse/Services/Service/Options/Option/ChildServiceOptions/Option' => 'Shipment::Purolator::WSDL::Types::Option',
+    'GetServicesOptionsResponse/Services/Service/Options/Option/ChildServiceOptions/Option/AvailableForPieces' => 'SOAP::WSDL::XSD::Typelib::Builtin::boolean',
+    'GetServicesOptionsResponse/Services/Service/Options/Option/ChildServiceOptions/Option/PossibleValues' => 'Shipment::Purolator::WSDL::Types::ArrayOfOptionValue',
+    'GetServicesOptionsResponse/Services/Service/Options/Option/ChildServiceOptions/Option/ID' => 'SOAP::WSDL::XSD::Typelib::Builtin::string',
+    'GetServicesOptionsResponse/Services/Service/Options/Option/ChildServiceOptions/Option/Description' => 'SOAP::WSDL::XSD::Typelib::Builtin::string',
+    'GetServicesOptionsResponse/Services/Service/Options/Option/ChildServiceOptions/Option/ValueType' => 'Shipment::Purolator::WSDL::Types::ValueType',
+    'GetServicesOptionsResponse/Services/Service/Options/Option/ChildServiceOptions/Option/PossibleValues/OptionValue/Value' => 'SOAP::WSDL::XSD::Typelib::Builtin::string',
+    'GetServicesOptionsResponse/Services/Service/Options/Option/ChildServiceOptions/Option/PossibleValues/OptionValue/Description' => 'SOAP::WSDL::XSD::Typelib::Builtin::string',
+    'GetServicesOptionsResponse/Services/Service/Options/Option/ChildServiceOptions/Option/PossibleValues/OptionValue' => 'Shipment::Purolator::WSDL::Types::OptionValue',
+    'GetServicesOptionsResponse/Services/Service/Options/Option/ChildServiceOptions/Option/ChildServiceOptions' => 'Shipment::Purolator::WSDL::Types::ArrayOfOption',
+    'GetServicesOptionsResponse/Services/Service/Options/Option/ChildServiceOptions/Option/ChildServiceOptions/Option' => 'Shipment::Purolator::WSDL::Types::Option',
+    'GetServicesOptionsResponse/Services/Service/Options/Option/ChildServiceOptions/Option/ChildServiceOptions/Option/AvailableForPieces' => 'SOAP::WSDL::XSD::Typelib::Builtin::boolean',
+    'GetServicesOptionsResponse/Services/Service/Options/Option/ChildServiceOptions/Option/ChildServiceOptions/Option/PossibleValues' => 'Shipment::Purolator::WSDL::Types::ArrayOfOptionValue',
+    'GetServicesOptionsResponse/Services/Service/Options/Option/ChildServiceOptions/Option/ChildServiceOptions/Option/ID' => 'SOAP::WSDL::XSD::Typelib::Builtin::string',
+    'GetServicesOptionsResponse/Services/Service/Options/Option/ChildServiceOptions/Option/ChildServiceOptions/Option/Description' => 'SOAP::WSDL::XSD::Typelib::Builtin::string',
+    'GetServicesOptionsResponse/Services/Service/Options/Option/ChildServiceOptions/Option/ChildServiceOptions/Option/ValueType' => 'Shipment::Purolator::WSDL::Types::ValueType',
+    'GetServicesOptionsResponse/Services/Service/Options/Option/ChildServiceOptions/Option/ChildServiceOptions/Option/PossibleValues/OptionValue/Value' => 'SOAP::WSDL::XSD::Typelib::Builtin::string',
+    'GetServicesOptionsResponse/Services/Service/Options/Option/ChildServiceOptions/Option/ChildServiceOptions/Option/PossibleValues/OptionValue/Description' => 'SOAP::WSDL::XSD::Typelib::Builtin::string',
+    'GetServicesOptionsResponse/Services/Service/Options/Option/ChildServiceOptions/Option/ChildServiceOptions/Option/PossibleValues/OptionValue' => 'Shipment::Purolator::WSDL::Types::OptionValue',
+    'GetServicesOptionsResponse/Services/Service/Options/Option/ChildServiceOptions/Option/ChildServiceOptions/Option/ChildServiceOptions' => 'Shipment::Purolator::WSDL::Types::ArrayOfOption',
+    'GetServicesOptionsResponse/Services/Service/Options/Option/ChildServiceOptions/Option/ChildServiceOptions/Option/ChildServiceOptions/Option' => 'Shipment::Purolator::WSDL::Types::Option',
+    'GetServicesOptionsResponse/Services/Service/Options/Option/ChildServiceOptions/Option/ChildServiceOptions/Option/ChildServiceOptions/Option/AvailableForPieces' => 'SOAP::WSDL::XSD::Typelib::Builtin::boolean',
+    'GetServicesOptionsResponse/Services/Service/Options/Option/ChildServiceOptions/Option/ChildServiceOptions/Option/ChildServiceOptions/Option/PossibleValues' => 'Shipment::Purolator::WSDL::Types::ArrayOfOptionValue',
+    'GetServicesOptionsResponse/Services/Service/Options/Option/ChildServiceOptions/Option/ChildServiceOptions/Option/ChildServiceOptions/Option/ID' => 'SOAP::WSDL::XSD::Typelib::Builtin::string',
+    'GetServicesOptionsResponse/Services/Service/Options/Option/ChildServiceOptions/Option/ChildServiceOptions/Option/ChildServiceOptions/Option/Description' => 'SOAP::WSDL::XSD::Typelib::Builtin::string',
+    'GetServicesOptionsResponse/Services/Service/Options/Option/ChildServiceOptions/Option/ChildServiceOptions/Option/ChildServiceOptions/Option/ValueType' => 'Shipment::Purolator::WSDL::Types::ValueType',
+    'GetServicesOptionsResponse/Services/Service/Options/Option/ChildServiceOptions/Option/ChildServiceOptions/Option/ChildServiceOptions/Option/PossibleValues/OptionValue/Value' => 'SOAP::WSDL::XSD::Typelib::Builtin::string',
+    'GetServicesOptionsResponse/Services/Service/Options/Option/ChildServiceOptions/Option/ChildServiceOptions/Option/ChildServiceOptions/Option/PossibleValues/OptionValue/Description' => 'SOAP::WSDL::XSD::Typelib::Builtin::string',
+    'GetServicesOptionsResponse/Services/Service/Options/Option/ChildServiceOptions/Option/ChildServiceOptions/Option/ChildServiceOptions/Option/PossibleValues/OptionValue' => 'Shipment::Purolator::WSDL::Types::OptionValue',
+
+***add the following to Interfaces/.../...Endpoint.pm "sub START"***
+
+    ## provide credentials
+    eval {
+      use SOAP::Lite;
+    };
+    if ($@) {
+      warn "SOAP::Lite not installed, using builtin SOAP::WSDL Transport";
+      *SOAP::WSDL::Transport::HTTP::get_basic_credentials = sub { return ('f94800ed937140aba80b2175bb272ba1', 'QkO?Z{Y9'); };
+    } 
+    else {
+      *SOAP::Transport::HTTP::Client::get_basic_credentials = sub { return ('f94800ed937140aba80b2175bb272ba1', 'QkO?Z{Y9'); };
+    }
+
+

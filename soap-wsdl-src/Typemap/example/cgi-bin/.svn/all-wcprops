@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svnroot/soap-wsdl/!svn/ver/833/SOAP-WSDL/branches/Typemap/example/cgi-bin
+END
+person.pl
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/example/cgi-bin/person.pl
+END
+helloworld.pl
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svnroot/soap-wsdl/!svn/ver/655/SOAP-WSDL/branches/Typemap/example/cgi-bin/helloworld.pl
+END
+soap_lite_test.pl
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svnroot/soap-wsdl/!svn/ver/833/SOAP-WSDL/branches/Typemap/example/cgi-bin/soap_lite_test.pl
+END

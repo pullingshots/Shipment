@@ -1,0 +1,39 @@
+do{ my $x = {
+       'build_requires' => {
+                             'Getopt::Long' => 0,
+                             'XML::Parser::Expat' => 0,
+                             'File::Spec' => 0,
+                             'Class::Std::Fast' => '0.0.5',
+                             'Storable' => 0,
+                             'Template' => '2.18',
+                             'Date::Format' => 0,
+                             'Date::Parse' => 0,
+                             'Test::More' => 0,
+                             'List::Util' => 0,
+                             'LWP::UserAgent' => 0,
+                             'File::Path' => 0,
+                             'Module::Build' => 0,
+                             'File::Basename' => 0,
+                             'Cwd' => 0
+                           },
+       'conflicts' => {},
+       'requires' => {
+                       'Scalar::Util' => 0,
+                       'Getopt::Long' => 0,
+                       'XML::Parser::Expat' => 0,
+                       'URI' => 0,
+                       'Data::Dumper' => 0,
+                       'Class::Std::Fast' => '0.0.5',
+                       'Template' => '2.18',
+                       'Date::Format' => 0,
+                       'Date::Parse' => 0,
+                       'List::Util' => 0,
+                       'perl' => '5.8.0',
+                       'LWP::UserAgent' => 0,
+                       'File::Path' => 0,
+                       'File::Basename' => 0,
+                       'Term::ReadKey' => 0
+                     },
+       'recommends' => {}
+     };
+$x; }
