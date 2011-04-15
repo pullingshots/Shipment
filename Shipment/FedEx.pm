@@ -130,10 +130,23 @@ Shipment::Base provides abstract types which need to be mapped to FedEx codes (i
 
 =cut
 
+=head2 Collect billing
+
+FedEx offers collect billing (without the need for a billing account #)
+
+=cut
+
+enum 'BillingOptions' => qw( sender recipient third_party collect );
+
+has '+bill_type' => (
+  isa => 'BillingOptions',
+);
+
 my %bill_type_map = (
   'sender'      => 'SENDER',
   'recipient'   => 'RECIPIENT',
   'third_party' => 'THIRD_PARTY',
+  'collect'     => 'COLLECT',
 );
 
 my %signature_type_map = (
@@ -167,6 +180,12 @@ my %printer_type_map = (
   'pdf'        => 'PDF',
   'thermal'        => 'EPL2',
   'image'      => 'PNG',
+);
+
+my %label_content_type_map = (
+  'pdf'        => 'application/pdf',
+  'thermal'        => 'text/fedex-epl',
+  'image'      => 'image/png',
 );
 
 =head2 custom package types
@@ -226,6 +245,14 @@ sub _build_services {
 
   my %services;
 
+  my @to_streetlines;
+  push @to_streetlines, $self->to_address()->address1;
+  push @to_streetlines, $self->to_address()->address2 if $self->to_address()->address2;
+
+  my @from_streetlines;
+  push @from_streetlines, $self->from_address()->address1;
+  push @from_streetlines, $self->from_address()->address2 if $self->from_address()->address2;
+
   try {
     $response = $interface->getRates( 
       { 
@@ -251,7 +278,7 @@ sub _build_services {
           PackagingType => 'YOUR_PACKAGING',
           Shipper =>  {
             Address =>  { 
-              StreetLines         =>  $self->from_address()->address1,
+              StreetLines         =>  \@from_streetlines,
               City                =>  $self->from_address()->city,
               StateOrProvinceCode =>  $self->from_address()->province_code,
               PostalCode          =>  $self->from_address()->postal_code,
@@ -260,7 +287,7 @@ sub _build_services {
           },
           Recipient =>  {
             Address =>  { 
-              StreetLines         =>  $self->to_address()->address1,
+              StreetLines         =>  \@to_streetlines,
               City                =>  $self->to_address()->city,
               StateOrProvinceCode =>  $self->to_address()->province_code,
               PostalCode          =>  $self->to_address()->postal_code,
@@ -296,8 +323,13 @@ sub _build_services {
 
   } catch {
       warn $_;
-      warn $response->get_Notifications()->get_Message;
-      $self->error( $response->get_Notifications()->get_Message->get_value );
+      try {
+        warn $response->get_Notifications()->get_Message;
+        $self->error( $response->get_Notifications()->get_Message->get_value );
+      } catch {
+        warn $response->get_faultstring;
+        $self->error( $response->get_faultstring->get_value ); 
+      };
   };
 
   \%services;
@@ -368,6 +400,14 @@ sub rate {
     $sequence++;
   }
 
+  my @to_streetlines;
+  push @to_streetlines, $self->to_address()->address1;
+  push @to_streetlines, $self->to_address()->address2 if $self->to_address()->address2;
+
+  my @from_streetlines;
+  push @from_streetlines, $self->from_address()->address1;
+  push @from_streetlines, $self->from_address()->address2 if $self->from_address()->address2;
+
   my %services;
 
   try {
@@ -404,7 +444,7 @@ sub rate {
           },
           Shipper =>  {
             Address =>  { 
-              StreetLines         =>  $self->from_address()->address1,
+              StreetLines         =>  \@from_streetlines,
               City                =>  $self->from_address()->city,
               StateOrProvinceCode =>  $self->from_address()->province_code,
               PostalCode          =>  $self->from_address()->postal_code,
@@ -413,7 +453,7 @@ sub rate {
           },
           Recipient =>  {
             Address =>  { 
-              StreetLines         =>  $self->to_address()->address1,
+              StreetLines         =>  \@to_streetlines,
               City                =>  $self->to_address()->city,
               StateOrProvinceCode =>  $self->to_address()->province_code,
               PostalCode          =>  $self->to_address()->postal_code,
@@ -442,8 +482,13 @@ sub rate {
     );
   } catch {
       warn $_;
-      warn $response->get_Notifications()->get_Message;
-      $self->error( $response->get_Notifications()->get_Message->get_value );
+      try {
+        warn $response->get_Notifications()->get_Message;
+        $self->error( $response->get_Notifications()->get_Message->get_value );
+      } catch {
+        warn $response->get_faultstring;
+        $self->error( $response->get_faultstring->get_value ); 
+      };
   };
 }
 
@@ -488,9 +533,9 @@ sub ship {
         LanguageCode => 'EN',
       },
     };
+    $shipment_options->{SpecialServiceTypes} = 'EMAIL_NOTIFICATION';
+    $shipment_options->{EMailNotificationDetail}->{Recipients} = \@email_notifications;
   }
-  $shipment_options->{SpecialServiceTypes} = 'EMAIL_NOTIFICATION';
-  $shipment_options->{EMailNotificationDetail}->{Recipients} = \@email_notifications;
 
   my @references;
   push @references, {
@@ -505,6 +550,14 @@ sub ship {
     CustomerReferenceType => 'P_O_NUMBER',
     Value => $self->get_reference(2),
   } if $self->get_reference(2);
+
+  my @to_streetlines;
+  push @to_streetlines, $self->to_address()->address1;
+  push @to_streetlines, $self->to_address()->address2 if $self->to_address()->address2;
+
+  my @from_streetlines;
+  push @from_streetlines, $self->from_address()->address1;
+  push @from_streetlines, $self->from_address()->address2 if $self->from_address()->address2;
 
     my $response;
     my $sequence = 1;
@@ -565,7 +618,7 @@ sub ship {
                   PhoneNumber         =>  $self->from_address()->phone,
                 },
                 Address =>  { 
-                  StreetLines         =>  $self->from_address()->address1,
+                  StreetLines         =>  \@from_streetlines,
                   City                =>  $self->from_address()->city,
                   StateOrProvinceCode =>  $self->from_address()->province_code,
                   PostalCode          =>  $self->from_address()->postal_code,
@@ -579,7 +632,7 @@ sub ship {
                   PhoneNumber         =>  $self->to_address()->phone,
                 },
                 Address =>  { 
-                  StreetLines         =>  $self->to_address()->address1,
+                  StreetLines         =>  \@to_streetlines,
                   City                =>  $self->to_address()->city,
                   StateOrProvinceCode =>  $self->to_address()->province_code,
                   PostalCode          =>  $self->to_address()->postal_code,
@@ -590,6 +643,7 @@ sub ship {
                 PaymentType => $bill_type_map{$self->bill_type} || $self->bill_type,
                 Payor =>  { 
                   AccountNumber =>  $self->bill_account,
+                  CountryCode   =>  ($self->bill_address) ? $self->bill_address->country_code : $self->from_address->country_code,
                 },
               },
               SpecialServicesRequested => $shipment_options,
@@ -624,7 +678,7 @@ sub ship {
             },
           },
         );
-        warn $response;
+        #warn $response;
         my $package_details = $response->get_CompletedShipmentDetail->get_CompletedPackageDetails;
         
         if ($self->count_packages > 1) {
@@ -637,6 +691,7 @@ sub ship {
         } else {
           $self->tracking_id( $package_details->get_TrackingIds->get_TrackingNumber->get_value );
         }
+        $_->tracking_id( $package_details->get_TrackingIds->get_TrackingNumber->get_value );
 
         if ($package_details->get_PackageRating) {
           $_->cost(
@@ -657,7 +712,7 @@ sub ship {
           Shipment::Label->new(
             {
               tracking_id => $package_details->get_TrackingIds->get_TrackingNumber->get_value,
-              content_type => lc $self->printer_type,
+              content_type => $label_content_type_map{$self->printer_type},
               data => decode_base64($package_details->get_Label->get_Parts->get_Image->get_value),
               file_name => $package_details->get_TrackingIds->get_TrackingNumber->get_value . '.' . lc $printer_type_map{$self->printer_type},
             },
@@ -666,23 +721,40 @@ sub ship {
         
       } catch {
           warn $_;
-          warn $response->get_Notifications()->get_Message;
-          $self->error( $response->get_Notifications()->get_Message->get_value );
+          try {
+            warn $response->get_Notifications()->get_Message;
+            $self->error( $response->get_Notifications()->get_Message->get_value );
+          } catch {
+            warn $response->get_faultstring;
+            $self->error( $response->get_faultstring->get_value ); 
+          };
       };
+    last if $self->error;
     $sequence++;
   }
 
-  my $total_charge = $response->get_CompletedShipmentDetail->get_ShipmentRating->get_ShipmentRateDetails->[0]->get_TotalNetCharge;
-  $self->service( 
-    new Shipment::Service( 
-      id        => $service_id,
-      name      => $self->services->{$service_id}->name,
-      cost      => Data::Currency->new(
-          $total_charge->get_Amount->get_value, 
-          $total_charge->get_Currency->get_value
-        ),
-    )
-  );
+  if (!$self->error) {
+    my $total_charge_amount = 0;
+    my $total_charge_currency = $self->currency;
+    try {
+      my $total_charge = $response->get_CompletedShipmentDetail->get_ShipmentRating->get_ShipmentRateDetails->[0]->get_TotalNetCharge;
+      $total_charge_amount = $total_charge->get_Amount->get_value;
+      $total_charge_currency = $total_charge->get_Currency->get_value;
+    } catch {
+      # for other billing (recipient/third_party/collect), no rate details are returned, so we ignore the caught error
+      #warn $_;
+    };
+    $self->service( 
+      new Shipment::Service( 
+        id        => $service_id,
+        name      => $self->services->{$service_id}->name,
+        cost      => Data::Currency->new(
+            $total_charge_amount,
+            $total_charge_currency,
+          ),
+      )
+    );
+  }
 
 }
 
@@ -749,8 +821,13 @@ sub cancel {
     $success = $response->get_HighestSeverity->get_value; 
   } catch {
       warn $_;
-      warn $response->get_Notifications()->get_Message;
-      $self->error( $response->get_Notifications()->get_Message->get_value );
+      try {
+        warn $response->get_Notifications()->get_Message;
+        $self->error( $response->get_Notifications()->get_Message->get_value );
+      } catch {
+        warn $response->get_faultstring;
+        $self->error( $response->get_faultstring->get_value ); 
+      };
   };
 
   return $success;
@@ -809,16 +886,13 @@ sub end_of_day {
     );
   } catch {
     warn $_;
-    warn $response->get_Notifications()->get_Message;
-    $self->error( $response->get_Notifications()->get_Message->get_value );
-
-    $self->manifest(
-      Shipment::Label->new(
-        content_type => 'text/plain',
-        data => $response->get_Notifications()->get_Message->get_value  . '\n',
-        file_name => 'manifest_' . DateTime->now->ymd('_') . '.txt',
-      )
-    );
+    try {
+      warn $response->get_Notifications()->get_Message;
+      $self->error( $response->get_Notifications()->get_Message->get_value );
+    } catch {
+      warn $response->get_faultstring;
+      $self->error( $response->get_faultstring->get_value ); 
+    };
   };
 }
 

@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 42;
+use Test::More tests => 44;
 
 use Shipment::FedEx;
 use Shipment::Address;
@@ -28,6 +28,7 @@ my $from = Shipment::Address->new(
 my $to = Shipment::Address->new(
   name => 'Foo Bar',
   address1 => '2436 NW Sacagawea Ln',
+  address2 => 'Apt #2',
   city => 'Bend',
   state => 'OR',
   country => 'US',
@@ -38,7 +39,7 @@ my $to = Shipment::Address->new(
 
 my @packages = (
   Shipment::Package->new(
-    weight => 10,
+    weight => 10.1,
     length => 18,
     width => 18,
     height => 24,
@@ -55,6 +56,7 @@ my $shipment = Shipment::FedEx->new(
   packages => \@packages,
   printer_type => 'thermal',
   references => [ qw( foo bar baz ) ],
+  bill_type => 'collect',
 );
 
 $shipment->proxy_domain( 'ws.fedex.com:443' ) if $live;
@@ -100,11 +102,27 @@ ok( defined $shipment->service, 'got a ground rate');
 my $rate = $shipment->service->cost->value if defined $shipment->service;
 is( $shipment->service->cost->code, 'USD', 'currency') if defined $shipment->service;
 
+$shipment = Shipment::FedEx->new(
+  key => $key,
+  password => $password,
+  account => $account,
+  meter => $meter,
+  from_address => $from,
+  to_address => $to,
+  packages => \@packages,
+  printer_type => 'thermal',
+  references => [ qw( foo bar baz ) ],
+  bill_type => 'collect',
+);
+
+$shipment->proxy_domain( 'ws.fedex.com:443' ) if $live;
+
 $shipment->ship( 'ground' );
 
-is( $shipment->service->cost->value, $rate, 'rate matches actual cost') if defined $shipment->service;
+ok( defined $shipment->service, 'got a shipment');
+is( $shipment->service->cost->value, '0', 'zero rating for collect') if defined $shipment->service;
 ok( defined $shipment->get_package(0)->label, 'got label' );
-is( $shipment->get_package(0)->label->content_type, 'thermal', 'label is thermal') if defined $shipment->get_package(0)->label;
+is( $shipment->get_package(0)->label->content_type, 'text/fedex-epl', 'label is thermal') if defined $shipment->get_package(0)->label;
 
 ## TODO test saving file to disk
 $shipment->get_package(0)->label->save if $save;
@@ -153,13 +171,28 @@ ok( defined $shipment->service, 'got an express rate');
 $rate = $shipment->service->cost->value if defined $shipment->service;
 is( $shipment->service->cost->code, 'USD', 'currency') if defined $shipment->service;
 
+$shipment = Shipment::FedEx->new(
+  key => $key,
+  password => $password,
+  account => $account,
+  meter => $meter,
+  from_address => $from,
+  from_address => $from,
+  to_address => $to,
+  packages => \@packages,
+  printer_type => 'thermal',
+);
+
+$shipment->proxy_domain( 'ws.fedex.com:443' ) if $live;
+
 $shipment->ship( 'express' );
 
+ok( defined $shipment->service, 'got a shipment');
 is( $shipment->service->cost->value, $rate, 'rate matches actual cost') if defined $shipment->service;
 ok( defined $shipment->get_package(0)->label, 'got first label' );
 ok( defined $shipment->get_package(1)->label, 'got second label' );
-is( $shipment->get_package(0)->label->content_type, 'thermal', 'first label is thermal') if defined $shipment->get_package(0)->label;
-is( $shipment->get_package(1)->label->content_type, 'thermal', 'second label is thermal') if defined $shipment->get_package(1)->label;
+is( $shipment->get_package(0)->label->content_type, 'text/fedex-epl', 'first label is thermal') if defined $shipment->get_package(0)->label;
+is( $shipment->get_package(1)->label->content_type, 'text/fedex-epl', 'second label is thermal') if defined $shipment->get_package(1)->label;
 
 is( $shipment->cancel, 'SUCCESS', 'successfully cancelled shipment');
 

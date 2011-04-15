@@ -219,8 +219,8 @@ sub _build_services {
     } catch {
       warn $_;
       try {
-        warn $response->get_ResponseInformation()->get_Errors()->[0]->get_Error()->get_Description;
-        $self->error( $response->get_ResponseInformation()->get_Errors()->[0]->get_Error()->get_Description->get_value );
+        warn $response->get_ResponseInformation()->get_Errors()->get_Error()->[0]->get_Description;
+        $self->error( $response->get_ResponseInformation()->get_Errors()->get_Error()->[0]->get_Description->get_value );
       } catch {
         warn $_;
         warn $response->get_faultstring;
@@ -281,7 +281,7 @@ sub rate {
       push @pieces,
         {
             Weight => {
-              Value => $_->weight,
+              Value => sprintf("%.0f", $_->weight) || 1,
               WeightUnit => $self->weight_unit,
             },
             Length => {
@@ -314,9 +314,10 @@ sub rate {
           SenderInformation => {
             Address => {
               Name            => $self->from_address->name,
+              Company         => $self->from_address->company,
               StreetNumber    => $self->from_address->address_components->{number},
-              StreetName      => $self->from_address->address_components->{street},
-              StreetDirection => $self->from_address->address_components->{direction},
+              StreetName      => $self->from_address->address_components->{street} . ' ' . $self->from_address->address_components->{direction},
+              StreetAddress2  => $self->from_address->address2,
               City            => $self->from_address->city,
               Province        => $self->from_address->province_code,
               Country         => $self->from_address->country_code,
@@ -331,9 +332,10 @@ sub rate {
           ReceiverInformation => {
             Address => {
               Name            => $self->to_address->name,
+              Company         => $self->to_address->company,
               StreetNumber    => $self->to_address->address_components->{number},
-              StreetName      => $self->to_address->address_components->{street},
-              StreetDirection => $self->to_address->address_components->{direction},
+              StreetName      => $self->to_address->address_components->{street} . ' ' . $self->to_address->address_components->{direction},
+              StreetAddress2  => $self->to_address->address2,
               City            => $self->to_address->city,
               Province        => $self->to_address->province_code,
               Country         => $self->to_address->country_code,
@@ -348,7 +350,7 @@ sub rate {
           PackageInformation  => {
             ServiceID => $service_id,
             TotalWeight => {
-              Value => $total_weight,
+              Value => sprintf("%.0f", $total_weight) || 1,
               WeightUnit => $self->weight_unit,
             },
             TotalPieces => scalar @{ $self->packages },
@@ -362,21 +364,18 @@ sub rate {
             },
           },
           PaymentInformation => {
-            PaymentType => $bill_type_map{$self->bill_type} || $self->bill_type,
+            PaymentType => 'Sender',
             RegisteredAccountNumber => $self->account,
-            BillingAccountNumber => $self->bill_account,
+            BillingAccountNumber => $self->account,
           },
           PickupInformation => {
             PickupType => $pickup_type_map{$self->pickup_type} || $self->pickup_type,
           },
           TrackingReferenceInformation =>  {
             Reference1 => $self->get_reference(0),
-            Reference1 => $self->get_reference(1),
-            Reference1 => $self->get_reference(2),
-            Reference1 => $self->get_reference(3),
-          },
-          NotificationInformation => {
-            AdvancedShippingNotificationEmailAddress1 => $self->to_address->email,
+            Reference2 => $self->get_reference(1),
+            Reference3 => $self->get_reference(2),
+            Reference4 => $self->get_reference(3),
           },
         },
         ShowAlternativeServicesIndicator => "false",
@@ -406,8 +405,8 @@ sub rate {
     } catch {
       warn $_;
       try {
-        warn $response->get_ResponseInformation()->get_Errors()->[0]->get_Error()->get_Description;
-        $self->error( $response->get_ResponseInformation()->get_Errors()->[0]->get_Error()->get_Description->get_value );
+        warn $response->get_ResponseInformation()->get_Errors()->get_Error()->[0]->get_Description;
+        $self->error( $response->get_ResponseInformation()->get_Errors()->get_Error()->[0]->get_Description->get_value );
       } catch {
         warn $_;
         warn $response->get_faultstring;
@@ -460,12 +459,17 @@ sub ship {
                 };
     }
 
+    my $notification_information;
+    if ($self->to_address->email) {
+      $notification_information->{AdvancedShippingNotificationEmailAddress1} = $self->to_address->email;
+    }
+
     my @pieces;
     foreach (@{ $self->packages }) {
       push @pieces,
         {
             Weight => {
-              Value => $_->weight,
+              Value => sprintf("%.0f", $_->weight) || 1,
               WeightUnit => $self->weight_unit,
             },
             Length => {
@@ -498,9 +502,10 @@ sub ship {
           SenderInformation => {
             Address => {
               Name            => $self->from_address->name,
+              Company         => $self->from_address->company,
               StreetNumber    => $self->from_address->address_components->{number},
-              StreetName      => $self->from_address->address_components->{street},
-              StreetDirection => $self->from_address->address_components->{direction},
+              StreetName      => $self->from_address->address_components->{street} . ' ' . $self->from_address->address_components->{direction},
+              StreetAddress2  => $self->from_address->address2,
               City            => $self->from_address->city,
               Province        => $self->from_address->province_code,
               Country         => $self->from_address->country_code,
@@ -515,9 +520,10 @@ sub ship {
           ReceiverInformation => {
             Address => {
               Name            => $self->to_address->name,
+              Company         => $self->to_address->company,
               StreetNumber    => $self->to_address->address_components->{number},
-              StreetName      => $self->to_address->address_components->{street},
-              StreetDirection => $self->to_address->address_components->{direction},
+              StreetName      => $self->to_address->address_components->{street} . ' ' . $self->to_address->address_components->{direction},
+              StreetAddress2  => $self->to_address->address2,
               City            => $self->to_address->city,
               Province        => $self->to_address->province_code,
               Country         => $self->to_address->country_code,
@@ -532,7 +538,7 @@ sub ship {
           PackageInformation  => {
             ServiceID => $service_id,
             TotalWeight => {
-              Value => $total_weight,
+              Value => sprintf("%.0f", $total_weight) || 1,
               WeightUnit => $self->weight_unit,
             },
             TotalPieces => scalar @{ $self->packages },
@@ -552,6 +558,16 @@ sub ship {
           },
           PickupInformation => {
             PickupType => $pickup_type_map{$self->pickup_type} || $self->pickup_type,
+          },
+          TrackingReferenceInformation =>  {
+            Reference1 => $self->get_reference(0),
+            Reference2 => $self->get_reference(1),
+            Reference3 => $self->get_reference(2),
+            Reference4 => $self->get_reference(3),
+          },
+          NotificationInformation => $notification_information,
+          OtherInformation => {
+            SpecialInstructions => $self->special_instructions,
           },
         },
         PrinterType => $printer_type_map{$self->printer_type} || $self->printer_type,
@@ -583,8 +599,8 @@ sub ship {
     } catch {
       try {
         warn $_;
-        warn $response->get_ResponseInformation()->get_Errors()->[0]->get_Error()->get_Description;
-        $self->error( $response->get_ResponseInformation()->get_Errors()->[0]->get_Error()->get_Description->get_value );
+        warn $response->get_ResponseInformation()->get_Errors()->get_Error()->[0]->get_Description;
+        $self->error( $response->get_ResponseInformation()->get_Errors()->get_Error()->[0]->get_Description->get_value );
       } catch {
         warn $_;
         warn $response->get_faultstring;
@@ -667,8 +683,8 @@ sub fetch_documents {
     } catch {
       warn $_;
       try {
-        warn $response->get_ResponseInformation()->get_Errors()->[0]->get_Error()->get_Description;
-        $self->error( $response->get_ResponseInformation()->get_Errors()->[0]->get_Error()->get_Description->get_value );
+        warn $response->get_ResponseInformation()->get_Errors()->get_Error()->[0]->get_Description;
+        $self->error( $response->get_ResponseInformation()->get_Errors()->get_Error()->[0]->get_Description->get_value );
       } catch {
         warn $_;
         warn $response->get_faultstring;
@@ -725,8 +741,8 @@ sub cancel {
     } catch {
       try {
         warn $_;
-        warn $response->get_ResponseInformation()->get_Errors()->[0]->get_Error()->get_Description;
-        $self->error( $response->get_ResponseInformation()->get_Errors()->[0]->get_Error()->get_Description->get_value );
+        warn $response->get_ResponseInformation()->get_Errors()->get_Error()->[0]->get_Description;
+        $self->error( $response->get_ResponseInformation()->get_Errors()->get_Error()->[0]->get_Description->get_value );
       } catch {
         warn $_;
         warn $response->get_faultstring;
@@ -792,8 +808,8 @@ sub end_of_day {
     } catch {
       warn $_;
       try {
-        warn $response->get_ResponseInformation()->get_Errors()->[0]->get_Error()->get_Description;
-        $self->error( $response->get_ResponseInformation()->get_Errors()->[0]->get_Error()->get_Description->get_value );
+        warn $response->get_ResponseInformation()->get_Errors()->get_Error()->[0]->get_Description;
+        $self->error( $response->get_ResponseInformation()->get_Errors()->get_Error()->[0]->get_Description->get_value );
       } catch {
         warn $_;
         warn $response->get_faultstring;

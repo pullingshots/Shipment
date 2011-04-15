@@ -38,7 +38,7 @@ my $to = Shipment::Address->new(
 
 my @packages = (
   Shipment::Package->new(
-    weight => 10,
+    weight => 10.1,
     length => 18,
     width => 18,
     height => 24,
@@ -104,7 +104,7 @@ $shipment->ship( 'ground' );
 
 is( $shipment->service->cost->value, $rate, 'rate matches actual cost') if defined $shipment->service;
 ok( defined $shipment->get_package(0)->label, 'got label' );
-is( $shipment->get_package(0)->label->content_type, 'epl', 'label is epl') if defined $shipment->get_package(0)->label;
+is( $shipment->get_package(0)->label->content_type, 'text/ups-epl', 'label is epl') if defined $shipment->get_package(0)->label;
 
 ## TODO test saving file to disk
 $shipment->get_package(0)->label->save if $save;
@@ -164,8 +164,8 @@ $shipment->ship( 'express' );
 is( $shipment->service->cost->value, $rate, 'rate matches actual cost') if defined $shipment->service;
 ok( defined $shipment->get_package(0)->label, 'got first label' );
 ok( defined $shipment->get_package(1)->label, 'got second label' );
-is( $shipment->get_package(0)->label->content_type, 'epl', 'first label is epl') if defined $shipment->get_package(0)->label;
-is( $shipment->get_package(1)->label->content_type, 'epl', 'second label is epl') if defined $shipment->get_package(1)->label;
+is( $shipment->get_package(0)->label->content_type, 'text/ups-epl', 'first label is epl') if defined $shipment->get_package(0)->label;
+is( $shipment->get_package(1)->label->content_type, 'text/ups-epl', 'second label is epl') if defined $shipment->get_package(1)->label;
 
 ## TODO test saving file to disk
 $shipment->get_package(0)->label->save if $save;

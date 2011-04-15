@@ -138,10 +138,13 @@ has 'province_code' => (
   default => sub {
     my $self = shift;
 
+    return '' unless ($self->province && $self->country);
+
     use Locale::SubCountry;
     my $country = new Locale::SubCountry($self->country_code);
 
-    return ($country->code($self->province) eq 'unknown') ? $self->province : $country->code($self->province);
+    return ($country->code($self->province) eq 'unknown') ? $self->province : $country->code($self->province) if $country;
+    return $self->province;
   },
 );
 
@@ -186,10 +189,14 @@ has 'country_code' => (
   lazy => 1,
   default => sub {
     my $self = shift;
+
+    return '' unless $self->country;
+
     use Locale::SubCountry;
     my $country = new Locale::SubCountry($self->country);
 
-    return $country->country_code;
+    return $country->country_code if $country;
+    return $self->country;
   },
 );
 
@@ -212,10 +219,8 @@ sub _build_address_components {
     my %components;
     $components{street} = uc($self->address1);
 
-    $components{street} =~ s/\b(N|E|S|W|NE|NW|SE|SW|SO|NO|O)\b//;
-    $components{direction} = $1 if $1;
-    $components{street} =~ s/^(\d+)//;
-    $components{number} = $1 if $1;
+    $components{direction} = ($components{street} =~ s/\b(N|E|S|W|NE|NW|SE|SW|SO|NO|O)\b//) ? $1 : '';
+    $components{number} = ($components{street} =~ s/^(\d+)//) ? $1 : '';
     $components{street} =~ s/(^\s+|\s+$)//g;
 
     \%components;
@@ -256,11 +261,17 @@ sub _build_phone_components {
 
   my %components;
 
-  my @parts = ($self->phone =~ /^([0-9]( |-)?)?(\(?[0-9]{3}\)?|[0-9]{3})( |-)?([0-9]{3}( |-)?[0-9]{4}|[a-zA-Z0-9]{7})$/);
+  my $phone = $self->phone;
+  $phone =~ s/[\sa-zA-Z]+.+$//;
+  $phone =~ s/\s//g;
+
+  my @parts = ($phone =~ /^([0-9]( |-)?)?(\(?[0-9]{3}\)?|[0-9]{3})( |-)?([0-9]{3}( |-)?[0-9]{4}|[a-zA-Z0-9]{7})$/);
 
   $components{country} = $parts[0] || "1";
-  $components{area} = $parts[2];
-  $components{phone} = $parts[4] || $self->phone;
+  $components{area} = $parts[2] || "";
+  $components{area} =~ s/\D//g;
+  $components{phone} = $parts[4] || $phone || "";
+  $components{phone} =~ s/\D//g;
   
   \%components;
 }

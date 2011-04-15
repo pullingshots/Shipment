@@ -393,6 +393,19 @@ has 'references' => (
   },
 );
 
+=head2 special_instructions
+
+Special Delivery Instructions
+
+type: String
+
+=cut
+
+has 'special_instructions' => (
+  is => 'rw',
+  isa => 'Str',
+);
+
 =head1 Class Methods
 
 =head2 _build_services

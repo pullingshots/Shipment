@@ -86,6 +86,20 @@ has 'proxy_domain' => (
   default => 'wwwcie.ups.com',
 );
 
+=head2 address_validation
+
+Turn address validation on or off. When on, ship will fail if the address does not pass UPS address validation
+
+Default is on.
+
+=cut
+
+has 'address_validation' => (
+  is => 'rw',
+  isa => 'Bool',
+  default => 1,
+);
+
 =head2 label_height
 
 The label height. Can be either 6" or 8". The label width is fixed at 4".
@@ -203,6 +217,14 @@ my %printer_type_map = (
   'ZPL'     => 'ZPL',
   'SPL'     => 'SPL',
   'STARPL'  => 'STARPL',
+);
+
+my %label_content_type_map = (
+  'thermal' => 'text/ups-epl',
+  'image'   => 'image/gif',
+  'ZPL'     => 'text/ups-zpl',
+  'SPL'     => 'text/ups-spl',
+  'STARPL'  => 'text/ups-starpl',
 );
 
 =head2 custom printer types
@@ -567,7 +589,7 @@ sub ship {
     $response = $interface->ProcessShipment( 
       {
         Request => {
-          RequestOption => 'validate',
+          RequestOption => ($self->address_validation) ? 'validate' : 'nonvalidate',
         },
         Shipment => {
           Shipper => {
@@ -650,7 +672,7 @@ sub ship {
         Shipment::Label->new(
           {
             tracking_id => $_->get_TrackingNumber()->get_value,
-            content_type => lc $printer_type_map{$self->printer_type},
+            content_type => $label_content_type_map{$self->printer_type},
             data => $data,
             file_name => $_->get_TrackingNumber()->get_value . '.' . lc $printer_type_map{$self->printer_type},
           },
@@ -669,7 +691,7 @@ sub ship {
       $self->control_log_receipt(
         Shipment::Label->new(
           {
-            content_type => lc $printer_type_map{$self->printer_type},
+            content_type => $label_content_type_map{$self->printer_type},
             data => $data,
             file_name => 'control_log_receipt.' . lc $printer_type_map{$self->printer_type},
           }
@@ -775,7 +797,7 @@ sub return {
     $response = $interface->ProcessShipment( 
       {
         Request => {
-          RequestOption => 'validate',
+          RequestOption => ($self->address_validation) ? 'validate' : 'nonvalidate',
         },
         Shipment => {
           ReturnService => {
@@ -873,7 +895,7 @@ sub return {
         Shipment::Label->new(
           {
             tracking_id => $_->get_TrackingNumber()->get_value,
-            content_type => lc $printer_type_map{$self->printer_type},
+            content_type => $label_content_type_map{$self->printer_type},
             data => $data,
             file_name => $_->get_TrackingNumber()->get_value . '.' . lc $printer_type_map{$self->printer_type},
           },
@@ -892,7 +914,7 @@ sub return {
       $self->control_log_receipt(
         Shipment::Label->new(
           {
-            content_type => lc $printer_type_map{$self->printer_type},
+            content_type => $label_content_type_map{$self->printer_type},
             data => $data,
             file_name => 'control_log_receipt.' . lc $printer_type_map{$self->printer_type},
           }

@@ -56,6 +56,19 @@ has 'name' => (
   isa => 'Str',
 );
 
+=head2 notes
+
+Notes (i.e. to describe the package contents)
+
+type: String
+
+=cut
+
+has 'notes' => (
+  is => 'rw',
+  isa => 'Str',
+);
+
 =head2 weight
 
 The weight of the package. Units are determined by the Shipment::Base class
@@ -145,6 +158,7 @@ type: Data::Currency
 has 'cost' => (
   is => 'rw',
   isa => 'Data::Currency',
+  default => sub { Data::Currency->new(0) },
 );
 
 no Moose;

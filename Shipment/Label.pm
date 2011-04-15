@@ -83,6 +83,24 @@ has 'file_name' => (
 
 =head1 Class Methods
 
+=head2 data_base64
+
+returns BASE64 encoded file content
+
+type: String
+
+=cut
+
+sub data_base64 {
+  my ($self) = @_;
+
+  use MIME::Base64;
+
+  return encode_base64($self->data) if $self->data;
+
+  return;
+}
+
 =head2 save
 
   $label->save('/tmp/');

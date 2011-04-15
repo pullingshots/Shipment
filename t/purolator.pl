@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 46;
+use Test::More tests => 47;
 
 use Shipment::Purolator;
 use Shipment::Address;
@@ -16,7 +16,8 @@ if (!$key || !$password || !$account) {
 
 my $from = Shipment::Address->new( 
   name => 'Andrew Baerg',
-  address1 => '67 Coventry View NE, #14',
+  company => 'Foo Bar',
+  address1 => '67 Coventry View NE #14',
   city => 'Calgary',
   province => 'Alberta',
   country => 'Canada',
@@ -26,18 +27,20 @@ my $from = Shipment::Address->new(
 
 my $to = Shipment::Address->new(
   name => 'Foo Bar',
+  company => 'Company',
   address1 => '123 Any Street NW',
+  address2 => '#2',
   city => 'Burnaby',
   province => 'BC',
   country => 'CA',
   postal_code => 'V5C5A9',
-  phone => '4036698017',
+  phone => '(403)669-8017 ext. 123',
   email => 'baerg@yoursole.com',
 );
 
 my @packages = (
   Shipment::Package->new(
-    weight => 10,
+    weight => 10.1,
     length => 18,
     width => 18,
     height => 24,
@@ -65,7 +68,7 @@ if (defined $shipment->from_address) {
   is( $shipment->from_address->country_code, 'CA', 'country_code');
   is( $shipment->from_address->address_components->{direction}, 'NE', 'address_components->{direction}');
   is( $shipment->from_address->address_components->{number}, '67', 'address_components->{number}');
-  is( $shipment->from_address->address_components->{street}, 'COVENTRY VIEW , #14', 'address_components->{street}');
+  is( $shipment->from_address->address_components->{street}, 'COVENTRY VIEW  #14', 'address_components->{street}');
   is( $shipment->from_address->phone_components->{country}, '1', 'phone_components->{country}');
   is( $shipment->from_address->phone_components->{area}, '403', 'phone_components->{area}');
   is( $shipment->from_address->phone_components->{phone}, '2261851', 'phone_components->{phone}');
@@ -99,11 +102,26 @@ ok( defined $shipment->service, 'got a ground rate');
 my $rate = $shipment->service->cost->value if defined $shipment->service;
 is( $shipment->service->etd, 2, 'estimated transit days') if defined $shipment->service;
 
+$shipment = Shipment::Purolator->new(
+  key => $key,
+  password => $password,
+  account => $account,
+  from_address => $from,
+  to_address => $to,
+  packages => \@packages,
+  printer_type => 'thermal',
+  references => [ qw( foo bar ) ],
+  special_instructions => 'leave at back door',
+);
+
+$shipment->proxy_domain( 'webservices.purolator.com' ) if $live;
+
 $shipment->ship( 'ground' );
 
 is( $shipment->service->cost->value, $rate, 'rate matches actual cost') if defined $shipment->service;
 ok( defined $shipment->documents, 'got documents' );
 is( $shipment->documents->content_type, 'application/pdf', 'documents are pdf') if defined $shipment->documents;
+ok( defined $shipment->get_package(0)->cost->value, 'got cost' );
 ok( defined $shipment->get_package(0)->label, 'got label' );
 is( $shipment->get_package(0)->label->content_type, 'application/pdf', 'label is a pdf') if defined $shipment->get_package(0)->label;
 ## TODO test saving file to disk
@@ -121,7 +139,7 @@ is( $shipment->cancel, 'true', 'successfully cancelled shipment');
 
 @packages = (
   Shipment::Package->new(
-    weight => 10,
+    weight => 0.1,
     length => 18,
     width => 18,
     height => 24,
@@ -155,6 +173,19 @@ $shipment->rate( 'express' );
 ok( defined $shipment->service, 'got an express rate');
 $rate = $shipment->service->cost->value if defined $shipment->service;
 is( $shipment->service->etd, 1, 'estimated transit days') if defined $shipment->service;
+
+
+$shipment = Shipment::Purolator->new(
+  key => $key,
+  password => $password,
+  account => $account,
+  from_address => $from,
+  to_address => $to,
+  packages => \@packages,
+  printer_type => 'thermal',
+);
+
+$shipment->proxy_domain( 'webservices.purolator.com' ) if $live;
 
 $shipment->ship( 'express' );
 

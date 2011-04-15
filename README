@@ -1,10 +1,6 @@
-This is the start of a perl interface into various shipping web service API's
+install SOAP::WSDL from the soap-wsdl-src/Typemap directory
 
-Currently, basic support has been implemented for FedEx, UPS, and Purolator
-
-NOTE: install SOAP::WSDL from the soap-wsdl-src/Typemap directory
-
-required perl modules
+required modules
  * Moose
  * DateTime
  * Try::Tiny

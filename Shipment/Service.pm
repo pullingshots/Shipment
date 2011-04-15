@@ -121,6 +121,7 @@ type: Data::Currency
 has 'cost' => (
   is => 'rw',
   isa => 'Data::Currency',
+  default => sub { Data::Currency->new(0) },
 );
 
 =head2 options
