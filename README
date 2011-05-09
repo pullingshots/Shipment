@@ -1,14 +1,64 @@
-install SOAP::WSDL from the soap-wsdl-src/Typemap directory
+NAME
+    Shipment - Interface to Popular Shipping Services
 
-required modules
- * Moose
- * DateTime
- * Try::Tiny
- * Data::Currency
- * LWP::UserAgent
- * MIME::Base64
- * MooseX::Types::DateTimeX
- * MooseX::Aliases
- * File::Util
- * Locale::SubCountry
+VERSION
+    version 0.01111290
+
+SYNOPSIS
+      use Shipment;
+
+      my $shipment = Shipment->new;
+     
+         $shipment->ups(
+            from_address => $shipment->address(...),
+            to_address => $shipment->address(...),
+            packages => [$shipment->package(...)]
+         );
+
+      foreach my $service ( $shipment->all_services ) {
+        print $service->id . "\n";
+      }
+
+      $shipment->rate( 'express' );
+      print $service->cost . "\n";
+
+      $shipment->ship( 'ground' );
+      $shipment->get_package(0)->label->save;
+
+DESCRIPTION
+    This library provides an interface to popular shipping/courier services.
+    See the eg (examples) directory for clues about getting up-and-running.
+    Better documentation coming soon...
+
+METHODS
+  fedex
+    The fedex method returns a Shipment::FedEx object. See Shipment::FedEx
+    for more details.
+
+  purolator
+    The purolator method returns a Shipment::Purolator object. See
+    Shipment::Purolator for more details.
+
+  ups
+    The ups method returns a Shipment::UPS object. See Shipment::UPS for
+    more details.
+
+  address
+    The address method returns a Shipment::Address object. See
+    Shipment::Address for more details.
+
+  package
+    The package method returns a Shipment::Package object. See
+    Shipment::Package for more details.
+
+AUTHORS
+    *   Andrew Baerg <andrew.baerg@gmail.com>
+
+    *   Al Newkirk <awncorp@cpan.org>
+
+COPYRIGHT AND LICENSE
+    This software is copyright (c) 2010 by awncorp.
+
+    This is free software; you can redistribute it and/or modify it under
+    the same terms as the Perl 5 programming language system itself.
 
