@@ -1,9 +1,0 @@
-[%
-  message_name = port_op.first_input.get_message();
-  # message_name;
-
-  part_from = definitions.find_message( port_op.first_input.expand( message_name ) ).get_part;
-  FOREACH part = part_from;
-    INCLUDE Interface/POD/Part.tt(part = part);
-  END;
-%]

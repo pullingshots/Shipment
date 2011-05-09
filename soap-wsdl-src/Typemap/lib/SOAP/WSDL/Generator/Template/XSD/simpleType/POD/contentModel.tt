@@ -1,9 +1,0 @@
-[% IF (simpleType.get_variety == 'list');
-    INCLUDE simpleType/POD/list.tt;
-ELSIF (simpleType.get_variety == 'restriction');
-    INCLUDE simpleType/POD/restriction.tt;
-ELSIF (simpleType.get_variety == 'union');
-    INCLUDE simpleType/POD/union.tt;
-ELSE;
-    # THROW NOT_IMPLEMENTED "simpleType " _ simpleType.get_variety _ "not implemented yet in $simpleType.get_name";
-END %]

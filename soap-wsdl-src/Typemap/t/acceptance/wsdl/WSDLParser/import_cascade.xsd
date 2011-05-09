@@ -1,4 +1,0 @@
-<s:schema elementFormDefault="qualified" targetNamespace="urn:HelloWorld"
-    xmlns:s="http://www.w3.org/2001/XMLSchema">
-    <s:import namespace="urn:HelloWorld2" schemaLocation="imported.xsd"/>
-</s:schema>

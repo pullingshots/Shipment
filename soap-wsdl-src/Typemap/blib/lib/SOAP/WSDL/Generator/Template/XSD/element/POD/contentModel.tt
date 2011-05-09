@@ -1,8 +1,0 @@
-[% IF (type = element.get_type);
-ELSIF (simpleType = element.get_simpleType) %]
-This XML element type class has a atomic simpleType as it's base:
-[%
-    INCLUDE simpleType/POD/contentModel.tt(simpleType = simpleType);
-ELSIF (simpleType = element.get_complexType);
-ELSIF (ref_element = element.get_ref);
-END %]
