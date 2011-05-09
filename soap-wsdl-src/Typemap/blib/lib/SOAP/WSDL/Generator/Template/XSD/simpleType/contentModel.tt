@@ -1,9 +1,0 @@
-[% IF (simpleType.get_variety == 'list');
-    INCLUDE simpleType/list.tt(simpleType = simpleType);
-ELSIF (simpleType.get_variety == 'restriction');
-    INCLUDE simpleType/restriction.tt(type = simpleType);
-ELSIF (simpleType.get_variety == 'union');
-    INCLUDE simpleType/union.tt(type = simpleType);
-ELSE;
-    THROW NOT_IMPLEMENTED "${ element.get_name } - ${ simpleType.get_variety } not supported yet";
-END %]

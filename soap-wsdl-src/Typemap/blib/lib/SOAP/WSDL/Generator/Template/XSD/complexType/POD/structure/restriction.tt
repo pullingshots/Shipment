@@ -1,7 +1,0 @@
-{
-[%- IF complexType.get_name %] # [% XSD.create_xsd_name(complexType) %][% END %]
-[%- indent = indent _ '  ';
-FOREACH element = complexType.get_element %]
-[% indent %][% element.get_name %] => [% INCLUDE element/POD/structure.tt -%]
-[% END %]
-[% indent.replace('\s{2}$', ''); %]}

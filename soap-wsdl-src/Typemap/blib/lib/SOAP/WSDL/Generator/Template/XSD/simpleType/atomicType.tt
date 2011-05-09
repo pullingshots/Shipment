@@ -1,3 +1,0 @@
-# atomic simple type.
-
-[% INCLUDE simpleType/contentModel.tt(simpleType = type ); %]
