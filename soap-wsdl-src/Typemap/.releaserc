@@ -1,9 +1,0 @@
-release_subclass Module::Release::ModuleBuild
-makefile_PL Build.PL
-makefile Build
-cpan_user MKUTTER
-sf_user kutterma
-passive_ftp 1
-sf_group_id 111978
-sf_package_id 249422
-sf_type_id 5002

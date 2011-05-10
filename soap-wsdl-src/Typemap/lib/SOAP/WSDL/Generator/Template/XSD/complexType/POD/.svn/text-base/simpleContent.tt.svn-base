@@ -1,9 +1,0 @@
-[% IF (complexType.get_variety == 'restriction');
-    INCLUDE complexType/POD/simpleContent/restriction.tt(complexType = complexType);
-ELSIF (complexType.get_variety == 'extension');
-    INCLUDE complexType/POD/simpleContent/restriction.tt(complexType = complexType);
-ELSE;
-    THROW UNKNOWN, "unknown variety ${ complexType.get_variety }";
-END;
-
-%]

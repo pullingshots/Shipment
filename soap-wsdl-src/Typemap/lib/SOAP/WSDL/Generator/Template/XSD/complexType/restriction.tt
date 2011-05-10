@@ -1,8 +1,0 @@
-[% IF (base=complexType.get_base);
-    base_type=definitions.get_types.0.find_type(complexType.expand(base));
--%]
-use base qw([% XSD.create_xsd_type(base_type) %]);
-[%
-ELSE;
-    THROW NOT_IMPLEMENTED, "restriction without base not supported";
-END %]

@@ -1,0 +1,9 @@
+verbose  = 5
+severity = 5
+
+# we're using distzilla
+[-Modules::RequireVersionVar]
+
+# we're using moose
+[-TestingAndDebugging::RequireUseStrict]
+[-TestingAndDebugging::RequireUseWarnings]

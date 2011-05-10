@@ -1,43 +1,0 @@
-10
-
-dir
-864
-https://soap-wsdl.svn.sourceforge.net/svnroot/soap-wsdl/SOAP-WSDL/branches/Typemap/example/lib/MyInterfaces
-https://soap-wsdl.svn.sourceforge.net/svnroot/soap-wsdl
-
-
-
-2009-03-09T20:01:25.871129Z
-828
-kutterma
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-662ab66d-5931-0410-9760-8af722b24055
-
-BarCode
-dir
-
-FullerData_x0020_Fortune_x0020_Cookie
-dir
-
-GlobalWeather
-dir
-
-TestService
-dir
-
-HelloWorld
-dir
-
