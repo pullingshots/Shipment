@@ -10,8 +10,6 @@ use Shipment::FedEx;
 use Shipment::Purolator;
 use Shipment::UPS;
 
-use Shipment::SOAP::WSDL; # just to be on the safe side :}
-
 =head1 SYNOPSIS
 
   use Shipment;
