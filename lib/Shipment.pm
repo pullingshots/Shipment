@@ -40,6 +40,18 @@ documentation coming soon...
 
 =cut
 
+=method generic
+
+The generic method returns a L<Shipment::Generic> object. See L<Shipment::Generic> for
+more details.
+
+=cut
+
+sub generic {
+    shift; return Shipment::Generic->new(@_)
+}
+
+
 =method fedex
 
 The fedex method returns a L<Shipment::FedEx> object. See L<Shipment::FedEx> for
