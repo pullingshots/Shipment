@@ -50,6 +50,7 @@ has 'name' => (
   is => 'rw',
   isa => 'Str',
   alias => 'contact',
+  default => '',
 );
 
 =head2 company
@@ -79,16 +80,19 @@ type: String
 has 'address1' => (
   is => 'rw',
   isa => 'Str',
+  default => '',
 );
 
 has 'address2' => (
   is => 'rw',
   isa => 'Str',
+  default => '',
 );
 
 has 'address3' => (
   is => 'rw',
   isa => 'Str',
+  default => '',
 );
 
 =head2 city
@@ -105,6 +109,7 @@ has 'city' => (
   is => 'rw',
   isa => 'Str',
   alias => 'town',
+  default => '',
 );
 
 =head2 province
@@ -122,6 +127,7 @@ has 'province' => (
   is => 'rw',
   isa => 'Str',
   alias => 'state',
+  default => '',
 );
 
 =head2 province_code
@@ -162,6 +168,7 @@ has 'postal_code' => (
   is => 'rw',
   isa => 'Str',
   alias => 'zip',
+  default => '',
 );
 
 =head2 country
@@ -176,6 +183,7 @@ type: String
 has 'country' => (
   is => 'rw',
   isa => 'Str',
+  default => '',
 );
 
 =head2 country_code

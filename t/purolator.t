@@ -4,15 +4,21 @@ use warnings;
 
 use Test::More tests => 47;
 
+my ($key, $password, $account) = @ARGV;
+
+$key      ||= $ENV{'PUROLATOR_KEY'};
+$password ||= $ENV{'PUROLATOR_PASSWORD'};
+$account  ||= $ENV{'PUROLATOR_ACCOUNT'};
+
+SKIP: {
+  skip "Tests can only be run with a valid Purolator Developer Key/Password and Account. The following environment variables are used: PUROLATOR_KEY PUROLATOR_PASSWORD PUROLATOR_ACCOUNT. You can sign up for a Purolator Web Services developer account at https://eship.purolator.com", 47 unless $key && $password && $account;
+}
+
+if ($key && $password && $account) {
+
 use Shipment::Purolator;
 use Shipment::Address;
 use Shipment::Package;
-
-my ($key, $password, $account, $save, $live) = @ARGV;
-
-if (!$key || !$password || !$account) {
-  die "ERROR: tests can only be run with a valid Purolator Key, Password, and Account.\n";
-}
 
 my $from = Shipment::Address->new( 
   name => 'Andrew Baerg',
@@ -57,8 +63,6 @@ my $shipment = Shipment::Purolator->new(
   printer_type => 'thermal',
   references => [ qw( foo bar ) ],
 );
-
-$shipment->proxy_domain( 'webservices.purolator.com' ) if $live;
 
 ok( defined $shipment, 'got a shipment');
 
@@ -114,8 +118,6 @@ $shipment = Shipment::Purolator->new(
   special_instructions => 'leave at back door',
 );
 
-$shipment->proxy_domain( 'webservices.purolator.com' ) if $live;
-
 $shipment->ship( 'ground' );
 
 is( $shipment->service->cost->value, $rate, 'rate matches actual cost') if defined $shipment->service;
@@ -125,8 +127,8 @@ ok( defined $shipment->get_package(0)->cost->value, 'got cost' );
 ok( defined $shipment->get_package(0)->label, 'got label' );
 is( $shipment->get_package(0)->label->content_type, 'application/pdf', 'label is a pdf') if defined $shipment->get_package(0)->label;
 ## TODO test saving file to disk
-$shipment->documents->save if $save;
-$shipment->get_package(0)->label->save if $save;
+#$shipment->documents->save;
+#$shipment->get_package(0)->label->save;
 
 is( $shipment->cancel, 'true', 'successfully cancelled shipment');
 
@@ -134,7 +136,7 @@ is( $shipment->cancel, 'true', 'successfully cancelled shipment');
 #$shipment->end_of_day;
 #ok( defined $shipment->manifest, 'got end of day manifest' );
 ## TODO test saving file to disk
-#$shipment->manifest->save if $save;
+#$shipment->manifest->save;
 
 
 @packages = (
@@ -164,8 +166,6 @@ $shipment = Shipment::Purolator->new(
   printer_type => 'thermal',
 );
 
-$shipment->proxy_domain( 'webservices.purolator.com' ) if $live;
-
 is( $shipment->count_packages, 2, 'shipment has 2 packages');
 
 $shipment->rate( 'express' );
@@ -185,8 +185,6 @@ $shipment = Shipment::Purolator->new(
   printer_type => 'thermal',
 );
 
-$shipment->proxy_domain( 'webservices.purolator.com' ) if $live;
-
 $shipment->ship( 'express' );
 
 is( $shipment->service->cost->value, $rate, 'rate matches actual cost') if defined $shipment->service;
@@ -200,7 +198,8 @@ is( $shipment->get_package(1)->label->content_type, 'application/pdf', 'second l
 is( $shipment->cancel, 'true', 'successfully cancelled shipment');
 
 ## TODO test saving file to disk
-$shipment->documents->save if $save;
-$shipment->get_package(0)->label->save if $save;
-$shipment->get_package(1)->label->save if $save;
+#$shipment->documents->save;
+#$shipment->get_package(0)->label->save;
+#$shipment->get_package(1)->label->save;
 
+}

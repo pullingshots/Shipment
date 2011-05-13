@@ -2,17 +2,25 @@
 use strict;
 use warnings;
 
-use Test::More tests => 41;
+use Test::More tests => 39;
+
+my ($username, $password, $key, $account) = @ARGV;
+
+$username    ||= $ENV{'UPS_USERNAME'};
+$password ||= $ENV{'UPS_PASSWORD'};
+$key      ||= $ENV{'UPS_KEY'};
+$account  ||= $ENV{'UPS_ACCOUNT'};
+
+SKIP: {
+  skip "Tests can only be run with a valid UPS Developer Username/Password/Key and Account. The following environment variables are used: UPS_USERNAME UPS_PASSWORD UPS_KEY UPS_ACCOUNT. You can sign up for a UPS Web Services developer account at https://www.ups.com/upsdeveloperkit", 41 unless $username && $password && $key && $account;
+}
+
+if ($username && $password && $key && $account) {
 
 use Shipment::UPS;
 use Shipment::Address;
 use Shipment::Package;
 
-my ($username, $password, $key, $account, $save, $live) = @ARGV;
-
-if (!$username || !$password || !$key || !$account) {
-  die "ERROR: tests can only be run with a valid UPS User ID, Password, Access Key, and Account.\n";
-}
 
 my $from = Shipment::Address->new( 
   name => 'Andrew Baerg',
@@ -57,8 +65,6 @@ my $shipment = Shipment::UPS->new(
   references => [ qw( foo bar ) ],
 );
 
-$shipment->proxy_domain( 'onlinetools.ups.com' ) if $live;
-
 ok( defined $shipment, 'got a shipment');
 
 ok( defined $shipment->from_address, 'got a shipment->from_address address' );
@@ -102,16 +108,13 @@ is( $shipment->service->cost->code, 'USD', 'currency') if defined $shipment->ser
 
 $shipment->ship( 'ground' );
 
-is( $shipment->service->cost->value, $rate, 'rate matches actual cost') if defined $shipment->service;
+#is( $shipment->service->cost->value, $rate, 'rate matches actual cost') if defined $shipment->service;
 ok( defined $shipment->get_package(0)->label, 'got label' );
 is( $shipment->get_package(0)->label->content_type, 'text/ups-epl', 'label is epl') if defined $shipment->get_package(0)->label;
 
 ## TODO test saving file to disk
-$shipment->get_package(0)->label->save if $save;
+#$shipment->get_package(0)->label->save;
 
-is( $shipment->cancel, 'Voided', 'successfully cancelled shipment: ' . $shipment->tracking_id ) if $live;
-
-if (!$live) {
   $shipment = Shipment::UPS->new(
     username => $username,
     password => $password,
@@ -121,7 +124,6 @@ if (!$live) {
   );
 
   is( $shipment->cancel, 'Voided', 'successfully cancelled shipment');
-}
 
 @packages = (
   Shipment::Package->new(
@@ -149,8 +151,6 @@ $shipment = Shipment::UPS->new(
   printer_type => 'thermal',
 );
 
-$shipment->proxy_domain( 'onlinetools.ups.com' ) if $live;
-
 is( $shipment->count_packages, 2, 'shipment has 2 packages');
 
 $shipment->rate( 'express' );
@@ -161,19 +161,16 @@ is( $shipment->service->cost->code, 'USD', 'currency') if defined $shipment->ser
 
 $shipment->ship( 'express' );
 
-is( $shipment->service->cost->value, $rate, 'rate matches actual cost') if defined $shipment->service;
+#is( $shipment->service->cost->value, $rate, 'rate matches actual cost') if defined $shipment->service;
 ok( defined $shipment->get_package(0)->label, 'got first label' );
 ok( defined $shipment->get_package(1)->label, 'got second label' );
 is( $shipment->get_package(0)->label->content_type, 'text/ups-epl', 'first label is epl') if defined $shipment->get_package(0)->label;
 is( $shipment->get_package(1)->label->content_type, 'text/ups-epl', 'second label is epl') if defined $shipment->get_package(1)->label;
 
 ## TODO test saving file to disk
-$shipment->get_package(0)->label->save if $save;
-$shipment->get_package(1)->label->save if $save;
+#$shipment->get_package(0)->label->save;
+#$shipment->get_package(1)->label->save;
 
-is( $shipment->cancel, 'Voided', 'successfully cancelled shipment') if $live;
-
-if (!$live) {
   $shipment = Shipment::UPS->new(
     username => $username,
     password => $password,
@@ -191,5 +188,5 @@ if (!$live) {
   );
 
   is( $shipment->cancel, 'Voided', 'successfully cancelled shipment');
-}
 
+}

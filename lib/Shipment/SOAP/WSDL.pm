@@ -11137,7 +11137,7 @@ $fatpacked{"SOAP/WSDL/XSD/Typelib/ComplexType.pm"} = <<'SOAP_WSDL_XSD_TYPELIB_CO
                                   # the commom:Request element uses <Request> for all subtags
                                   # Andrew Baerg - Oct 6, 2010
                                   if ($name && $option_ref->{name}) {
-                                    warn "deleting option_ref->{name} for $name: [$option_ref->{name}]";
+                                    #warn "deleting option_ref->{name} for $name: [$option_ref->{name}]";
                                     delete $option_ref->{name};
                                   }
   

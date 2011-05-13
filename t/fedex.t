@@ -2,17 +2,24 @@
 use strict;
 use warnings;
 
-use Test::More tests => 44;
+my ($key, $password, $account, $meter) = @ARGV;
+
+$key      ||= $ENV{'FEDEX_KEY'};
+$password ||= $ENV{'FEDEX_PASSWORD'};
+$account  ||= $ENV{'FEDEX_ACCOUNT'};
+$meter    ||= $ENV{'FEDEX_METER'};
+
+use Test::More tests => 43;
+
+SKIP: {
+  skip "Tests can only be run with a valid FedEx Developer Key/Password and Account/Meter. The following environment variables are used: FEDEX_KEY FEDEX_PASSWORD FEDEX_ACCOUNT FEDEX_METER You can sign up for a FedEx Web Services developer account at https://www.fedex.com/wpor/web/jsp/drclinks.jsp?links=techresources/index.html", 43 unless $key && $password && $account && $meter;
+}
+
+if ($key && $password && $account && $meter) {
 
 use Shipment::FedEx;
 use Shipment::Address;
 use Shipment::Package;
-
-my ($key, $password, $account, $meter, $save, $live) = @ARGV;
-
-if (!$key || !$password || !$account || !$meter) {
-  die "ERROR: tests can only be run with a valid FedEx Developer Key/Password and Account/Meter.\n";
-}
 
 my $from = Shipment::Address->new( 
   name => 'Andrew Baerg',
@@ -58,8 +65,6 @@ my $shipment = Shipment::FedEx->new(
   references => [ qw( foo bar baz ) ],
   bill_type => 'collect',
 );
-
-$shipment->proxy_domain( 'ws.fedex.com:443' ) if $live;
 
 ok( defined $shipment, 'got a shipment');
 
@@ -115,8 +120,6 @@ $shipment = Shipment::FedEx->new(
   bill_type => 'collect',
 );
 
-$shipment->proxy_domain( 'ws.fedex.com:443' ) if $live;
-
 $shipment->ship( 'ground' );
 
 ok( defined $shipment->service, 'got a shipment');
@@ -125,12 +128,12 @@ ok( defined $shipment->get_package(0)->label, 'got label' );
 is( $shipment->get_package(0)->label->content_type, 'text/fedex-epl', 'label is thermal') if defined $shipment->get_package(0)->label;
 
 ## TODO test saving file to disk
-$shipment->get_package(0)->label->save if $save;
+#$shipment->get_package(0)->label->save;
 
 $shipment->end_of_day;
 ok( defined $shipment->manifest, 'got end of day manifest' );
 ## TODO test saving file to disk
-$shipment->manifest->save if $save;
+#$shipment->manifest->save;
 
 is( $shipment->cancel, 'SUCCESS', 'successfully cancelled shipment');
 
@@ -161,8 +164,6 @@ $shipment = Shipment::FedEx->new(
   printer_type => 'thermal',
 );
 
-$shipment->proxy_domain( 'ws.fedex.com:443' ) if $live;
-
 is( $shipment->count_packages, 2, 'shipment has 2 packages');
 
 $shipment->rate( 'express' );
@@ -183,12 +184,9 @@ $shipment = Shipment::FedEx->new(
   printer_type => 'thermal',
 );
 
-$shipment->proxy_domain( 'ws.fedex.com:443' ) if $live;
-
 $shipment->ship( 'express' );
 
 ok( defined $shipment->service, 'got a shipment');
-is( $shipment->service->cost->value, $rate, 'rate matches actual cost') if defined $shipment->service;
 ok( defined $shipment->get_package(0)->label, 'got first label' );
 ok( defined $shipment->get_package(1)->label, 'got second label' );
 is( $shipment->get_package(0)->label->content_type, 'text/fedex-epl', 'first label is thermal') if defined $shipment->get_package(0)->label;
@@ -197,5 +195,7 @@ is( $shipment->get_package(1)->label->content_type, 'text/fedex-epl', 'second la
 is( $shipment->cancel, 'SUCCESS', 'successfully cancelled shipment');
 
 ## TODO test saving file to disk
-$shipment->get_package(0)->label->save if $save;
-$shipment->get_package(1)->label->save if $save;
+#$shipment->get_package(0)->label->save;
+#$shipment->get_package(1)->label->save;
+
+}
