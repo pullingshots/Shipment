@@ -1,4 +1,7 @@
 *.swp
 *.kpf
-Shipment-*
-Shipment-*/*
+/Shipment-*
+/Shipment-*/*
+/.build
+/.pause
+/accounts
