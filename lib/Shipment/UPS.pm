@@ -41,7 +41,7 @@ It makes extensive use of SOAP::WSDL in order to create/decode xml requests and 
 =cut
 
 use Try::Tiny;
-use Moose;
+use Moose 2.0000;
 use Moose::Util::TypeConstraints;
 
 extends 'Shipment::Base';

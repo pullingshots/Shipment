@@ -31,8 +31,8 @@ This class defines a shipping address and provides some methods for parsing the 
 
 =cut
 
-use Moose;
-use MooseX::Aliases;
+use Moose 2.0000;
+use MooseX::Aliases 0.10;
 
 =head1 Class Attributes
 

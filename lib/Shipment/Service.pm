@@ -26,7 +26,7 @@ for listing available services or storing details about a rate.
 
 use MooseX::Types::DateTimeX qw( DateTime );
 use Data::Currency;
-use Moose;
+use Moose 2.0000;
 
 =head1 Class Attributes
 

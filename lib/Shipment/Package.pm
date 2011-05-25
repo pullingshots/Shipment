@@ -26,7 +26,7 @@ are set after a shipment has been created (label, cost, tracking_id)
 
 use Data::Currency;
 
-use Moose;
+use Moose 2.0000;
 
 =head1 Class Attributes
 

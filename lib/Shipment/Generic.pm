@@ -30,7 +30,7 @@ This class provides a Generic interface for a shipping service.
 
 =cut
 
-use Moose;
+use Moose 2.0000;
 
 extends 'Shipment::Base';
 

@@ -45,7 +45,7 @@ This is a base class for a shipping service such as UPS or FedEx.
 
 use Data::Currency;
 use Shipment::Service;
-use Moose;
+use Moose 2.0000;
 use Moose::Util::TypeConstraints;
 
 =head1 Class Attributes

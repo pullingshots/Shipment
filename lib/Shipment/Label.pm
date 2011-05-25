@@ -24,7 +24,7 @@ It can also be used to store other shipping documents.
 
 =cut
 
-use Moose;
+use Moose 2.0000;
 
 =head1 Class Attributes
 
