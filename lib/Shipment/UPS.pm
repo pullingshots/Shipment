@@ -86,6 +86,35 @@ has 'proxy_domain' => (
   default => 'wwwcie.ups.com',
 );
 
+=head2 negotiated_rates
+
+Turn negotiated rates on or off. The Shipping account used must be authorized and the Rates tool must be
+configured to return Negotiated Rates.
+
+Default is off.
+
+=cut
+
+has 'negotiated_rates' => (
+  is => 'rw',
+  isa => 'Bool',
+  default => 0,
+);
+
+=head2 residential_address
+
+Flag the ship to address as residential.
+
+Default is false.
+
+=cut
+
+has 'residential_address' => (
+  is => 'rw',
+  isa => 'Bool',
+  default => 0,
+);
+
 =head2 address_validation
 
 Turn address validation on or off. When on, ship will fail if the address does not pass UPS address validation
@@ -167,7 +196,7 @@ my %bill_type_map = (
 my %signature_type_map = (
   'default'      => '1',
   'required'     => '2',
-  'not_required' => '1',
+  'not_required' => undef,
   'adult'        => '3',
 );
 
@@ -285,6 +314,20 @@ sub _build_services {
   );
   my $response;
 
+
+  my $rating_options;
+  $rating_options->{NegotiatedRatesIndicator} = 1 if $self->negotiated_rates;
+
+  my $shipto = { 
+            Address => {
+              City              => $self->to_address()->city,
+              StateProvinceCode => $self->to_address()->province_code,
+              PostalCode        => $self->to_address()->postal_code,
+              CountryCode       => $self->to_address()->country_code,
+            },
+  };
+  $shipto->{Address}->{ResidentialAddressIndicator} = 1 if $self->{residential_address};
+
   my %services;
   try {
     $response = $interface->ProcessRate( 
@@ -302,14 +345,8 @@ sub _build_services {
               CountryCode       => $self->from_address()->country_code,
             },
           },
-          ShipTo => {
-            Address => {
-              City              => $self->to_address()->city,
-              StateProvinceCode => $self->to_address()->province_code,
-              PostalCode        => $self->to_address()->postal_code,
-              CountryCode       => $self->to_address()->country_code,
-            },
-          },
+          ShipTo => $shipto,
+          ShipmentRatingOptions => $rating_options,
           Package => {
             PackagingType => {
               Code => $package_type_map{$self->package_type} || $self->package_type,
@@ -336,19 +373,24 @@ sub _build_services {
     #warn $response;
 
     foreach my $service (@{ $response->get_RatedShipment() }) {
+      my $rate = ($self->negotiated_rates) ? $service->get_NegotiatedRateCharges->get_TotalCharge->get_MonetaryValue : $service->get_TotalCharges->get_MonetaryValue;
+      my $currency = ($self->negotiated_rates) ? $service->get_NegotiatedRateCharges->get_TotalCharge->get_CurrencyCode : $service->get_TotalCharges->get_CurrencyCode;
       $services{$service->get_Service()->get_Code()->get_value} = Shipment::Service->new(
           id => $service->get_Service()->get_Code()->get_value,
           name => $service_map{$service->get_Service()->get_Code()->get_value},
-          cost => Data::Currency->new($service->get_TotalCharges->get_MonetaryValue, $service->get_TotalCharges->get_CurrencyCode),
+          cost => Data::Currency->new($rate, $currency),
         );
     }
-    $services{ground} = $services{'03'} || $services{'11'} || Shipment::Service->new();
-    $services{express} = $services{'02'} || Shipment::Service->new();
-    $services{priority} = $services{'01'} || Shipment::Service->new();
+    $services{ground} = ($services{'03'}) ? $services{'03'} : $services{'11'} if ($services{'03'} || $services{'11'});
+    $services{express} = $services{'02'} if $services{'02'};
+    $services{priority} = $services{'01'} if $services{'01'};
 
+    $self->notice( '' );
     if ( $response->get_Response->get_Alert ) {
-      warn $response->get_Response->get_Alert->get_Description->get_value;
-      $self->notice( $response->get_Response->get_Alert->get_Description->get_value );
+      foreach my $alert (@{$response->get_Response->get_Alert}) {
+        warn $alert->get_Description->get_value;
+        $self->add_notice( $alert->get_Description->get_value . "\n" );
+      }
     }
 
   } catch {
@@ -381,9 +423,11 @@ sub rate {
   return unless $service_id;
 
     my $options;
-    $options->{DeliveryConfirmation}->{DCISType} = ($signature_type_map{$self->signature_type}) ? 2 : 1;
+    $options->{DeliveryConfirmation}->{DCISType} = $signature_type_map{$self->signature_type} if defined $signature_type_map{$self->signature_type};
     $options->{DeclaredValue}->{CurrencyCode} = $self->currency;
     
+    my $rating_options;
+    $rating_options->{NegotiatedRatesIndicator} = 1 if $self->negotiated_rates;
 
     my @pieces;
     foreach (@{ $self->packages }) {
@@ -411,6 +455,17 @@ sub rate {
         };
     }
 
+
+  my $shipto = { 
+            Address => {
+              City              => $self->to_address()->city,
+              StateProvinceCode => $self->to_address()->province_code,
+              PostalCode        => $self->to_address()->postal_code,
+              CountryCode       => $self->to_address()->country_code,
+            },
+  };
+  $shipto->{Address}->{ResidentialAddressIndicator} = 1 if $self->{residential_address};
+
   use Shipment::UPS::WSDL::RateInterfaces::RateService::RatePort;
   
   my $interface = Shipment::UPS::WSDL::RateInterfaces::RateService::RatePort->new(
@@ -437,14 +492,8 @@ sub rate {
               CountryCode       => $self->from_address->country_code,
             },
           },
-          ShipTo => {
-            Address => {
-              City              => $self->to_address->city,
-              StateProvinceCode => $self->to_address->province_code,
-              PostalCode        => $self->to_address->postal_code,
-              CountryCode       => $self->to_address->country_code,
-            },
-          },
+          ShipTo => $shipto,
+          ShipmentRatingOptions => $rating_options,
           Service => {
             Code => $service_id,
           },
@@ -465,17 +514,22 @@ sub rate {
 
     use Data::Currency;
     use Shipment::Service;
+    my $rate = ($self->negotiated_rates) ? $response->get_RatedShipment()->get_NegotiatedRateCharges->get_TotalCharge->get_MonetaryValue : $response->get_RatedShipment()->get_TotalCharges->get_MonetaryValue;
+    my $currency = ($self->negotiated_rates) ? $response->get_RatedShipment()->get_NegotiatedRateCharges->get_TotalCharge->get_CurrencyCode : $response->get_RatedShipment()->get_TotalCharges->get_CurrencyCode;
     $self->service( 
       new Shipment::Service( 
         id        => $service_id,
         name      => $self->services->{$service_id}->name,
-        cost      => Data::Currency->new($response->get_RatedShipment()->get_TotalCharges->get_MonetaryValue, $response->get_RatedShipment()->get_TotalCharges->get_CurrencyCode),
+        cost      => Data::Currency->new($rate, $currency),
       )
     );
 
+    $self->notice( '' );
     if ( $response->get_Response->get_Alert ) {
-      warn $response->get_Response->get_Alert->get_Description->get_value;
-      $self->notice( $response->get_Response->get_Alert->get_Description->get_value );
+      foreach my $alert (@{$response->get_Response->get_Alert}) {
+        warn $alert->get_Description->get_value;
+        $self->add_notice( $alert->get_Description->get_value . "\n" );
+      }
     }
   } catch {
       warn $_;
@@ -505,7 +559,7 @@ sub ship {
   return unless $service_id;
 
     my $package_options;
-    $package_options->{DeliveryConfirmation}->{DCISType} = ($signature_type_map{$self->signature_type}) ? 2 : 1;
+    $package_options->{DeliveryConfirmation}->{DCISType} = $signature_type_map{$self->signature_type} if defined $signature_type_map{$self->signature_type};
     $package_options->{DeclaredValue}->{CurrencyCode} = $self->currency;
 
     my $shipment_options;
@@ -514,6 +568,9 @@ sub ship {
       $shipment_options->{Notification}->{EMail}->{EMailAddress} = $self->to_address->email;
       $shipment_options->{Notification}->{EMail}->{SubjectCode} = '03'; 
     }
+
+    my $rating_options;
+    $rating_options->{NegotiatedRatesIndicator} = 1 if $self->negotiated_rates;
 
     my @pieces;
     my $reference_index = 1;
@@ -576,6 +633,19 @@ sub ship {
       $self->to_address->address3
     );
 
+  my $shipto = {
+            Name => $self->to_address->company,
+            AttentionName => $self->to_address->name,
+            Address => {
+              AddressLine       => \@to_addresslines,
+              City              => $self->to_address->city,
+              StateProvinceCode => $self->to_address->province_code,
+              PostalCode        => $self->to_address->postal_code,
+              CountryCode       => $self->to_address->country_code,
+            },
+          };
+  $shipto->{Address}->{ResidentialAddressIndicator} = 1 if $self->{residential_address};
+
   use Shipment::UPS::WSDL::ShipInterfaces::ShipService::ShipPort;
   
   my $interface = Shipment::UPS::WSDL::ShipInterfaces::ShipService::ShipPort->new(
@@ -604,17 +674,8 @@ sub ship {
               CountryCode       => $self->from_address->country_code,
             },
           },
-          ShipTo => {
-            Name => $self->to_address->company,
-            AttentionName => $self->to_address->name,
-            Address => {
-              AddressLine       => \@to_addresslines,
-              City              => $self->to_address->city,
-              StateProvinceCode => $self->to_address->province_code,
-              PostalCode        => $self->to_address->postal_code,
-              CountryCode       => $self->to_address->country_code,
-            },
-          },
+          ShipTo => $shipto,
+          ShipmentRatingOptions => $rating_options,
           Service => {
             Code => $service_id,
           },
@@ -649,11 +710,13 @@ sub ship {
     $self->tracking_id( $response->get_ShipmentResults()->get_ShipmentIdentificationNumber()->get_value );
     use Data::Currency;
     use Shipment::Service;
+    my $rate = ($self->negotiated_rates) ? $response->get_ShipmentResults()->get_NegotiatedRateCharges->get_TotalCharge->get_MonetaryValue : $response->get_ShipmentResults()->get_ShipmentCharges()->get_TotalCharges->get_MonetaryValue;
+    my $currency = ($self->negotiated_rates) ? $response->get_ShipmentResults()->get_NegotiatedRateCharges->get_TotalCharge->get_CurrencyCode : $response->get_ShipmentResults()->get_ShipmentCharges()->get_TotalCharges->get_CurrencyCode;
     $self->service( 
       new Shipment::Service( 
         id        => $service_id,
         name      => $self->services->{$service_id}->name,
-        cost      => Data::Currency->new($response->get_ShipmentResults()->get_ShipmentCharges->get_TotalCharges()->get_MonetaryValue, $response->get_ShipmentResults()->get_ShipmentCharges()->get_TotalCharges()->get_CurrencyCode),
+        cost      => Data::Currency->new($rate, $currency),
       )
     );
 
@@ -699,9 +762,12 @@ sub ship {
       );
     }
 
+    $self->notice( '' );
     if ( $response->get_Response->get_Alert ) {
-      warn $response->get_Response->get_Alert->get_Description->get_value;
-      $self->notice( $response->get_Response->get_Alert->get_Description->get_value );
+      foreach my $alert (@{$response->get_Response->get_Alert}) {
+        warn $alert->get_Description->get_value;
+        $self->add_notice( $alert->get_Description->get_value . "\n" );
+      }
     }
 
   } catch {
@@ -922,9 +988,12 @@ sub return {
       );
     }
 
+    $self->notice( '' );
     if ( $response->get_Response->get_Alert ) {
-      warn $response->get_Response->get_Alert->get_Description->get_value;
-      $self->notice( $response->get_Response->get_Alert->get_Description->get_value );
+      foreach my $alert (@{$response->get_Response->get_Alert}) {
+        warn $alert->get_Description->get_value;
+        $self->add_notice( $alert->get_Description->get_value . "\n" );
+      }
     }
 
   } catch {
@@ -1000,9 +1069,12 @@ sub cancel {
 
     $success = $response->get_SummaryResult->get_Status->get_Description->get_value;
 
+    $self->notice( '' );
     if ( $response->get_Response->get_Alert ) {
-      warn $response->get_Response->get_Alert->get_Description->get_value;
-      $self->notice( $response->get_Response->get_Alert->get_Description->get_value );
+      foreach my $alert (@{$response->get_Response->get_Alert}) {
+        warn $alert->get_Description->get_value;
+        $self->add_notice( $alert->get_Description->get_value . "\n" );
+      }
     }
 
   } catch {

@@ -63,6 +63,7 @@ my $shipment = Shipment::UPS->new(
   packages => \@packages,
   printer_type => 'thermal',
   references => [ qw( foo bar ) ],
+  residential_address => 1,
 );
 
 ok( defined $shipment, 'got a shipment');
@@ -149,6 +150,7 @@ $shipment = Shipment::UPS->new(
   to_address => $to,
   packages => \@packages,
   printer_type => 'thermal',
+  residential_address => 1,
 );
 
 is( $shipment->count_packages, 2, 'shipment has 2 packages');

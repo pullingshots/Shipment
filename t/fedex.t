@@ -64,6 +64,7 @@ my $shipment = Shipment::FedEx->new(
   printer_type => 'thermal',
   references => [ qw( foo bar baz ) ],
   bill_type => 'collect',
+  residential_address => 1,
 );
 
 ok( defined $shipment, 'got a shipment');
@@ -95,7 +96,7 @@ is( $shipment->count_packages, 1, 'shipment has 1 packages');
 
 ok( defined $shipment->services, 'got services');
 ok( defined $shipment->services->{ground}, 'got a ground service');
-is( $shipment->services->{ground}->id, 'FEDEX_GROUND', 'ground service_id') if defined $shipment->services->{ground};
+is( $shipment->services->{ground}->id, 'GROUND_HOME_DELIVERY', 'ground service_id') if defined $shipment->services->{ground};
 ok( defined $shipment->services->{express}, 'got an express service');
 is( $shipment->services->{express}->id, 'FEDEX_2_DAY', 'express service_id') if defined $shipment->services->{express};
 ok( defined $shipment->services->{priority}, 'got a priority service');

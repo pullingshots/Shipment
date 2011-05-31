@@ -362,8 +362,13 @@ type: String
 =cut
 
 has 'notice' => (
+  traits  => ['String'],
   is => 'rw',
   isa => 'Str',
+  default => q{},
+  handles => {
+    add_notice  => 'append',
+  },
 );
 
 =head2 references
