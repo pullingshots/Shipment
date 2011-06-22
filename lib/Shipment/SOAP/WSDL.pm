@@ -1492,6 +1492,7 @@ $fatpacked{"SOAP/WSDL/Client.pm"} = <<'SOAP_WSDL_CLIENT';
           options => {prefix => $prefix_of{ $ident }},
       });
   
+#warn "Request\n" . $envelope;
       return $envelope if $no_dispatch_of{ $ident };
   
       # always quote SOAPAction header.
