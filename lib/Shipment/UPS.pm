@@ -396,8 +396,14 @@ sub _build_services {
 
   } catch {
       warn $_;
-      warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description;
-      $self->error( $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description->get_value );
+      try {
+        warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description;
+        $self->error( $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description->get_value );
+      } catch {
+        warn $_;
+        warn $response->get_faultstring;
+        $self->error( $response->get_faultstring->get_value );
+      };
   };
 
 
@@ -534,8 +540,14 @@ sub rate {
     }
   } catch {
       warn $_;
-      warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description;
-      $self->error( $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description->get_value );
+      try {
+        warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description;
+        $self->error( $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description->get_value );
+      } catch {
+        warn $_;
+        warn $response->get_faultstring;
+        $self->error( $response->get_faultstring->get_value );
+      };
   };
 
 }
@@ -773,8 +785,14 @@ sub ship {
 
   } catch {
       warn $_;
-      warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description;
-      $self->error( $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description->get_value );
+      try {
+        warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description;
+        $self->error( $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description->get_value );
+      } catch {
+        warn $_;
+        warn $response->get_faultstring;
+        $self->error( $response->get_faultstring->get_value );
+      };
   };
 
 }
@@ -999,8 +1017,14 @@ sub return {
 
   } catch {
       warn $_;
-      warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description;
-      $self->error( $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description->get_value );
+      try {
+        warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description;
+        $self->error( $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description->get_value );
+      } catch {
+        warn $_;
+        warn $response->get_faultstring;
+        $self->error( $response->get_faultstring->get_value );
+      };
   };
 
 }
@@ -1080,8 +1104,14 @@ sub cancel {
 
   } catch {
       warn $_;
-      warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description;
-      $self->error( $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description->get_value );
+      try {
+        warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description;
+        $self->error( $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description->get_value );
+      } catch {
+        warn $_;
+        warn $response->get_faultstring;
+        $self->error( $response->get_faultstring->get_value );
+      };
   };
 
   return $success;
