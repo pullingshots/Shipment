@@ -89,8 +89,11 @@ has 'proxy_domain' => (
 
 =head2 negotiated_rates
 
-Turn negotiated rates on or off. The Shipping account used must be authorized and the Rates tool must be
-configured to return Negotiated Rates.
+Turn negotiated rates on or off.
+
+The Shipper Account/UserID used must be qualified to receive negotiated rates. You will most likely need to contact UPS to have set this up.
+
+If the Shipper Account/UserID is not qualified, the published rates will be used instead and a notice set.
 
 Default is off.
 
@@ -374,8 +377,19 @@ sub _build_services {
     #warn $response;
 
     foreach my $service (@{ $response->get_RatedShipment() }) {
-      my $rate = ($self->negotiated_rates) ? $service->get_NegotiatedRateCharges->get_TotalCharge->get_MonetaryValue : $service->get_TotalCharges->get_MonetaryValue;
-      my $currency = ($self->negotiated_rates) ? $service->get_NegotiatedRateCharges->get_TotalCharge->get_CurrencyCode : $service->get_TotalCharges->get_CurrencyCode;
+      my $rate = $service->get_TotalCharges->get_MonetaryValue;
+      my $currency = $service->get_TotalCharges->get_CurrencyCode;
+      if ($self->negotiated_rates) {
+        if ($service->get_NegotiatedRateCharges) {
+          $rate = $service->get_NegotiatedRateCharges->get_TotalCharge->get_MonetaryValue;
+          $currency = $service->get_NegotiatedRateCharges->get_TotalCharge->get_CurrencyCode;
+        }
+        else {
+          my $notice =  "Shipper Account/UserId is not qualified to receive negotiated rates. Using published rates.";
+          warn $notice;
+          $self->add_notice( $notice . "\n" );
+        }
+      }
       $services{$service->get_Service()->get_Code()->get_value} = Shipment::Service->new(
           id => $service->get_Service()->get_Code()->get_value,
           name => $service_map{$service->get_Service()->get_Code()->get_value},
@@ -521,8 +535,19 @@ sub rate {
 
     use Data::Currency;
     use Shipment::Service;
-    my $rate = ($self->negotiated_rates) ? $response->get_RatedShipment()->get_NegotiatedRateCharges->get_TotalCharge->get_MonetaryValue : $response->get_RatedShipment()->get_TotalCharges->get_MonetaryValue;
-    my $currency = ($self->negotiated_rates) ? $response->get_RatedShipment()->get_NegotiatedRateCharges->get_TotalCharge->get_CurrencyCode : $response->get_RatedShipment()->get_TotalCharges->get_CurrencyCode;
+    my $rate = $response->get_RatedShipment->get_TotalCharges->get_MonetaryValue;
+    my $currency = $response->get_RatedShipment->get_TotalCharges->get_CurrencyCode;
+    if ($self->negotiated_rates) {
+      if ($response->get_RatedShipment->get_NegotiatedRateCharges) {
+        $rate = $response->get_RatedShipment->get_NegotiatedRateCharges->get_TotalCharge->get_MonetaryValue;
+        $currency = $response->get_RatedShipment->get_NegotiatedRateCharges->get_TotalCharge->get_CurrencyCode;
+      }
+      else {
+        my $notice =  "Shipper Account/UserId is not qualified to receive negotiated rates. Using published rates.";
+        warn $notice;
+        $self->add_notice( $notice . "\n" );
+      }
+    }
     $self->service( 
       new Shipment::Service( 
         id        => $service_id,
@@ -723,8 +748,19 @@ sub ship {
     $self->tracking_id( $response->get_ShipmentResults()->get_ShipmentIdentificationNumber()->get_value );
     use Data::Currency;
     use Shipment::Service;
-    my $rate = ($self->negotiated_rates) ? $response->get_ShipmentResults()->get_NegotiatedRateCharges->get_TotalCharge->get_MonetaryValue : $response->get_ShipmentResults()->get_ShipmentCharges()->get_TotalCharges->get_MonetaryValue;
-    my $currency = ($self->negotiated_rates) ? $response->get_ShipmentResults()->get_NegotiatedRateCharges->get_TotalCharge->get_CurrencyCode : $response->get_ShipmentResults()->get_ShipmentCharges()->get_TotalCharges->get_CurrencyCode;
+    my $rate = $response->get_ShipmentResults->get_ShipmentCharges->get_TotalCharges->get_MonetaryValue;
+    my $currency = $response->get_ShipmentResults->get_ShipmentCharges->get_TotalCharges->get_CurrencyCode;
+    if ($self->negotiated_rates) {
+      if ($response->get_ShipmentResults->get_NegotiatedRateCharges) {
+        $rate = $response->get_ShipmentResults->get_NegotiatedRateCharges->get_TotalCharge->get_MonetaryValue;
+        $currency = $response->get_ShipmentResults->get_NegotiatedRateCharges->get_TotalCharge->get_CurrencyCode;
+      }
+      else {
+        my $notice =  "Shipper Account/UserId is not qualified to receive negotiated rates. Using published rates.";
+        warn $notice;
+        $self->add_notice( $notice . "\n" );
+      }
+    }
     $self->service( 
       new Shipment::Service( 
         id        => $service_id,
