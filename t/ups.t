@@ -151,6 +151,7 @@ $shipment = Shipment::UPS->new(
   packages => \@packages,
   printer_type => 'thermal',
   residential_address => 1,
+  negotiated_rates => 1,
 );
 
 is( $shipment->count_packages, 2, 'shipment has 2 packages');
