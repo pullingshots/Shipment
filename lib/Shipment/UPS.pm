@@ -384,11 +384,6 @@ sub _build_services {
           $rate = $service->get_NegotiatedRateCharges->get_TotalCharge->get_MonetaryValue;
           $currency = $service->get_NegotiatedRateCharges->get_TotalCharge->get_CurrencyCode;
         }
-        else {
-          my $notice =  "Shipper Account/UserId is not qualified to receive negotiated rates. Using published rates.";
-          warn $notice;
-          $self->add_notice( $notice . "\n" );
-        }
       }
       $services{$service->get_Service()->get_Code()->get_value} = Shipment::Service->new(
           id => $service->get_Service()->get_Code()->get_value,
@@ -541,11 +536,6 @@ sub rate {
       if ($response->get_RatedShipment->get_NegotiatedRateCharges) {
         $rate = $response->get_RatedShipment->get_NegotiatedRateCharges->get_TotalCharge->get_MonetaryValue;
         $currency = $response->get_RatedShipment->get_NegotiatedRateCharges->get_TotalCharge->get_CurrencyCode;
-      }
-      else {
-        my $notice =  "Shipper Account/UserId is not qualified to receive negotiated rates. Using published rates.";
-        warn $notice;
-        $self->add_notice( $notice . "\n" );
       }
     }
     $self->service( 
@@ -754,11 +744,6 @@ sub ship {
       if ($response->get_ShipmentResults->get_NegotiatedRateCharges) {
         $rate = $response->get_ShipmentResults->get_NegotiatedRateCharges->get_TotalCharge->get_MonetaryValue;
         $currency = $response->get_ShipmentResults->get_NegotiatedRateCharges->get_TotalCharge->get_CurrencyCode;
-      }
-      else {
-        my $notice =  "Shipper Account/UserId is not qualified to receive negotiated rates. Using published rates.";
-        warn $notice;
-        $self->add_notice( $notice . "\n" );
       }
     }
     $self->service( 
