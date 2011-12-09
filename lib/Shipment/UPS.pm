@@ -357,7 +357,7 @@ sub _build_services {
             },
             PackageWeight => {
               UnitOfMeasurement => {
-                Code => 'LBS',
+                Code => $units_type_map{$self->weight_unit} || $self->weight_unit,
               },
               Weight => 1,
             },
