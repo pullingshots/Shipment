@@ -4,3 +4,5 @@
 /Shipment-*/*
 /.build
 /accounts
+.pause
+soap-wsdl-src/
