@@ -1,0 +1,19 @@
+* download wsdl and xsd files from
+   * http://api.temando.com/schema/2009_06/server.wsdl
+   * http://api.temando.com/schema/2009_06/server.xsd
+   * http://api.temando.com/schema/2009_06/common.xsd
+
+* add <wsdl: to all tags in server.wsdl
+* change definition - xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+* copy/paste xsd files into <wsdl:types> </wsdl:types> section of server.wsdl
+* add empty complexType to all empty element definitions
+   * i.e. from this
+	<xsd:element name="getRequestsRequiringBooking"/>
+   * to this
+	<xsd:element name="getRequestsRequiringBooking">
+                <xsd:complexType>
+                </xsd:complexType>
+        </xsd:element>
+* remove all minOccurs="0"
+
+
