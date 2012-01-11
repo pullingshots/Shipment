@@ -16,4 +16,5 @@
         </xsd:element>
 * remove all minOccurs="0"
 
-
+* use command
+/usr/local/bin/wsdl2perl.pl -use_typemap -p Shipment::Temando::WSDL:: -b /home/baerg/Shipment/lib/ file:/home/baerg/Shipment/wsdl-files/Temando/server.wsdl

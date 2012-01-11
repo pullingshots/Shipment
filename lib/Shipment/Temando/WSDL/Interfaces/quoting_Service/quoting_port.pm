@@ -6,12 +6,18 @@ use Scalar::Util qw(blessed);
 use base qw(SOAP::WSDL::Client::Base);
 
 
+# only load if it hasn't been loaded before
+require Shipment::Temando::WSDL::Typemaps::quoting_Service
+    if not Shipment::Temando::WSDL::Typemaps::quoting_Service->can('get_class');
 
 sub START {
 
     my $service_address = $_[2]->{service_address} || 'https://api.temando.com/soapServer.html';
 
     $_[0]->set_proxy($service_address) if not $_[2]->{proxy};
+
+    $_[0]->set_class_resolver('Shipment::Temando::WSDL::Typemaps::quoting_Service')
+        if not $_[2]->{class_resolver};
 
     $_[0]->set_prefix($_[2]->{use_prefix}) if exists $_[2]->{use_prefix};
 }
@@ -21,7 +27,7 @@ sub getQuotesByRequest {
     die "getQuotesByRequest must be called as object method (\$self is <$self>)" if not blessed($self);
     return $self->SUPER::call({
         operation => 'getQuotesByRequest',
-        soap_action => '',
+        soap_action => 'getQuotesByRequest',
         style => 'document',
         body => {
             
