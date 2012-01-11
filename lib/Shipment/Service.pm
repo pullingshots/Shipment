@@ -24,7 +24,7 @@ for listing available services or storing details about a rate.
 
 =cut
 
-use MooseX::Types::DateTimeX qw( DateTime );
+use MooseX::Types::DateTime::ButMaintained qw( DateTime );
 use Data::Currency;
 use Moose 2.0000;
 
