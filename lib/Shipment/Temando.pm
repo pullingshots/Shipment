@@ -45,6 +45,8 @@ use Moose 2.0000;
 use Moose::Util::TypeConstraints;
 use Shipment::SOAP::WSDL;
 
+#$Shipment::SOAP::WSDL::Debug = 1;
+
 extends 'Shipment::Base';
 
 =head1 Class Attributes
@@ -108,6 +110,25 @@ sub _build_services {
       live => $self->live,
     }
   );
+
+    my @pieces;
+    foreach (@{ $self->packages }) {
+      push @pieces,
+        {
+            class => 'Freight',
+            mode => 'Less than load',
+            packaging => 'Carton',
+            qualifierFreightGeneralFragile => 'N',
+            distanceMeasurementType => 'Centimetres',
+            weightMeasurementType => 'Kilograms',
+            length => $_->length,
+            width => $_->width,
+            height => $_->height,
+            weight => $_->weight,
+            quantity => 1,
+            description => 'Contains bottle lids.',
+        };
+    }
   my $response;
 
   my %services;
@@ -116,28 +137,22 @@ sub _build_services {
     $response = $interface->getQuotesByRequest(
       {
         anythings => {
-          anything => {
-            class => 'Vehicle',
-            subclass => 'Car',
-            qualifierVehicleMake => 'Ford',
-            qualifierVehicleModel => 'Mustang',
-            qualifierVehicleDescription => 'GT Convertible 2dr Auto 3sp 289',
-            quantity => 1,
-          },
+          anything => \@pieces,
         },
 	anywhere => {
           itemNature => 'Domestic',
           itemMethod => 'Door to Door',
-          originCountry => 'AU',
-          originCode => '4000',
-          originSuburb => 'Brisbane',
-          destinationCountry => 'AU',
-          destinationCode => '2000',
-          destinationSuburb => 'Sydney',
+          originCountry => $self->from_address->country_code,
+          originCode => $self->from_address->postal_code,
+          originSuburb => $self->from_address->city,
+          destinationCountry => $self->to_address->country_code,
+          destinationCode => $self->to_address->postal_code,
+          destinationSuburb => $self->to_address->city,
           destinationIs => 'Residence',
+          originIs => 'Business',
         },
         anytime => {
-          readyDate => '2009-07-01',
+          readyDate => '2012-12-12',
           readyTime => 'PM',
         },
         general => {
@@ -152,7 +167,7 @@ sub _build_services {
       },
     );
 
-    warn $response->get_faultstring;
+    warn $response;
 
   } catch {
     warn $_;
