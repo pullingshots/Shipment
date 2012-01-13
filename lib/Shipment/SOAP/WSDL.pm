@@ -272,6 +272,7 @@ $fatpacked{"SOAP/WSDL.pm"} = <<'SOAP_WSDL';
   use 5.008;  # require at least perl 5.8
   
   our $Trace = 0;
+  our $Debug = 0;
   
   use version; our $VERSION = qv('2.00.99_3');
   
@@ -1491,8 +1492,10 @@ $fatpacked{"SOAP/WSDL/Client.pm"} = <<'SOAP_WSDL_CLIENT';
           header => $header,
           options => {prefix => $prefix_of{ $ident }},
       });
-  
-#warn "Request\n" . $envelope;
+
+      ## output raw request XML  
+      warn "Request\n" . $envelope if $Shipment::SOAP::WSDL::Debug;
+
       return $envelope if $no_dispatch_of{ $ident };
   
       # always quote SOAPAction header.
