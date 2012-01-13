@@ -5,6 +5,7 @@ use Class::Std::Fast::Storable;
 use Scalar::Util qw(blessed);
 use base qw(SOAP::WSDL::Client::Base);
 
+our $ns_url;
 
 # only load if it hasn't been loaded before
 require Shipment::Temando::WSDL::Typemaps::quoting_Service
@@ -12,8 +13,16 @@ require Shipment::Temando::WSDL::Typemaps::quoting_Service
 
 sub START {
 
-    my $service_address = $_[2]->{service_address} || 'https://api.temando.com/soapServer.html';
-
+    my $service_address;
+    if ($_[2]->{live}) {
+    	$service_address = 'https://api.temando.com/soapServer.html';
+	$ns_url = 'api.temando.com';
+    }
+    else {
+    	$service_address = 'http://training-api.temando.com/soapServer.html';
+	$ns_url = 'training-api.temando.com';
+    }
+	
     $_[0]->set_proxy($service_address) if not $_[2]->{proxy};
 
     $_[0]->set_class_resolver('Shipment::Temando::WSDL::Typemaps::quoting_Service')
@@ -27,7 +36,7 @@ sub getQuotesByRequest {
     die "getQuotesByRequest must be called as object method (\$self is <$self>)" if not blessed($self);
     return $self->SUPER::call({
         operation => 'getQuotesByRequest',
-        soap_action => 'getQuotesByRequest',
+        soap_action => '',
         style => 'document',
         body => {
             

@@ -2,7 +2,7 @@ package Shipment::Temando::WSDL::Types::Surname;
 use strict;
 use warnings;
 
-sub get_xmlns { 'http://api.temando.com/schema/2009_06/common.xsd'};
+sub get_xmlns { 'http://' . $Shipment::Temando::WSDL::Interfaces::quoting_Service::quoting_port::ns_url . '/schema/2009_06/common.xsd'};
 
 # derivation by restriction
 use base qw(
@@ -23,7 +23,7 @@ __END__
 =head1 DESCRIPTION
 
 Perl data type class for the XML Schema defined simpleType
-Surname from the namespace http://api.temando.com/schema/2009_06/common.xsd.
+Surname from the namespace http://' . $Shipment::Temando::WSDL::Interfaces::quoting_Service::quoting_port::ns_url . '/schema/2009_06/common.xsd.
 
 
 

@@ -5,7 +5,7 @@ use warnings;
 
 { # BLOCK to scope variables
 
-sub get_xmlns { 'http://api.temando.com/schema/2009_06/server.xsd' }
+sub get_xmlns { 'http://' . $Shipment::Temando::WSDL::Interfaces::quoting_Service::quoting_port::ns_url . '/schema/2009_06/server.xsd' }
 
 __PACKAGE__->__set_name('getManifestResponse');
 __PACKAGE__->__set_nillable();
@@ -146,7 +146,7 @@ Shipment::Temando::WSDL::Elements::getManifestResponse
 =head1 DESCRIPTION
 
 Perl data type class for the XML Schema defined element
-getManifestResponse from the namespace http://api.temando.com/schema/2009_06/server.xsd.
+getManifestResponse from the namespace http://' . $Shipment::Temando::WSDL::Interfaces::quoting_Service::quoting_port::ns_url . '/schema/2009_06/server.xsd.
 
 
 

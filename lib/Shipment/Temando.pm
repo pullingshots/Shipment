@@ -65,21 +65,16 @@ has 'password' => (
   isa => 'Str',
 );
 
-=head2 proxy_domain
+=head2 live
 
 This determines whether you will use the Temando training web service (for development) or the production web service (live)
-  * http://training-api.temando.com/soapServer.html (training)
-  * https://api.temando.com/soapServer.html (production)
 
 =cut
 
-has 'service_address' => (
+has 'live' => (
   is => 'rw',
-  isa => enum( [ qw(
-    http://training-api.temando.com/soapServer.html
-    https://api.temando.com/soapServer.html
-  ) ] ),
-  default => 'http://training-api.temando.com/soapServer.html',
+  isa => 'Bool',
+  default => 0,
 );
 
 =head1 Class Methods
@@ -110,7 +105,7 @@ sub _build_services {
   
   my $interface = Shipment::Temando::WSDL::Interfaces::quoting_Service::quoting_port->new(
     {
-      service_address => $self->service_address,
+      live => $self->live,
     }
   );
   my $response;
@@ -157,7 +152,7 @@ sub _build_services {
       },
     );
 
-    warn $response;
+    warn $response->get_faultstring;
 
   } catch {
     warn $_;

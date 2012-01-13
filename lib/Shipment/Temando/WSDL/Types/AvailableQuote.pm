@@ -5,7 +5,7 @@ use warnings;
 
 __PACKAGE__->_set_element_form_qualified(0);
 
-sub get_xmlns { 'http://api.temando.com/schema/2009_06/common.xsd' };
+sub get_xmlns { 'http://' . $Shipment::Temando::WSDL::Interfaces::quoting_Service::quoting_port::ns_url . '/schema/2009_06/common.xsd' };
 
 our $XML_ATTRIBUTE_CLASS = 'Shipment::Temando::WSDL::Types::AvailableQuote::_AvailableQuote::XmlAttr';
 
@@ -373,7 +373,7 @@ Shipment::Temando::WSDL::Types::AvailableQuote
 =head1 DESCRIPTION
 
 Perl data type class for the XML Schema defined complexType
-AvailableQuote from the namespace http://api.temando.com/schema/2009_06/common.xsd.
+AvailableQuote from the namespace http://' . $Shipment::Temando::WSDL::Interfaces::quoting_Service::quoting_port::ns_url . '/schema/2009_06/common.xsd.
 
 
 
