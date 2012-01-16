@@ -393,13 +393,17 @@ sub rate {
     try {
       use Data::Currency;
       use Shipment::Service;
+      my ($y, $m, $d) = split('-', $response->get_ShipmentEstimates()->[0]->get_ShipmentEstimate()->get_ShipmentDate()->get_value);
+      my $ship_date = { year => $y, month => $m, day => $d };
+      my ($y, $m, $d) = split('-', $response->get_ShipmentEstimates()->[0]->get_ShipmentEstimate()->get_ExpectedDeliveryDate()->get_value);
+      my $eta = { year => $y, month => $m, day => $d };
       $self->service( 
         new Shipment::Service( 
           id        => $service_id,
           name      => $self->services->{$service_id}->name,
           etd       => $response->get_ShipmentEstimates()->[0]->get_ShipmentEstimate()->get_EstimatedTransitDays()->get_value,
-          ship_date => $response->get_ShipmentEstimates()->[0]->get_ShipmentEstimate()->get_ShipmentDate()->get_value,
-          eta       => $response->get_ShipmentEstimates()->[0]->get_ShipmentEstimate()->get_ExpectedDeliveryDate()->get_value,
+          ship_date => $ship_date,
+          eta       => $eta,
           cost      => Data::Currency->new($response->get_ShipmentEstimates()->[0]->get_ShipmentEstimate()->get_TotalPrice, 'CAD'),
         )
       );
