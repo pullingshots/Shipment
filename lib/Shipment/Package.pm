@@ -43,9 +43,22 @@ has 'id' => (
   isa => 'Str',
 );
 
+=head2 type
+
+The package type as defined by a shipping service (i.e. "envelope")
+
+type: String
+
+=cut
+
+has 'type' => (
+  is => 'rw',
+  isa => 'Str',
+);
+
 =head2 name
 
-A descriptive name for the package type (box, tube, custom, etc)
+A descriptive name for the package (i.e. "12x12x12 box")
 
 type: String
 
@@ -67,6 +80,18 @@ type: String
 has 'notes' => (
   is => 'rw',
   isa => 'Str',
+);
+
+=head2 fragile
+
+Whether or not the items being sent are fragile
+
+=cut
+
+has 'fragile' => (
+  is => 'rw',
+  isa => 'Bool',
+  default => 0,
 );
 
 =head2 weight

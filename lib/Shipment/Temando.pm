@@ -79,6 +79,108 @@ has 'live' => (
   default => 0,
 );
 
+=head2 class, subclass
+
+These define the type of shipment.
+
+Currently the default (and only supported) options are class="General Goods" and subclass="Household Goods". This should be sane defaults for most shipments.
+
+Temando supports many other options here including Freight (pallets, containers, etc) and Vehicles.
+
+=cut
+
+has 'class' => (
+  is => 'rw',
+  default => 'General Goods',
+);
+
+has 'subclass' => (
+  is => 'rw',
+  default => 'Household Goods',
+);
+
+=head2 Shipment::Base type maps
+
+Shipment::Base provides abstract types which need to be mapped to Temando (i.e. package_type of "envelope" maps to Temando "Document Envelope")
+
+=cut
+
+my %bill_type_map = (
+  'sender'      => '',
+  'recipient'   => '',
+  'third_party' => '',
+);
+
+my %signature_type_map = (
+  'default'      => '',
+  'required'     => '',
+  'not_required' => undef,
+  'adult'        => '',
+);
+
+my %package_type_map = (
+  'custom'              => 'Carton',
+  'carton'              => 'Carton',
+  'envelope'            => 'Document Envelope',
+  'tube'                => 'Tube',
+  'box'                 => 'Box',
+  'pack'                => 'Flat Pack',
+  'pallet'              => 'Pallet',
+  'cylinder'            => 'Cylinder',
+  'letter'              => 'Letter',
+  'parcel'              => 'Parcel',
+  'bag'                 => 'Satchel/Bag',
+  'skid'                => 'Skid',
+  'unpacked'            => 'Unpackaged or N/A',
+  'wheel'               => 'Wheel/Tyre',
+);
+
+my %units_type_map = (
+  'lb'          => 'Pounds',
+  'oz'          => 'Ounces',
+  'kg'          => 'Kilograms',
+  'g'          => 'Grams',
+  'in'          => 'Inches',
+  'ft'          => 'Feet',
+  'cm'          => 'Centimetres',
+  'm'           => 'Metres',
+);
+
+=head2 custom package types
+
+Temando provides package types in addition to the defaults in Shipment::Base
+
+=cut
+
+enum 'PackageOptions' => keys %package_type_map;
+
+has '+package_type' => (
+  isa => 'PackageOptions',
+);
+
+my %printer_type_map = (
+  'pdf'     => '',
+  'thermal' => '',
+  'image'   => '',
+);
+
+my %label_content_type_map = (
+  'pdf'     => 'application/pdf',
+  'thermal' => 'text/ups-epl',
+  'image'   => 'image/gif',
+);
+
+=head2 default currency
+
+The default currency is AUD
+
+=cut
+
+has '+currency' => (
+  default => 'AUD',
+);
+
+
 =head1 Class Methods
 
 =head2 _build_services
@@ -88,13 +190,9 @@ This calls getQuotesByRequest from the Temando API
 Each Quote that is returned is added to services
 
 The following service mapping is used:
-  * ground => ??
-  * express => ??
-  * priority => ??
-
-This method only uses the first package from $self->packages.
-
-The idea is to list what services are available, but for accurate rate comparisons of multi-piece shipments, the rate method should be used.
+  * ground => cheapest where <usingGeneralRoad>
+  * express => cheapest where <usingExpressRoad>
+  * priority => cheapest where <usingExpressAir>
 
 =cut
 
@@ -115,18 +213,18 @@ sub _build_services {
     foreach (@{ $self->packages }) {
       push @pieces,
         {
-            class => 'Freight',
-            mode => 'Less than load',
-            packaging => 'Carton',
-            qualifierFreightGeneralFragile => 'N',
-            distanceMeasurementType => 'Centimetres',
-            weightMeasurementType => 'Kilograms',
+            class => $self->class,
+            subclass => $self->subclass,
+            packaging => $package_type_map{$_->type} || $package_type_map{$self->package_type},
+            qualifierFreightGeneralFragile => ($_->fragile) ? 'Y' : 'N',
+            distanceMeasurementType => $units_type_map{$self->dim_unit},
+            weightMeasurementType => $units_type_map{$self->weight_unit},
             length => $_->length,
             width => $_->width,
             height => $_->height,
             weight => $_->weight,
             quantity => 1,
-            description => 'Contains bottle lids.',
+            description => $_->notes,
         };
     }
   my $response;
