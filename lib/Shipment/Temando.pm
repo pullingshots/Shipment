@@ -156,6 +156,7 @@ enum 'PackageOptions' => keys %package_type_map;
 
 has '+package_type' => (
   isa => 'PackageOptions',
+  default => 'custom',
 );
 
 my %printer_type_map = (
@@ -209,27 +210,28 @@ sub _build_services {
     }
   );
 
-    my @pieces;
-    foreach (@{ $self->packages }) {
-      push @pieces,
-        {
-            class => $self->class,
-            subclass => $self->subclass,
-            packaging => $package_type_map{$_->type} || $package_type_map{$self->package_type},
-            qualifierFreightGeneralFragile => ($_->fragile) ? 'Y' : 'N',
-            distanceMeasurementType => $units_type_map{$self->dim_unit},
-            weightMeasurementType => $units_type_map{$self->weight_unit},
-            length => $_->length,
-            width => $_->width,
-            height => $_->height,
-            weight => $_->weight,
-            quantity => 1,
-            description => $_->notes,
-        };
-    }
-  my $response;
+  my @pieces;
+  foreach (@{ $self->packages }) {
+    push @pieces,
+      {
+          class => $self->class,
+          subclass => $self->subclass,
+          packaging => ($_->type) ? $package_type_map{$_->type} : $package_type_map{$self->package_type},
+          qualifierFreightGeneralFragile => ($_->fragile) ? 'Y' : 'N',
+          distanceMeasurementType => $units_type_map{$self->dim_unit},
+          weightMeasurementType => $units_type_map{$self->weight_unit},
+          length => $_->length,
+          width => $_->width,
+          height => $_->height,
+          weight => $_->weight,
+          quantity => 1,
+          description => $_->notes,
+      };
+  }
 
+  my $response;
   my %services;
+
   try {
 
     $response = $interface->getQuotesByRequest(
@@ -237,7 +239,7 @@ sub _build_services {
         anythings => {
           anything => \@pieces,
         },
-	anywhere => {
+        anywhere => {
           itemNature => 'Domestic',
           itemMethod => 'Door to Door',
           originCountry => $self->from_address->country_code,
@@ -265,7 +267,29 @@ sub _build_services {
       },
     );
 
-    warn $response;
+    #warn $response;
+
+    foreach my $quote (@{ $response->get_quote }) {
+      my $id = $quote->get_carrier->get_id->get_value . $quote->get_deliveryMethod->get_value;
+      $services{$id} = Shipment::Service->new(
+          id        => $quote->get_carrier->get_id->get_value,
+          name      => $quote->get_carrier->get_companyName->get_value . " - " . $quote->get_deliveryMethod->get_value,
+          etd       => $quote->get_etaTo->get_value,
+          cost      => Data::Currency->new($quote->get_totalPrice->get_value, $quote->get_currency->get_value),
+        );
+
+      my $type; 
+      $type = 'ground' if $quote->get_usingGeneralRoad->get_value eq 'Y';
+      $type = 'express' if $quote->get_usingExpressRoad->get_value eq 'Y';
+      $type = 'priority' if $quote->get_usingExpressAir->get_value eq 'Y';
+
+      if ($services{$type}) {
+        $services{$type} = $services{$id} if $services{$type}->cost > $services{$id}->cost;
+      }
+      else {
+        $services{$type} = $services{$id};
+      }
+    }
 
   } catch {
     warn $_;

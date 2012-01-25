@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 6;
+use Test::More tests => 13;
 
 my ($username, $password) = @ARGV;
 
@@ -10,7 +10,7 @@ $username    ||= $ENV{'TEMANDO_USERNAME'};
 $password ||= $ENV{'TEMANDO_PASSWORD'};
 
 SKIP: {
-  skip "Tests can only be run with a valid Temando Username and Password. The following environment variables are used: TEMANDO_USERNAME TEMANDO_PASSWORD.", 6 unless $username && $password;
+  skip "Tests can only be run with a valid Temando Username and Password. The following environment variables are used: TEMANDO_USERNAME TEMANDO_PASSWORD.", 13 unless $username && $password;
 }
 
 if ($username && $password) {
@@ -71,15 +71,14 @@ is( $shipment->count_packages, 1, 'shipment has 1 packages');
 
 ok( defined $shipment->services, 'got services');
 
-=head1 
-
-ok( defined $shipment->services, 'got services');
 ok( defined $shipment->services->{ground}, 'got a ground service');
-is( $shipment->services->{ground}->id, '03', 'ground service_id') if defined $shipment->services->{ground};
+is( $shipment->services->{ground}->id, '54440', 'ground service_id') if defined $shipment->services->{ground};
 ok( defined $shipment->services->{express}, 'got an express service');
-is( $shipment->services->{express}->id, '02', 'express service_id') if defined $shipment->services->{express};
+is( $shipment->services->{express}->id, '54426', 'express service_id') if defined $shipment->services->{express};
 ok( defined $shipment->services->{priority}, 'got a priority service');
-is( $shipment->services->{priority}->id, '01', 'priority service_id') if defined $shipment->services->{priority};
+is( $shipment->services->{priority}->id, '54359', 'priority service_id') if defined $shipment->services->{priority};
+
+=head1 
 
 $shipment->rate( 'ground' );
 
