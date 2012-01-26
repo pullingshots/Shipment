@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 18;
+use Test::More tests => 19;
 
 my ($username, $password) = @ARGV;
 
@@ -117,10 +117,20 @@ $shipment = Shipment::Temando->new(
 $shipment->ship( 'ground' );
 
 is( $shipment->service->cost->value, $rate, 'rate matches actual cost') if defined $shipment->service;
-ok( defined $shipment->labels, 'got labels' );
-is( $shipment->labels->content_type, 'application/pdf', 'labels are a pdf') if defined $shipment->get_package(0)->label;
+ok( defined $shipment->documents, 'got labels' );
+is( $shipment->documents->content_type, 'application/pdf', 'labels are a pdf') if defined $shipment->documents;
 
 #$shipment->documents->save;
 #$shipment->manifest->save;
 
+my $request_id = $shipment->request_id;
+
+$shipment = Shipment::Temando->new(
+  username => $username,
+  password => $password,
+  request_id => $request_id,
+);
+
+$shipment->cancel;
+is( $shipment->error, undef, 'successfully cancelled shipment');
 

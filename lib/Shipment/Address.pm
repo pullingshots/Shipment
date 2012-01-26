@@ -33,6 +33,7 @@ This class defines a shipping address and provides some methods for parsing the 
 
 use Moose 2.0000;
 use MooseX::Aliases 0.10;
+use Moose::Util::TypeConstraints;
 
 =head1 Class Attributes
 
@@ -67,6 +68,18 @@ has 'company' => (
   is => 'rw',
   isa => 'Str',
   default => 'n/a',
+);
+
+=head2 address_type
+
+Whether the address is residential or business
+
+=cut
+
+has 'address_type' => (
+  is => 'rw',
+  isa => enum( [ qw/residential business/ ] ),
+  default => 'business',
 );
 
 =head2 address1, address2, address3

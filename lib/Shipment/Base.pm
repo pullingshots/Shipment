@@ -47,6 +47,7 @@ use Data::Currency;
 use Shipment::Service;
 use Moose 2.0000;
 use Moose::Util::TypeConstraints;
+use MooseX::Types::DateTime::ButMaintained qw( DateTime );
 
 =head1 Class Attributes
 
@@ -263,6 +264,21 @@ has 'currency' => (
   is => 'rw',
   isa => 'Str',
   default => 'USD',
+);
+
+=head2 pickup_date
+
+When the shipment will be ready for pickup
+
+type: DateTime
+
+=cut
+
+has 'pickup_date' => (
+  is => 'rw',
+  isa => DateTime,
+  default => time(),
+  coerce => 1,
 );
 
 =head2 services

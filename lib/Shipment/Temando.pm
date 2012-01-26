@@ -99,6 +99,36 @@ has 'subclass' => (
   default => 'Household Goods',
 );
 
+=head2 request_id
+
+The Temando request id
+
+This will be set upon a successful call to "ship"
+
+It can also be set before a call to "cancel"
+
+type: String
+
+=cut
+
+has 'request_id' => (
+  is => 'rw',
+  isa => 'Str',
+);
+
+=head2 comments
+
+Additional comments about the shipment
+
+type: String
+
+=cut
+
+has 'comments' => (
+  is => 'rw',
+  isa => 'Str',
+);
+
 =head2 Shipment::Base type maps
 
 Shipment::Base provides abstract types which need to be mapped to Temando (i.e. package_type of "envelope" maps to Temando "Document Envelope")
@@ -106,9 +136,9 @@ Shipment::Base provides abstract types which need to be mapped to Temando (i.e. 
 =cut
 
 my %bill_type_map = (
-  'sender'      => '',
-  'recipient'   => '',
-  'third_party' => '',
+  'sender'      => 'Account',
+  'recipient'   => undef,
+  'third_party' => undef,
 );
 
 my %signature_type_map = (
@@ -159,16 +189,22 @@ has '+package_type' => (
   default => 'custom',
 );
 
+=head2 printer types
+
+Temando does not offer true thermal printing, all labels are provided as documents (pdf, doc, or xls), thermal labels are simply a 4x6 documents.
+
+=cut
+
 my %printer_type_map = (
-  'pdf'     => '',
-  'thermal' => '',
-  'image'   => '',
+  'pdf'        => 'Standard',
+  'thermal'        => 'Thermal',
+  'image'      => 'Standard',
 );
 
-my %label_content_type_map = (
-  'pdf'     => 'application/pdf',
-  'thermal' => 'text/ups-epl',
-  'image'   => 'image/gif',
+my %content_type_map = (
+  'application/pdf' => 'pdf',
+  'application/msword' => 'doc',
+  'application/excel'   => 'xls',
 );
 
 =head2 default currency
@@ -210,6 +246,8 @@ sub _build_services {
     }
   );
 
+  my $goods_value = 1;
+
   my @pieces;
   foreach (@{ $self->packages }) {
     push @pieces,
@@ -227,6 +265,7 @@ sub _build_services {
           quantity => 1,
           description => $_->notes,
       };
+    $goods_value += $_->insured_value->value;
   }
 
   my $response;
@@ -240,23 +279,23 @@ sub _build_services {
           anything => \@pieces,
         },
         anywhere => {
-          itemNature => 'Domestic',
-          itemMethod => 'Door to Door',
+          itemNature => 'Domestic', ## Temando currently only supports domestic shipments
+          itemMethod => 'Door to Door', ## Temando also supports 'Depot to Depot'
           originCountry => $self->from_address->country_code,
           originCode => $self->from_address->postal_code,
           originSuburb => $self->from_address->city,
           destinationCountry => $self->to_address->country_code,
           destinationCode => $self->to_address->postal_code,
           destinationSuburb => $self->to_address->city,
-          destinationIs => 'Residence',
-          originIs => 'Business',
+          destinationIs => ($self->from_address->address_type eq 'residential') ? 'Residence' : 'Business',
+          originIs => ($self->from_address->address_type eq 'residential') ? 'Residence' : 'Business',
         },
         anytime => {
-          readyDate => '2012-12-12',
-          readyTime => 'PM',
+          readyDate => $self->pickup_date->ymd,
+          readyTime => $self->pickup_date->strftime('%p'),
         },
         general => {
-          goodsValue => '2000.00',
+          goodsValue => $goods_value,
         }
       },
       {
@@ -270,6 +309,7 @@ sub _build_services {
     #warn $response;
 
     foreach my $quote (@{ $response->get_quote }) {
+      #warn $quote;
       my $id = $quote->get_carrier->get_id->get_value . $quote->get_deliveryMethod->get_value;
       $services{$id} = Shipment::Service->new(
           id            => $id,
@@ -284,6 +324,9 @@ sub _build_services {
           service_name  => $quote->get_deliveryMethod->get_value,
           guaranteed    => ($quote->get_guaranteedEta->get_value eq 'Y') ? 1 : 0,
         );
+      ## TODO: store insurance and carbon offset extra charges so that we can pull the details in to the makeBooking quote if required
+      ##       easiest would probably be to store them in $services{"$id-insurance"}
+      ##       details are in @{$quote->get_extras} where $extra->get_summary eq 'Insurance' or 'Carbon Offset'
 
       my $type; 
       $type = 'ground' if $quote->get_usingGeneralRoad->get_value eq 'Y';
@@ -332,7 +375,11 @@ sub rate {
 
 =head2 ship
 
-This method calls ProcessShipment from the Shipping API
+This method calls makeBookingByRequest from the Temando API
+
+All labels are available in $self->documents
+
+The consignment document is available in $self->manifest
 
 =cut
 
@@ -360,6 +407,8 @@ sub ship {
     }
   );
 
+  my $goods_value = 1;
+
   my @pieces;
   foreach (@{ $self->packages }) {
     push @pieces,
@@ -377,15 +426,14 @@ sub ship {
           quantity => 1,
           description => $_->notes,
       };
+    $goods_value += $_->insured_value->value;
   }
 
+  ## TODO: deal with credit card billing
   my $payment;
-  $payment->{paymentType} = $bill_type_map{$self->bill_type} || 'Account';
+  $payment->{paymentType} = $bill_type_map{$self->bill_type};
 
-  my $shipto = {
-    Name => $self->to_address->company,
-    AttentionName => $self->to_address->name,
-  };
+  ## TODO: add Insurance and Carbon Offset extra charges to quote if requested
 
   my $response;
   my %services;
@@ -398,23 +446,23 @@ sub ship {
           anything => \@pieces,
         },
         anywhere => {
-          itemNature => 'Domestic',
-          itemMethod => 'Door to Door',
+          itemNature => 'Domestic', ## Temando currently only supports domestic shipments
+          itemMethod => 'Door to Door', ## Temando also supports 'Depot to Depot'
           originCountry => $self->from_address->country_code,
           originCode => $self->from_address->postal_code,
           originSuburb => $self->from_address->city,
           destinationCountry => $self->to_address->country_code,
           destinationCode => $self->to_address->postal_code,
           destinationSuburb => $self->to_address->city,
-          destinationIs => 'Residence',
-          originIs => 'Business',
+          destinationIs => ($self->from_address->address_type eq 'residential') ? 'Residence' : 'Business',
+          originIs => ($self->from_address->address_type eq 'residential') ? 'Residence' : 'Business',
         },
         anytime => {
-          readyDate => '2012-12-12',
-          readyTime => 'PM',
+          readyDate => $self->pickup_date->ymd,
+          readyTime => $self->pickup_date->strftime('%p'),
         },
         general => {
-          goodsValue => '2000.00',
+          goodsValue => $goods_value,
         },
         origin => {
           contactName => $self->from_address->contact,
@@ -450,10 +498,10 @@ sub ship {
           carrierId       => $self->service->carrier_id,
         },
         payment => $payment,
-        instructions => '',
-        reference => '',
-        comments => '',
-        labelPrinterType => 'Thermal',
+        instructions => $self->special_instructions,
+        reference => join(" ", $self->all_references),
+        comments => $self->comments,
+        labelPrinterType => $printer_type_map{$self->printer_type},
       },
       {
         UsernameToken => {
@@ -468,15 +516,18 @@ sub ship {
     use Shipment::Label;
     use MIME::Base64;
 
-    $self->tracking_id( $response->get_consignmentNumber->get_value );
+    my $tracking_id = $response->get_consignmentNumber->get_value || $response->get_bookingNumber->get_value || $response->get_requestId->get_value;
+    $self->tracking_id( $tracking_id );
+    $self->request_id( $response->get_requestId->get_value );
+
     my $data = decode_base64($response->get_labelDocument->get_value);
     $self->documents(
         Shipment::Label->new(
           {
-            tracking_id => $response->get_consignmentNumber->get_value,
+            tracking_id => $tracking_id,
             content_type => $response->get_labelDocumentType->get_value,
             data => $data,
-            file_name => $response->get_consignmentNumber->get_value . '-labels.pdf',
+            file_name => $tracking_id . '-labels.' . $content_type_map{$response->get_labelDocumentType->get_value},
           },
         )
       );
@@ -487,23 +538,23 @@ sub ship {
           {
             content_type => $response->get_consignmentDocumentType->get_value,
             data => $data,
-            file_name => $response->get_consignmentNumber->get_value . '-manifest.pdf',
+            file_name => $tracking_id . '-manifest.' . $content_type_map{$response->get_consignmentDocumentType->get_value},
           },
         )
       );
 
     foreach (@{ $self->packages }) {
-      $_->tracking_id( $response->get_consignmentNumber->get_value );
+      $_->tracking_id( $tracking_id );
 
       $data = decode_base64($response->get_labelDocument->get_value);
 
       $_->label(
         Shipment::Label->new(
           {
-            tracking_id => $response->get_consignmentNumber->get_value,
+            tracking_id => $tracking_id,
             content_type => $response->get_labelDocumentType->get_value,
             data => $data,
-            file_name => $response->get_consignmentNumber->get_value . '.pdf',
+            file_name => $tracking_id . '.' . $content_type_map{$response->get_labelDocumentType->get_value},
           },
         )
       );
@@ -516,5 +567,94 @@ sub ship {
   };
 
 }
+
+=head2 cancel
+
+This method calls cancelRequest from the Temando API
+
+It uses $self->request_id to identify the request to be cancelled
+
+returns "Cancelled"  if successful,
+
+=cut
+
+sub cancel {
+  my $self = shift;
+
+  if (!$self->request_id) {
+    $self->error('no request id provided');
+    return;
+  }
+
+  use Shipment::Temando::WSDL::Interfaces::quoting_Service::quoting_port;
+  
+  my $interface = Shipment::Temando::WSDL::Interfaces::quoting_Service::quoting_port->new(
+    {
+      live => $self->live,
+    }
+  );
+
+  my $response = $interface->cancelRequest(
+    {
+      requestId => $self->request_id,
+    },
+    {
+      UsernameToken => {
+        Username => $self->username,
+        Password => $self->password,
+      },
+    },
+  );
+  #warn $response;
+
+  my $error;
+  try {
+    $error = $response->get_faultstring;
+  }
+  catch { };
+
+  if ($error) {
+    warn $response->get_faultstring;
+    $self->error( $response->get_faultcode->get_value . ":" . $response->get_faultstring->get_value );
+    return;
+  }
+  else {
+    return 'Cancelled';
+  }
+
+}
+
+=head1 AUTHOR
+
+Andrew Baerg @ <andrew at pullingshots dot ca>
+
+http://pullingshots.ca/
+
+=head1 ACKNOWLEDGEMENTS
+
+SiteSuite Australasia (http://www.sitesuite.com.au/) commissioned and paid for the development of this module
+
+=head1 BUGS
+
+Please contact me directly.
+
+=head1 COPYRIGHT
+
+Copyright (C) 2012 Andrew J Baerg, All Rights Reserved
+
+=head1 NO WARRANTY
+
+Absolutely, positively NO WARRANTY, neither express or implied, is
+offered with this software.  You use this software at your own risk.  In
+case of loss, no person or entity owes you anything whatsoever.  You
+have been warned.
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+=cut
+
 
 1;

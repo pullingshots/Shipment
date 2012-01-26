@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 18;
+use Test::More tests => 19;
 
 my ($username, $password) = @ARGV;
 
@@ -63,6 +63,8 @@ my $shipment = Shipment::Temando->new(
 #  live => 1,
 );
 
+$shipment->pickup_date->set_time_zone('Australia/Sydney');
+
 ok( defined $shipment, 'got a shipment');
 
 ok( defined $shipment->from_address, 'got a shipment->from_address address' );
@@ -97,6 +99,7 @@ $shipment = Shipment::Temando->new(
 #  live => 1,
 );
 
+$shipment->pickup_date->set_time_zone('Australia/Sydney');
 $shipment->rate( 'ground' );
 
 ok( defined $shipment->service, 'got a ground rate');
@@ -114,13 +117,24 @@ $shipment = Shipment::Temando->new(
 #  live => 1,
 );
 
+$shipment->pickup_date->set_time_zone('Australia/Sydney');
 $shipment->ship( 'ground' );
 
 is( $shipment->service->cost->value, $rate, 'rate matches actual cost') if defined $shipment->service;
-ok( defined $shipment->labels, 'got labels' );
-is( $shipment->labels->content_type, 'application/pdf', 'labels are a pdf') if defined $shipment->get_package(0)->label;
+ok( defined $shipment->documents, 'got labels' );
+is( $shipment->documents->content_type, 'application/pdf', 'labels are a pdf') if defined $shipment->documents;
 
 #$shipment->documents->save;
 #$shipment->manifest->save;
 
+my $request_id = $shipment->request_id;
+
+$shipment = Shipment::Temando->new(
+  username => $username,
+  password => $password,
+  request_id => $request_id,
+);
+
+$shipment->cancel;
+is( $shipment->error, undef, 'successfully cancelled shipment');
 
