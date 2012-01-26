@@ -272,10 +272,17 @@ sub _build_services {
     foreach my $quote (@{ $response->get_quote }) {
       my $id = $quote->get_carrier->get_id->get_value . $quote->get_deliveryMethod->get_value;
       $services{$id} = Shipment::Service->new(
-          id        => $quote->get_carrier->get_id->get_value,
-          name      => $quote->get_carrier->get_companyName->get_value . " - " . $quote->get_deliveryMethod->get_value,
-          etd       => $quote->get_etaTo->get_value,
-          cost      => Data::Currency->new($quote->get_totalPrice->get_value, $quote->get_currency->get_value),
+          id            => $id,
+          name          => $quote->get_carrier->get_companyName->get_value . " - " . $quote->get_deliveryMethod->get_value,
+          etd           => $quote->get_etaTo->get_value,
+          pickup_etd    => $quote->get_etaFrom->get_value,
+          cost          => Data::Currency->new($quote->get_totalPrice->get_value, $quote->get_currency->get_value),
+          base_cost     => Data::Currency->new($quote->get_basePrice->get_value, $quote->get_currency->get_value),
+          tax           => Data::Currency->new($quote->get_tax->get_value, $quote->get_currency->get_value),
+          carrier_id    => $quote->get_carrier->get_id->get_value,
+          carrier_name  => $quote->get_carrier->get_companyName->get_value,
+          service_name  => $quote->get_deliveryMethod->get_value,
+          guaranteed    => ($quote->get_guaranteedEta->get_value eq 'Y') ? 1 : 0,
         );
 
       my $type; 
@@ -293,11 +300,221 @@ sub _build_services {
 
   } catch {
     warn $_;
-    warn $response->get_faultcode;
     warn $response->get_faultstring;
+    $self->error( $response->get_faultcode->get_value . ":" . $response->get_faultstring->get_value );
   };
 
   \%services
+}
+
+=head2 rate
+
+This method sets $self->service to $self->services{$service_id}
+
+=cut
+
+sub rate {
+  my ( $self, $service_id ) = @_;
+
+  try { 
+    $service_id = $self->services->{$service_id}->id;
+  } catch {
+    warn $_;
+    warn "service ($service_id) not available";
+    $self->error( "service ($service_id) not available" );
+    $service_id = '';
+  };
+  return unless $service_id;
+
+  $self->service($self->services->{$service_id});
+
+}
+
+=head2 ship
+
+This method calls ProcessShipment from the Shipping API
+
+=cut
+
+sub ship {
+  my ( $self, $service_id ) = @_;
+
+  try {
+    $self->rate($service_id);
+    $service_id = $self->service->id;
+  } catch {
+    warn $_;
+    warn "service ($service_id) not available";
+    $self->error( "service ($service_id) not available" );
+    $service_id = '';
+  };
+  return unless $service_id;
+
+  use Shipment::Package;
+  use Shipment::Service;
+  use Shipment::Temando::WSDL::Interfaces::quoting_Service::quoting_port;
+  
+  my $interface = Shipment::Temando::WSDL::Interfaces::quoting_Service::quoting_port->new(
+    {
+      live => $self->live,
+    }
+  );
+
+  my @pieces;
+  foreach (@{ $self->packages }) {
+    push @pieces,
+      {
+          class => $self->class,
+          subclass => $self->subclass,
+          packaging => ($_->type) ? $package_type_map{$_->type} : $package_type_map{$self->package_type},
+          qualifierFreightGeneralFragile => ($_->fragile) ? 'Y' : 'N',
+          distanceMeasurementType => $units_type_map{$self->dim_unit},
+          weightMeasurementType => $units_type_map{$self->weight_unit},
+          length => $_->length,
+          width => $_->width,
+          height => $_->height,
+          weight => $_->weight,
+          quantity => 1,
+          description => $_->notes,
+      };
+  }
+
+  my $payment;
+  $payment->{paymentType} = $bill_type_map{$self->bill_type} || 'Account';
+
+  my $shipto = {
+    Name => $self->to_address->company,
+    AttentionName => $self->to_address->name,
+  };
+
+  my $response;
+  my %services;
+
+  try {
+
+    $response = $interface->makeBookingByRequest(
+      {
+        anythings => {
+          anything => \@pieces,
+        },
+        anywhere => {
+          itemNature => 'Domestic',
+          itemMethod => 'Door to Door',
+          originCountry => $self->from_address->country_code,
+          originCode => $self->from_address->postal_code,
+          originSuburb => $self->from_address->city,
+          destinationCountry => $self->to_address->country_code,
+          destinationCode => $self->to_address->postal_code,
+          destinationSuburb => $self->to_address->city,
+          destinationIs => 'Residence',
+          originIs => 'Business',
+        },
+        anytime => {
+          readyDate => '2012-12-12',
+          readyTime => 'PM',
+        },
+        general => {
+          goodsValue => '2000.00',
+        },
+        origin => {
+          contactName => $self->from_address->contact,
+          companyName => $self->from_address->company,
+          street      => $self->from_address->address1 . " " . $self->from_address->address2,
+          suburb      => $self->from_address->city,
+          state       => $self->from_address->province,
+          code        => $self->from_address->postal_code,
+          country     => $self->from_address->country_code,
+          phone1      => $self->from_address->phone || undef,
+          email       => $self->from_address->email || undef,
+        },
+        destination => {
+          contactName => $self->to_address->contact,
+          companyName => $self->to_address->company,
+          street      => $self->to_address->address1 . " " . $self->to_address->address2,
+          suburb      => $self->to_address->city,
+          state       => $self->to_address->province,
+          code        => $self->to_address->postal_code,
+          country     => $self->to_address->country_code,
+          phone1      => $self->to_address->phone || undef,
+          email       => $self->to_address->email || undef,
+        },
+        quote => {
+          totalPrice  => $self->service->cost->value,
+          basePrice   => $self->service->base_cost->value,
+          tax         => $self->service->tax->value,
+          currency    => $self->service->cost->code,
+          deliveryMethod  => $self->service->service_name,
+          etaFrom         => $self->service->pickup_etd,
+          etaTo           => $self->service->etd,
+          guaranteedEta   => ($self->service->guaranteed) ? 'Y' : 'N',
+          carrierId       => $self->service->carrier_id,
+        },
+        payment => $payment,
+        instructions => '',
+        reference => '',
+        comments => '',
+        labelPrinterType => 'Thermal',
+      },
+      {
+        UsernameToken => {
+          Username => $self->username,
+          Password => $self->password,
+        },
+      },
+    );
+
+    #warn $response;
+
+    use Shipment::Label;
+    use MIME::Base64;
+
+    $self->tracking_id( $response->get_consignmentNumber->get_value );
+    my $data = decode_base64($response->get_labelDocument->get_value);
+    $self->labels(
+        Shipment::Label->new(
+          {
+            tracking_id => $response->get_consignmentNumber->get_value,
+            content_type => $response->get_labelDocumentType->get_value,
+            data => $data,
+            file_name => $response->get_consignmentNumber->get_value . '-labels.pdf',
+          },
+        )
+      );
+
+    $data = decode_base64($response->get_consignmentDocument->get_value);
+    $self->manifest(
+        Shipment::Label->new(
+          {
+            content_type => $response->get_consignmentDocumentType->get_value,
+            data => $data,
+            file_name => $response->get_consignmentNumber->get_value . '-manifest.pdf',
+          },
+        )
+      );
+
+    foreach (@{ $self->packages }) {
+      $_->tracking_id( $response->get_consignmentNumber->get_value );
+
+      $data = decode_base64($response->get_labelDocument->get_value);
+
+      $_->label(
+        Shipment::Label->new(
+          {
+            tracking_id => $response->get_consignmentNumber->get_value,
+            content_type => $response->get_labelDocumentType->get_value,
+            data => $data,
+            file_name => $response->get_consignmentNumber->get_value . '.pdf',
+          },
+        )
+      );
+    }
+
+  } catch {
+    warn $_;
+    warn $response->get_faultstring;
+    $self->error( $response->get_faultcode->get_value . ":" . $response->get_faultstring->get_value );
+  };
+
 }
 
 1;

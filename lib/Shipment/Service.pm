@@ -30,9 +30,9 @@ use Moose 2.0000;
 
 =head1 Class Attributes
 
-=head2 id
+=head2 id, carrier_id
 
-The service id as defined by a shipping service
+The service id and carrier id as defined by a shipping service
 
 type: String
 
@@ -43,7 +43,12 @@ has 'id' => (
   isa => 'Str',
 );
 
-=head2 name
+has 'carrier_id' => (
+  is => 'rw',
+  isa => 'Str',
+);
+
+=head2 name, carrier_name, service_name
 
 A descriptive name for the service
 
@@ -52,6 +57,16 @@ type: String
 =cut
 
 has 'name' => (
+  is => 'rw',
+  isa => 'Str',
+);
+
+has 'carrier_name' => (
+  is => 'rw',
+  isa => 'Str',
+);
+
+has 'service_name' => (
   is => 'rw',
   isa => 'Str',
 );
@@ -69,7 +84,7 @@ has 'package' => (
   isa => 'Shipment::Package',
 );
 
-=head2 etd
+=head2 etd, pickup_etd
 
 The estimated transit days for the service
 
@@ -78,6 +93,11 @@ type: Number
 =cut
 
 has 'etd' => (
+  is => 'rw',
+  isa => 'Num',
+);
+
+has 'pickup_etd' => (
   is => 'rw',
   isa => 'Num',
 );
@@ -110,7 +130,21 @@ has 'eta' => (
   coerce => 1,
 );
 
-=head2 cost
+=head2 guaranteed
+
+Whether or not the eta is guaranteed by the carrier
+
+type: Bool
+
+=cut
+
+has 'guaranteed' => (
+  is => 'rw',
+  isa => 'Bool',
+  default => 0,
+);
+
+=head2 cost, base_cost, tax
 
 The cost of the service
 
@@ -123,6 +157,19 @@ has 'cost' => (
   isa => 'Data::Currency',
   default => sub { Data::Currency->new(0) },
 );
+
+has 'base_cost' => (
+  is => 'rw',
+  isa => 'Data::Currency',
+  default => sub { Data::Currency->new(0) },
+);
+
+has 'tax' => (
+  is => 'rw',
+  isa => 'Data::Currency',
+  default => sub { Data::Currency->new(0) },
+);
+
 
 =head2 options
 
