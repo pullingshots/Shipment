@@ -470,7 +470,7 @@ sub ship {
 
     $self->tracking_id( $response->get_consignmentNumber->get_value );
     my $data = decode_base64($response->get_labelDocument->get_value);
-    $self->labels(
+    $self->documents(
         Shipment::Label->new(
           {
             tracking_id => $response->get_consignmentNumber->get_value,

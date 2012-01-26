@@ -120,7 +120,7 @@ is( $shipment->service->cost->value, $rate, 'rate matches actual cost') if defin
 ok( defined $shipment->labels, 'got labels' );
 is( $shipment->labels->content_type, 'application/pdf', 'labels are a pdf') if defined $shipment->get_package(0)->label;
 
-#$shipment->labels->save;
+#$shipment->documents->save;
 #$shipment->manifest->save;
 
 
