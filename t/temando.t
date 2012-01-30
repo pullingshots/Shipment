@@ -6,8 +6,14 @@ use Test::More tests => 19;
 
 my ($username, $password) = @ARGV;
 
-$username    ||= $ENV{'TEMANDO_USERNAME'} || 'temandotest';
-$password ||= $ENV{'TEMANDO_PASSWORD'} || 'password';
+$username    ||= $ENV{'TEMANDO_USERNAME'};
+$password ||= $ENV{'TEMANDO_PASSWORD'};
+
+SKIP: {
+  skip "Tests can only be run with a valid Temando Username/Password. The following environment variables are used: TEMANDO_USERNAME TEMANDO_PASSWORD.", 19 unless $username && $password;
+}
+
+if ($username && $password) {
 
 use Shipment::Temando;
 use Shipment::Address;
@@ -134,3 +140,4 @@ $shipment = Shipment::Temando->new(
 $shipment->cancel;
 is( $shipment->error, undef, 'successfully cancelled shipment');
 
+}
