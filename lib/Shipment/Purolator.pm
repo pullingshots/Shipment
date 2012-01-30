@@ -395,7 +395,7 @@ sub rate {
       use Shipment::Service;
       my ($y, $m, $d) = split('-', $response->get_ShipmentEstimates()->[0]->get_ShipmentEstimate()->get_ShipmentDate()->get_value);
       my $ship_date = { year => $y, month => $m, day => $d };
-      my ($y, $m, $d) = split('-', $response->get_ShipmentEstimates()->[0]->get_ShipmentEstimate()->get_ExpectedDeliveryDate()->get_value);
+      ($y, $m, $d) = split('-', $response->get_ShipmentEstimates()->[0]->get_ShipmentEstimate()->get_ExpectedDeliveryDate()->get_value);
       my $eta = { year => $y, month => $m, day => $d };
       $self->service( 
         new Shipment::Service( 
