@@ -63,8 +63,6 @@ my $shipment = Shipment::Temando->new(
 #  live => 1,
 );
 
-$shipment->pickup_date->set_time_zone('Australia/Sydney');
-
 ok( defined $shipment, 'got a shipment');
 
 ok( defined $shipment->from_address, 'got a shipment->from_address address' );
@@ -99,7 +97,6 @@ $shipment = Shipment::Temando->new(
 #  live => 1,
 );
 
-$shipment->pickup_date->set_time_zone('Australia/Sydney');
 $shipment->rate( 'ground' );
 
 ok( defined $shipment->service, 'got a ground rate');
@@ -117,7 +114,6 @@ $shipment = Shipment::Temando->new(
 #  live => 1,
 );
 
-$shipment->pickup_date->set_time_zone('Australia/Sydney');
 $shipment->ship( 'ground' );
 
 is( $shipment->service->cost->value, $rate, 'rate matches actual cost') if defined $shipment->service;

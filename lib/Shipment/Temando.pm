@@ -268,6 +268,12 @@ sub _build_services {
     $goods_value += $_->insured_value->value;
   }
 
+  my $anytime;
+  $anytime = {
+          readyDate => $self->pickup_date->ymd,
+          readyTime => $self->pickup_date->strftime('%p'),
+        } if $self->pickup_date;
+
   my $response;
   my %services;
 
@@ -290,10 +296,7 @@ sub _build_services {
           destinationIs => ($self->from_address->address_type eq 'residential') ? 'Residence' : 'Business',
           originIs => ($self->from_address->address_type eq 'residential') ? 'Residence' : 'Business',
         },
-        anytime => {
-          readyDate => $self->pickup_date->ymd,
-          readyTime => $self->pickup_date->strftime('%p'),
-        },
+        anytime => $anytime,
         general => {
           goodsValue => $goods_value,
         }
@@ -342,7 +345,7 @@ sub _build_services {
     }
 
   } catch {
-    warn $_;
+    #warn $_;
     warn $response->get_faultstring;
     $self->error( $response->get_faultcode->get_value . ":" . $response->get_faultstring->get_value );
   };
@@ -362,7 +365,7 @@ sub rate {
   try { 
     $service_id = $self->services->{$service_id}->id;
   } catch {
-    warn $_;
+    #warn $_;
     warn "service ($service_id) not available";
     $self->error( "service ($service_id) not available" );
     $service_id = '';
@@ -390,7 +393,7 @@ sub ship {
     $self->rate($service_id);
     $service_id = $self->service->id;
   } catch {
-    warn $_;
+    #warn $_;
     warn "service ($service_id) not available";
     $self->error( "service ($service_id) not available" );
     $service_id = '';
@@ -429,6 +432,12 @@ sub ship {
     $goods_value += $_->insured_value->value;
   }
 
+  my $anytime;
+  $anytime = {
+          readyDate => $self->pickup_date->ymd,
+          readyTime => $self->pickup_date->strftime('%p'),
+        } if $self->pickup_date;
+
   ## TODO: deal with credit card billing
   my $payment;
   $payment->{paymentType} = $bill_type_map{$self->bill_type};
@@ -457,10 +466,7 @@ sub ship {
           destinationIs => ($self->from_address->address_type eq 'residential') ? 'Residence' : 'Business',
           originIs => ($self->from_address->address_type eq 'residential') ? 'Residence' : 'Business',
         },
-        anytime => {
-          readyDate => $self->pickup_date->ymd,
-          readyTime => $self->pickup_date->strftime('%p'),
-        },
+        anytime => $anytime,
         general => {
           goodsValue => $goods_value,
         },
@@ -561,7 +567,7 @@ sub ship {
     }
 
   } catch {
-    warn $_;
+    #warn $_;
     warn $response->get_faultstring;
     $self->error( $response->get_faultcode->get_value . ":" . $response->get_faultstring->get_value );
   };

@@ -277,7 +277,6 @@ type: DateTime
 has 'pickup_date' => (
   is => 'rw',
   isa => DateTime,
-  default => time(),
   coerce => 1,
 );
 
