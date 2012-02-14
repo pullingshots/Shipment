@@ -85,6 +85,17 @@ sub ups {
     shift; return Shipment::UPS->new(@_)
 }
 
+=method temando
+
+The temando method returns a L<Shipment::Temando> object. See L<Shipment::Temando> for
+more details.
+
+=cut
+
+sub temando {
+    shift; return Shipment::UPS->new(@_)
+}
+
 =method address
 
 The address method returns a L<Shipment::Address> object.

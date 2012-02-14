@@ -35,7 +35,7 @@ This class provides an interface to the Purolator E-Ship Web Services. You must 
 
 https://eship.purolator.com
 
-It is an extension of Shipment::Base.
+It is an extension of L<Shipment::Base>.
 
 It makes extensive use of SOAP::WSDL in order to create/decode xml requests and responses. The Shipment::UPS::WSDL interface was created primarily using the wsdl2perl.pl script from SOAP::WSDL.
 

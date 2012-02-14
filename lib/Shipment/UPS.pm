@@ -34,7 +34,7 @@ This class provides an interface to the UPS Online Tools. You must sign up for a
 
 https://www.ups.com/upsdeveloperkit
 
-It is an extension of Shipment::Base.
+It is an extension of L<Shipment::Base>.
 
 It makes extensive use of SOAP::WSDL in order to create/decode xml requests and responses. The Shipment::UPS::WSDL interface was created primarily using the wsdl2perl.pl script from SOAP::WSDL.
 
