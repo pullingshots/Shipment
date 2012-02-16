@@ -132,7 +132,7 @@ has 'height' => (
 
 =head2 insured_value
 
-The value of the contents. 
+The value of the contents to be insured
 
 type: Data::Currency
 
@@ -142,6 +142,24 @@ has 'insured_value' => (
   is => 'rw',
   isa => 'Data::Currency',
   default => sub { Data::Currency->new(0) }, 
+);
+
+=head2 goods_value
+
+The value of the contents
+
+type: Data::Currency
+
+=cut
+
+has 'goods_value' => (
+  is => 'rw',
+  isa => 'Data::Currency',
+  lazy => 1,
+  default => sub {
+    my $self = shift;
+    return $self->insured_value;
+  },
 );
 
 =head2 label

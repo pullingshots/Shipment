@@ -170,10 +170,29 @@ has 'tax' => (
   default => sub { Data::Currency->new(0) },
 );
 
+=head2 extra_charges, adjustments
+
+Any extra charges and adjustments that will be applied, but are not included in the cost
+
+type: Data::Currency
+
+=cut
+
+has 'extra_charges' => (
+  is => 'rw',
+  isa => 'Data::Currency',
+  default => sub { Data::Currency->new(0) },
+);
+
+has 'adjustments' => (
+  is => 'rw',
+  isa => 'Data::Currency',
+  default => sub { Data::Currency->new(0) },
+);
 
 =head2 options
 
-Available options for the service
+Available options for the service (this attribute was added for Purolator)
 
 type: HashRef[Str]
 
@@ -182,6 +201,19 @@ type: HashRef[Str]
 has 'options' => (
   is => 'rw',
   isa => 'HashRef[Str]',
+);
+
+=head2 extras
+
+Extra service charges (Insurance, Carbon Offset, etc) - this attribute was added for Temando
+
+type: HashRef[L<Shipment::Service>]
+=cut
+
+has 'extras' => (
+  is => 'rw',
+  isa => 'HashRef[Shipment::Service]',
+  default => sub { {} },
 );
 
 no Moose;

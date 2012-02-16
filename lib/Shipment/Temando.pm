@@ -129,16 +129,54 @@ has 'comments' => (
   isa => 'Str',
 );
 
+=head2 credit_card_type, credit_card_expiry, credit_card_number, credit_card_name
+
+Temando accepts payment by credit card
+
+credit_card_type can be one of 'Visa' or 'MasterCard'
+
+credit_card_expiry must be in the format '02-2013'
+
+=cut
+
+has 'credit_card_type' => (
+  is => 'rw',
+  isa => enum( [ qw( Visa MasterCard ) ] ),
+);
+
+has 'credit_card_expiry' => (
+  is => 'rw',
+  isa => 'Str',
+);
+
+has 'credit_card_number' => (
+  is => 'rw',
+  isa => 'Str',
+);
+
+has 'credit_card_name' => (
+  is => 'rw',
+  isa => 'Str',
+);
+
+
 =head2 Shipment::Base type maps
 
 Shipment::Base provides abstract types which need to be mapped to Temando (i.e. package_type of "envelope" maps to Temando "Document Envelope")
 
 =cut
 
+enum 'BillingOptions' => qw( sender account credit credit_card );
+
+has '+bill_type' => (
+  isa => 'BillingOptions',
+);
+
 my %bill_type_map = (
   'sender'      => 'Account',
-  'recipient'   => undef,
-  'third_party' => undef,
+  'account'     => 'Account',
+  'credit'      => 'Credit',
+  'credit_card' => 'Credit Card',
 );
 
 my %signature_type_map = (
@@ -246,7 +284,8 @@ sub _build_services {
     }
   );
 
-  my $goods_value = 1;
+  my $goods_value;
+  my $insured_value;
 
   my @pieces;
   foreach (@{ $self->packages }) {
@@ -265,8 +304,10 @@ sub _build_services {
           quantity => 1,
           description => $_->notes,
       };
-    $goods_value += $_->insured_value->value;
+    $goods_value += $_->goods_value->value;
+    $insured_value += $_->insured_value->value;
   }
+  $goods_value ||= 1;
 
   my $anytime;
   $anytime = {
@@ -327,9 +368,45 @@ sub _build_services {
           service_name  => $quote->get_deliveryMethod->get_value,
           guaranteed    => ($quote->get_guaranteedEta->get_value eq 'Y') ? 1 : 0,
         );
-      ## TODO: store insurance and carbon offset extra charges so that we can pull the details in to the makeBooking quote if required
-      ##       easiest would probably be to store them in $services{"$id-insurance"}
-      ##       details are in @{$quote->get_extras} where $extra->get_summary eq 'Insurance' or 'Carbon Offset'
+
+      my $adjustments;
+      foreach my $adjustment (@{ $quote->get_adjustments->get_adjustment }) {
+        if ($self->bill_type eq 'credit_card' && $adjustment->get_description->get_value eq 'Credit Card Payment Adjustment') {
+          $adjustments += $adjustment->get_amount->get_value + $adjustment->get_tax->get_value;
+        }
+        if ($self->bill_type eq 'credit' && $adjustment->get_description->get_value eq 'Credit Payment Adjustment') {
+          $adjustments += $adjustment->get_amount->get_value + $adjustment->get_tax->get_value;
+        }
+      }
+
+      my $extra_charges;
+      foreach my $extra (@{ $quote->get_extras->get_extra }) {
+        #warn $extra;
+        $services{$id}->extras->{$extra->get_summary->get_value} = Shipment::Service->new(
+            id        => $extra->get_summary->get_value,
+            name      => $extra->get_details->get_value,
+            cost      => Data::Currency->new($extra->get_totalPrice->get_value, $quote->get_currency->get_value),
+            base_cost => Data::Currency->new($extra->get_basePrice->get_value, $quote->get_currency->get_value),
+            tax       => Data::Currency->new($extra->get_tax->get_value, $quote->get_currency->get_value),
+          );
+        if ($insured_value && $extra->get_summary->get_value eq 'Insurance') {
+          $extra_charges += $extra->get_totalPrice->get_value;
+        }
+        if ($self->carbon_offset && $extra->get_summary->get_value eq 'Carbon Offset') {
+          $extra_charges += $extra->get_totalPrice->get_value;
+        }
+
+        foreach my $adjustment (@{ $quote->get_adjustments->get_adjustment }) {
+          if ($self->bill_type eq 'credit_card' && $adjustment->get_description->get_value eq 'Credit Card Payment Adjustment') {
+            $adjustments += $adjustment->get_amount->get_value + $adjustment->get_tax->get_value;
+          }
+          if ($self->bill_type eq 'credit' && $adjustment->get_description->get_value eq 'Credit Payment Adjustment') {
+            $adjustments += $adjustment->get_amount->get_value + $adjustment->get_tax->get_value;
+          }
+        }
+      }
+      $services{$id}->extra_charges(Data::Currency->new($extra_charges, $quote->get_currency->get_value));
+      $services{$id}->adjustments(Data::Currency->new($adjustments, $quote->get_currency->get_value));
 
       my $type; 
       $type = 'ground' if $quote->get_usingGeneralRoad->get_value eq 'Y';
@@ -345,7 +422,7 @@ sub _build_services {
     }
 
   } catch {
-    #warn $_;
+    warn $_;
     warn $response->get_faultstring;
     $self->error( $response->get_faultcode->get_value . ":" . $response->get_faultstring->get_value );
   };
@@ -365,7 +442,7 @@ sub rate {
   try { 
     $service_id = $self->services->{$service_id}->id;
   } catch {
-    #warn $_;
+    warn $_;
     warn "service ($service_id) not available";
     $self->error( "service ($service_id) not available" );
     $service_id = '';
@@ -393,7 +470,7 @@ sub ship {
     $self->rate($service_id);
     $service_id = $self->service->id;
   } catch {
-    #warn $_;
+    warn $_;
     warn "service ($service_id) not available";
     $self->error( "service ($service_id) not available" );
     $service_id = '';
@@ -410,7 +487,8 @@ sub ship {
     }
   );
 
-  my $goods_value = 1;
+  my $goods_value;
+  my $insured_value;
 
   my @pieces;
   foreach (@{ $self->packages }) {
@@ -429,7 +507,34 @@ sub ship {
           quantity => 1,
           description => $_->notes,
       };
-    $goods_value += $_->insured_value->value;
+    $goods_value += $_->goods_value->value;
+    $insured_value += $_->insured_value->value;
+  }
+  $goods_value ||= 1;
+
+  my @extras;
+  if ($insured_value && $self->service->extras->{'Insurance'}) {
+    my $insurance = $self->service->extras->{'Insurance'};
+    push @extras, 
+      {
+        summary => $insurance->id,
+        details => $insurance->name,
+        totalPrice => $insurance->cost->value,
+        basePrice => $insurance->base_cost->value,
+        tax => $insurance->tax->value,
+      };
+  }
+
+  if ($self->carbon_offset && $self->service->extras->{'Carbon Offset'}) {
+    my $carbon_offset = $self->service->extras->{'Carbon Offset'};
+    push @extras, 
+      {
+        summary => $carbon_offset->id,
+        details => $carbon_offset->name,
+        totalPrice => $carbon_offset->cost->value,
+        basePrice => $carbon_offset->base_cost->value,
+        tax => $carbon_offset->tax->value,
+      };
   }
 
   my $anytime;
@@ -438,11 +543,14 @@ sub ship {
           readyTime => $self->pickup_date->strftime('%p'),
         } if $self->pickup_date;
 
-  ## TODO: deal with credit card billing
   my $payment;
   $payment->{paymentType} = $bill_type_map{$self->bill_type};
-
-  ## TODO: add Insurance and Carbon Offset extra charges to quote if requested
+  if ($self->bill_type eq 'credit_card') {
+    $payment->{cardType} = $self->credit_card_type;
+    $payment->{cardExpiryDate} = $self->credit_card_expiry;
+    $payment->{cardNumber} = $self->credit_card_number;
+    $payment->{cardName} = $self->credit_card_name;
+  }
 
   my $response;
   my %services;
@@ -502,6 +610,9 @@ sub ship {
           etaTo           => $self->service->etd,
           guaranteedEta   => ($self->service->guaranteed) ? 'Y' : 'N',
           carrierId       => $self->service->carrier_id,
+          extras => {
+            extra => \@extras,
+          },
         },
         payment => $payment,
         instructions => $self->special_instructions,
@@ -567,7 +678,7 @@ sub ship {
     }
 
   } catch {
-    #warn $_;
+    warn $_;
     warn $response->get_faultstring;
     $self->error( $response->get_faultcode->get_value . ":" . $response->get_faultstring->get_value );
   };

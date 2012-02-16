@@ -426,6 +426,20 @@ has 'special_instructions' => (
   isa => 'Str',
 );
 
+=head2 carbon_offset
+
+If available, add a carbon offset charge for the shipment
+
+type: Bool
+
+=cut
+
+has 'carbon_offset' => (
+  is => 'rw',
+  isa => 'Bool',
+  default => 0,
+);
+
 =head1 Class Methods
 
 =head2 _build_services
