@@ -23,7 +23,7 @@ Shipment::Temando - Interface to Temando Shipping Web Services
   }
 
   $shipment->rate( 'Service Name' );
-  print $service->cost . "\n";
+  print $shipment->service->cost . "\n";
 
   $shipment->ship( $service->id );
   $shipment->get_package(0)->label->save;

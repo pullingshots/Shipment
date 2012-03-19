@@ -23,7 +23,7 @@ Shipment::Purolator - Interface to Purolator Shipping Web Services
   }
 
   $shipment->rate( 'express' );
-  print $service->cost . "\n";
+  print $shipment->service->cost . "\n";
 
   $shipment->ship( 'ground' );
   $shipment->get_package(0)->label->save;
