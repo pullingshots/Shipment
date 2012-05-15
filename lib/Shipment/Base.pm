@@ -315,6 +315,19 @@ has 'service' => (
   isa => 'Shipment::Service',
 );
 
+=head2 tracking
+
+Details of what was returned from a call to track
+
+type: L<Shipment::Tracking>
+
+=cut
+
+has 'tracking' => (
+  is => 'rw',
+  isa => 'Shipment::Tracking',
+);
+
 =head2 tracking_id
 
 The tracking_id returned from a call to ship
@@ -438,6 +451,21 @@ has 'carbon_offset' => (
   is => 'rw',
   isa => 'Bool',
   default => 0,
+);
+
+=head2 customer_ref
+
+Something to reference your customer by ( customer id, order id, name, etc )
+Used in tracking
+
+type: String
+
+=cut
+
+has 'customer_ref' => (
+  is => 'rw',
+  isa => 'Str',
+  default => '',
 );
 
 =head1 Class Methods

@@ -398,7 +398,7 @@ sub _build_services {
     $self->notice( '' );
     if ( $response->get_Response->get_Alert ) {
       foreach my $alert (@{$response->get_Response->get_Alert}) {
-        warn $alert->get_Description->get_value;
+        #warn $alert->get_Description->get_value;
         $self->add_notice( $alert->get_Description->get_value . "\n" );
       }
     }
@@ -565,6 +565,98 @@ sub rate {
       };
   };
 
+}
+
+=head2 track
+
+This method calls ProcessTrack from the Shipping API
+
+=cut
+
+sub track {
+    my ( $self ) = @_;
+
+    use Shipment::UPS::WSDL::TrackInterfaces::TrackService::TrackPort;
+    my $interface = Shipment::UPS::WSDL::TrackInterfaces::TrackService::TrackPort->new(
+		       {
+		           proxy_domain => $self->proxy_domain,
+		       }
+    		     );
+
+    my $tracking = Shipment::Tracking->new;
+    my $response;
+    my $customer_ref = $self->customer_ref;
+    my $tracking_id = $self->tracking_id;
+
+    if ( !$customer_ref ) 
+    {
+	$self->error("customer_ref required for tracking");
+	return;
+    }
+
+
+    try {
+
+  	$response = $interface->ProcessTrack(
+  	{
+            Request =>  { # Shipment::UPS::WSDL::TrackTypes::RequestType
+                RequestOption =>  0, # string
+                TransactionReference =>  { # Shipment::UPS::WSDL::TrackTypes::TransactionReferenceType
+                    CustomerContext =>  $customer_ref, # string
+                },
+            },
+            InquiryNumber =>  $tracking_id, # string
+            TrackingOption =>  "02", # string
+ 	},
+ 	{
+             UsernameToken =>  {
+               Username =>  $self->username,
+               Password =>  $self->password,
+             },
+             ServiceAccessToken =>  {
+               AccessLicenseNumber =>  $self->key,
+             },
+	},
+
+  	);
+	#warn $response;
+
+	use Shipment::Tracking;
+
+        my $shipment =  $response->get_Shipment();
+	my $tracking = Shipment::Tracking->new;
+
+        # Note: Some of these attributes might not exist	
+	$tracking->set_attr($shipment, "InquiryNumber", "Value");
+	$tracking->set_attr($shipment, "ShipmentType", "Description");
+	$tracking->set_attr($shipment, "ShipperNumber");
+        $tracking->set_attr($shipment, "ShipmentType", "Description");
+	$tracking->set_attr($shipment, "ReferenceNumber", "Value");
+        $tracking->set_attr($shipment, "Service", "Description");
+        $tracking->set_attr($shipment, "ReferenceNumber", "Code");
+	$tracking->set_attr($shipment, "PickupDate");
+
+	my $package = $shipment->get_Package();
+
+	for my $activity ( @{ $package->get_Activity() } )  
+	{
+		$tracking->add_act($activity);
+	}
+
+    # store our tracking object
+    $self->tracking( $tracking ); 
+
+  } catch {
+      #warn $_;
+      try {
+        #warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description;
+        $self->error( $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description->get_value );
+      } catch {
+        #warn $_;
+        #warn $response->get_faultstring;
+        $self->error( $response->get_faultstring->get_value );
+      };
+  };
 }
 
 =head2 ship
@@ -805,7 +897,7 @@ sub ship {
     }
 
   } catch {
-      warn $_;
+    #  warn $_;
       try {
         warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description;
         $self->error( $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description->get_value );
@@ -831,7 +923,7 @@ It assumes that you are first creating an outgoing shipment and creating the ret
 =cut
 
 sub return {
-  my ( $self, $service_id ) = @_;
+  my ( $self, $service_id, $rc ) = @_;
 
   try { 
     $service_id = $self->services->{$service_id}->id;
@@ -845,6 +937,9 @@ sub return {
 
     my $package_options;
     $package_options->{DeclaredValue}->{CurrencyCode} = $self->currency;
+
+    # default return code is 9 which means we print a return label
+    my $return_code = $rc ? $rc : 9;
 
     my @pieces;
     foreach (@{ $self->packages }) {
@@ -898,16 +993,13 @@ sub return {
     }
   );
 
-  my $response;
-  try {
-    $response = $interface->ProcessShipment( 
-      {
+    my %body = (
         Request => {
           RequestOption => ($self->address_validation) ? 'validate' : 'nonvalidate',
         },
         Shipment => {
           ReturnService => {
-            Code => 9,
+            Code => $return_code,
           },
           Shipper => {
             Name => $self->from_address->company,
@@ -931,7 +1023,7 @@ sub return {
               PostalCode        => $self->to_address->postal_code,
               CountryCode       => $self->to_address->country_code,
             },
-            EmailAddress => $self->from_address->email,
+            #EmailAddress => $self->from_address->email,
           },
           ShipTo => {
             Name => $self->from_address->company,
@@ -943,7 +1035,7 @@ sub return {
               PostalCode        => $self->from_address->postal_code,
               CountryCode       => $self->from_address->country_code,
             },
-            EmailAddress => $self->to_address->email,
+            #EmailAddress => $self->to_address->email,
           },
           Service => {
             Code => $service_id,
@@ -952,6 +1044,7 @@ sub return {
           PaymentInformation =>  { 
             ShipmentCharge => $payment_option,
           },
+
         },
         LabelSpecification =>  { 
           LabelImageFormat =>  { 
@@ -962,8 +1055,27 @@ sub return {
             Width =>  4,
           },
         },
-      },
-      {
+      );
+
+      my $body = \%body;
+
+	if ($return_code == 8)
+	{
+		$body->{Shipment}->{ShipmentServiceOptions} =  {
+		     LabelDelivery => {
+			EMail => {
+			  EMailAddress => $self->from_address->email,
+			  UndeliverableEMailAddress => $self->from_address->email,
+			  FromEMailAddress => 'support@sonic.net',
+			  FromName => 'Sonic.net',
+			  Memo => 'Your Label',
+			},
+		     },
+		};
+	}
+
+
+      my %header = (
              UsernameToken =>  {
                Username =>  $self->username,
                Password =>  $self->password,
@@ -971,70 +1083,79 @@ sub return {
              ServiceAccessToken =>  {
                AccessLicenseNumber =>  $self->key,
              },
-      },
-    );
-    #warn $response;
+      ); 
+#use Data::Dumper;
+#print Dumper \%body;
+#exit;
+    my $response;
+   try {
+	    $response = $interface->ProcessShipment( \%body, \%header ); 
+   	    #warn $response;
 
-    $self->tracking_id( $response->get_ShipmentResults()->get_ShipmentIdentificationNumber()->get_value );
-    use Data::Currency;
-    use Shipment::Service;
-    $self->service( 
-      new Shipment::Service( 
-        id        => $service_id,
-        name      => $self->services->{$service_id}->name,
-        cost      => Data::Currency->new($response->get_ShipmentResults()->get_ShipmentCharges->get_TotalCharges()->get_MonetaryValue, $response->get_ShipmentResults()->get_ShipmentCharges()->get_TotalCharges()->get_CurrencyCode),
-      )
-    );
+	    $self->tracking_id( $response->get_ShipmentResults()->get_ShipmentIdentificationNumber()->get_value );
+	    use Data::Currency;
+	    use Shipment::Service;
+	    $self->service( 
+	      new Shipment::Service( 
+		id        => $service_id,
+		name      => $self->services->{$service_id}->name,
+		cost      => Data::Currency->new($response->get_ShipmentResults()->get_ShipmentCharges->get_TotalCharges()->get_MonetaryValue, $response->get_ShipmentResults()->get_ShipmentCharges()->get_TotalCharges()->get_CurrencyCode),
+	      )
+	    );
 
-    use Shipment::Label;
-    use MIME::Base64;
-    my $package_index = 0;
-    foreach (@{ $response->get_ShipmentResults()->get_PackageResults() }) {
+	    # return_code 9 means we are getting a label back to print
+	    if ($return_code == 9)
+	    {
+		    use Shipment::Label;
+		    use MIME::Base64;
+		    my $package_index = 0;
+		    foreach (@{ $response->get_ShipmentResults()->get_PackageResults() }) {
 
-      ## For EPL labels, force Top Orientation by inserting the ZT command at the beginning of the file. 
-      ## This is needed for cases when the printer defaults to the incorrect orientation.
-      my $data = "ZT\n" if $printer_type_map{$self->printer_type} eq 'EPL';
-      $data .= decode_base64($_->get_ShippingLabel()->get_GraphicImage->get_value);
+		      ## For EPL labels, force Top Orientation by inserting the ZT command at the beginning of the file. 
+		      ## This is needed for cases when the printer defaults to the incorrect orientation.
+		      my $data = "ZT\n" if $printer_type_map{$self->printer_type} eq 'EPL';
+		      $data .= decode_base64($_->get_ShippingLabel()->get_GraphicImage->get_value);
 
-      $self->get_package($package_index)->tracking_id( $_->get_TrackingNumber()->get_value );
-      $self->get_package($package_index)->label(
-        Shipment::Label->new(
-          {
-            tracking_id => $_->get_TrackingNumber()->get_value,
-            content_type => $label_content_type_map{$self->printer_type},
-            data => $data,
-            file_name => $_->get_TrackingNumber()->get_value . '.' . lc $printer_type_map{$self->printer_type},
-          },
-        )
-      );
-      $package_index++;
-    }
+		      $self->get_package($package_index)->tracking_id( $_->get_TrackingNumber()->get_value );
+		      $self->get_package($package_index)->label(
+			Shipment::Label->new(
+			  {
+			    tracking_id => $_->get_TrackingNumber()->get_value,
+			    content_type => $label_content_type_map{$self->printer_type},
+			    data => $data,
+			    file_name => $_->get_TrackingNumber()->get_value . '.' . lc $printer_type_map{$self->printer_type},
+			  },
+			)
+		      );
+		      $package_index++;
+		    }
 
-    if ( $response->get_ShipmentResults()->get_ControlLogReceipt ) {
+		    if ( $response->get_ShipmentResults()->get_ControlLogReceipt ) {
 
-      ## For EPL labels, force Top Orientation by inserting the ZT command at the beginning of the file. 
-      ## This is needed for cases when the printer defaults to the incorrect orientation.
-      my $data = "ZT\n" if $printer_type_map{$self->printer_type} eq 'EPL';
-      $data .= decode_base64($response->get_ShipmentResults()->get_ControlLogReceipt()->get_GraphicImage->get_value);
+		      ## For EPL labels, force Top Orientation by inserting the ZT command at the beginning of the file. 
+		      ## This is needed for cases when the printer defaults to the incorrect orientation.
+		      my $data = "ZT\n" if $printer_type_map{$self->printer_type} eq 'EPL';
+		      $data .= decode_base64($response->get_ShipmentResults()->get_ControlLogReceipt()->get_GraphicImage->get_value);
 
-      $self->control_log_receipt(
-        Shipment::Label->new(
-          {
-            content_type => $label_content_type_map{$self->printer_type},
-            data => $data,
-            file_name => 'control_log_receipt.' . lc $printer_type_map{$self->printer_type},
-          }
-        )
-      );
-    }
+		      $self->control_log_receipt(
+			Shipment::Label->new(
+			  {
+			    content_type => $label_content_type_map{$self->printer_type},
+			    data => $data,
+			    file_name => 'control_log_receipt.' . lc $printer_type_map{$self->printer_type},
+			  }
+			)
+		      );
+		    }
+	     }
 
-    $self->notice( '' );
-    if ( $response->get_Response->get_Alert ) {
-      foreach my $alert (@{$response->get_Response->get_Alert}) {
-        warn $alert->get_Description->get_value;
-        $self->add_notice( $alert->get_Description->get_value . "\n" );
-      }
-    }
+	    $self->notice( '' );
+	    if ( $response->get_Response->get_Alert ) {
+	      foreach my $alert (@{$response->get_Response->get_Alert}) {
+		warn $alert->get_Description->get_value;
+		$self->add_notice( $alert->get_Description->get_value . "\n" );
+	      }
+	    }
 
   } catch {
       warn $_;
