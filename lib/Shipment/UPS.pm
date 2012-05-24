@@ -703,11 +703,24 @@ sub ship {
         $self->to_address->country_code =~ /(US|PR)/ && 
         $self->from_address->country_code eq $self->to_address->country_code
       ) {
+
         foreach ($self->get_reference(0), $self->get_reference(1)) {
           next if !$_;
+
+	   my ($code, $val);
+	   if ( ref($_) eq "HASH")
+	   {
+		$code = (keys %$_)[0];
+		$val  = (values %$_)[0];
+           }	
+	   else
+	   {
+		$code = $reference_index;
+		$val  = $_;
+           }
           push @references, {
-            Code => $reference_index,
-            Value => $_,
+            Code => $code,
+            Value => $val,
           };
           $reference_index++;
         }
@@ -942,8 +955,38 @@ sub return {
     my $return_code = $rc ? $rc : 9;
 
     my @pieces;
+    my $reference_index = 1;
     foreach (@{ $self->packages }) {
       $package_options->{DeclaredValue}->{MonetaryValue} = $_->insured_value->value;
+      my @references;
+      if (
+        $self->references && 
+        $self->from_address->country_code =~ /(US|PR)/ && 
+        $self->to_address->country_code =~ /(US|PR)/ && 
+        $self->from_address->country_code eq $self->to_address->country_code
+      ) {
+
+        foreach ($self->get_reference(0), $self->get_reference(1)) {
+          next if !$_;
+
+	   my ($code, $val);
+	   if ( ref($_) eq "HASH")
+	   {
+		$code = (keys %$_)[0];
+		$val  = (values %$_)[0];
+           }	
+	   else
+	   {
+		$code = $reference_index;
+		$val  = $_;
+           }
+          push @references, {
+            Code => $code,
+            Value => $val,
+          };
+          $reference_index++;
+        }
+      }
       push @pieces,
         {
             Description => 'n/a',
@@ -964,6 +1007,7 @@ sub return {
               },
               Weight => $_->weight,
             },
+	    ReferenceNumber => \@references,
             PackageServiceOptions => $package_options,
         };
     }
@@ -1084,10 +1128,8 @@ sub return {
                AccessLicenseNumber =>  $self->key,
              },
       ); 
-#use Data::Dumper;
-#print Dumper \%body;
-#exit;
-    my $response;
+
+   my $response;
    try {
 	    $response = $interface->ProcessShipment( \%body, \%header ); 
    	    #warn $response;
@@ -1245,9 +1287,9 @@ sub cancel {
     }
 
   } catch {
-      warn $_;
+      #warn $_;
       try {
-        warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description;
+        #warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description;
         $self->error( $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description->get_value );
       } catch {
         warn $_;
