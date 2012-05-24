@@ -416,7 +416,7 @@ methods handled:
 has 'references' => (
   traits => ['Array'],
   is => 'rw',
-  isa => 'ArrayRef[Str]',
+  isa => 'ArrayRef',
   default => sub { [] },
   handles => {
     all_references => 'elements',
