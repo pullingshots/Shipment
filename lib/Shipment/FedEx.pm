@@ -331,6 +331,10 @@ sub _build_services {
             id => 'YOUR_PACKAGING',
             name => 'Customer Supplied',
           ),
+          cost => Data::Currency->new(
+            $service->get_RatedShipmentDetails->[0]->get_ShipmentRateDetail->get_TotalNetCharge->get_Amount,
+            $service->get_RatedShipmentDetails->[0]->get_ShipmentRateDetail->get_TotalNetCharge->get_Currency
+          ),
         );
     }
     $services{ground} = $services{'FEDEX_GROUND'} || $services{'GROUND_HOME_DELIVERY'} || $services{'INTERNATIONAL_GROUND'} || Shipment::Service->new();
