@@ -268,6 +268,9 @@ sub _build_services {
   push @from_streetlines, $self->from_address()->address1;
   push @from_streetlines, $self->from_address()->address2 if $self->from_address()->address2;
 
+  my $total_weight;
+  $total_weight += $_->weight for @{ $self->packages };
+
   try {
     $response = $interface->getRates( 
       { 
@@ -314,7 +317,7 @@ sub _build_services {
           PackageDetail => 'INDIVIDUAL_PACKAGES',
           RequestedPackageLineItems =>  { 
             Weight => {
-              Value => 1,
+              Value => $total_weight,
               Units => $units_type_map{$self->weight_unit} || $self->weight_unit,
             }, 
           },
