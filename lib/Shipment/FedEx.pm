@@ -270,6 +270,7 @@ sub _build_services {
 
   my $total_weight;
   $total_weight += $_->weight for @{ $self->packages };
+  $total_weight ||= 1;
 
   try {
     $response = $interface->getRates( 
