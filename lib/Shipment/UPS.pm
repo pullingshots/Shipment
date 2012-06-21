@@ -1109,11 +1109,10 @@ sub return {
 		     LabelDelivery => {
 			EMail => {
 			  EMailAddress => $self->from_address->email,
-			  UndeliverableEMailAddress => $self->from_address->email,
-			  FromEMailAddress => 'support@sonic.net',
-			  FromName => 'Sonic.net',
-			  Memo => 'Your Label',
+			  UndeliverableEMailAddress => $self->to_address->email,
+			  FromEMailAddress => $self->to_address->email, 
 			},
+		        LabelLinksIndicator => '',
 		     },
 		};
 	}
@@ -1190,7 +1189,42 @@ sub return {
 		      );
 		    }
 	     }
+	     elsif ($return_code == 8)
+	     {
+		    use Shipment::Label;
+		    use MIME::Base64;
+		    my $package_index = 0;
+	      	    my $label_url = $response->get_ShipmentResults()->get_LabelURL()->get_value;
 
+		    # don't think this foreach makes sense here. I think you can only return one package get package_index is always 0
+		    foreach (@{ $response->get_ShipmentResults()->get_PackageResults() }) {
+
+		      $self->get_package($package_index)->tracking_id( $_->get_TrackingNumber()->get_value );
+		      $self->get_package($package_index)->label(
+			Shipment::Label->new(
+			  {
+			    tracking_id => $_->get_TrackingNumber()->get_value,
+			    content_type => 'url',
+			    data => $label_url,
+			  },
+			)
+		      );
+		      $package_index++;
+		    }
+
+             }
+	     elsif ($return_code == 2)
+	     {
+		    use MIME::Base64;
+		    my $package_index = 0;
+
+		    # don't think this foreach makes sense here. I think you can only return one package get package_index is always 0
+		    foreach (@{ $response->get_ShipmentResults()->get_PackageResults() }) {
+		      $self->get_package($package_index)->tracking_id( $_->get_TrackingNumber()->get_value );
+		      $package_index++;
+		    }
+
+             }
 	    $self->notice( '' );
 	    if ( $response->get_Response->get_Alert ) {
 	      foreach my $alert (@{$response->get_Response->get_Alert}) {
