@@ -1,0 +1,415 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<xsd:schema
+	targetNamespace="http://api.temando.com/schema/2009_06/server.xsd"
+	elementFormDefault="unqualified"
+	attributeFormDefault="unqualified"
+	xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+	xmlns:tns="http://api.temando.com/schema/2009_06/server.xsd"
+	xmlns:com="http://api.temando.com/schema/2009_06/common.xsd"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+	<import namespace="http://api.temando.com/schema/2009_06/common.xsd" location="common.xsd"/>
+
+	<!-- Operation Request or Response Types -->
+
+<!--
+	<xsd:element name="getRequestIdByReference">
+		<xsd:complexType>
+			<xsd:all>
+				<xsd:element name="reference" type="com:ClientReference"/>
+			</xsd:all>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="getRequestIdByReferenceResponse">
+		<xsd:complexType>
+			<xsd:all>
+				<xsd:element name="requestId" type="xsd:positiveInteger"/>
+			</xsd:all>
+		</xsd:complexType>
+	</xsd:element>
+-->
+<!--
+	<xsd:element name="lodgeRequest">
+		<xsd:complexType>
+			<xsd:all>
+				<xsd:element name="anythings">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element name="anything" type="com:Anything" maxOccurs="10"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+				<xsd:element name="anywhere" type="com:Anywhere"/>
+				<xsd:element name="anytime" type="com:Anytime"/>
+				<xsd:element name="general" type="com:General" minOccurs="0"/>
+				<xsd:element name="instructions" type="com:Instructions" minOccurs="0"/>
+				<xsd:element name="comments" type="com:Comments" minOccurs="0"/>
+				<xsd:element name="origin" type="com:Location"/>
+				<xsd:element name="destination" type="com:Location"/>
+			</xsd:all>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="lodgeRequestResponse">
+		<xsd:complexType>
+			<xsd:all>
+				<xsd:element name="requestId" type="xsd:positiveInteger"/>
+			</xsd:all>
+		</xsd:complexType>
+	</xsd:element>
+-->
+
+	<xsd:element name="getQuotesByRequest">
+		<xsd:complexType>
+			<xsd:all>
+				<xsd:element name="anythings">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element name="anything" type="com:Anything" maxOccurs="10"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+				<xsd:element name="anywhere" type="com:Anywhere"/>
+				<xsd:element name="anytime" type="com:Anytime" minOccurs="0"/>
+				<xsd:element name="general" type="com:General" minOccurs="0"/>
+				<xsd:element name="quoteFilter" type="com:QuoteFilter" minOccurs="0"/>
+				<xsd:element name="clientId" type="com:ClientId" minOccurs="0"/>
+			</xsd:all>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="getQuotesByRequestResponse">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="quote" type="com:AvailableQuote" minOccurs="0" maxOccurs="unbounded"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="makeBookingByRequest">
+		<xsd:complexType>
+			<xsd:all>
+				<xsd:element name="anythings">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element name="anything" type="com:Anything" maxOccurs="10"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+				<xsd:element name="anywhere" type="com:Anywhere"/>
+				<xsd:element name="anytime" type="com:Anytime" minOccurs="0"/>
+				<xsd:element name="general" type="com:General" minOccurs="0"/>
+				<xsd:element name="origin" type="com:Location"/>
+				<xsd:element name="destination" type="com:Location"/>
+				<xsd:element name="returnto" type="com:Location" minOccurs="0"/>
+				<xsd:element name="quote" type="com:BookingQuote" minOccurs="0"/>
+				<xsd:element name="quoteFilter" type="com:QuoteFilter" minOccurs="0"/>
+				<xsd:element name="payment" type="com:Payment"/>
+				<xsd:element name="instructions" type="com:Instructions" minOccurs="0"/>
+				<xsd:element name="comments" type="com:Comments" minOccurs="0"/>
+				<xsd:element name="reference" type="com:ClientReference" minOccurs="0"/>
+				<xsd:element name="promotionCode" type="com:PromotionCode" minOccurs="0"/>
+				<xsd:element name="clientId" type="com:ClientId" minOccurs="0"/>
+				<xsd:element name="labelPrinterType" type="com:LabelPrinterType" minOccurs="0"/>
+			</xsd:all>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="makeBookingByRequestResponse">
+		<xsd:complexType>
+			<xsd:all>
+				<xsd:element name="requestId" type="xsd:positiveInteger"/>
+				<xsd:element name="bookingNumber" type="com:BookingNumber" minOccurs="0"/>
+				<xsd:element name="consignmentNumber" type="com:ConsignmentNumber" minOccurs="0"/>
+				<xsd:element name="consignmentDocument" type="com:ConsignmentDocument" minOccurs="0"/>
+				<xsd:element name="consignmentDocumentType" type="com:ConsignmentDocumentType" minOccurs="0"/>
+				<xsd:element name="labelDocument" type="com:LabelDocument" minOccurs="0"/>
+				<xsd:element name="labelDocumentType" type="com:LabelDocumentType" minOccurs="0"/>
+				<xsd:element name="anytime" type="com:Anytime" minOccurs="0"/>
+				<xsd:element name="quote" type="com:AvailableQuote" minOccurs="0"/>
+				<xsd:element name="manifestNumber" type="com:ManifestNumber" minOccurs="0"/>
+				<xsd:element name="articles" minOccurs="0">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element name="article" type="com:Article" minOccurs="0" maxOccurs="unbounded"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:all>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="updateRequest">
+		<xsd:complexType>
+			<xsd:all>
+				<xsd:element name="action" type="com:UpdateAction"/>
+				<xsd:element name="requestId" type="xsd:positiveInteger" minOccurs="0"/>
+				<xsd:element name="reference" type="com:ClientReference" minOccurs="0"/>
+				<xsd:element name="anythings">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element name="anything" type="com:Anything" maxOccurs="10"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+				<xsd:element name="articles" minOccurs="0">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element name="article" type="com:Article" minOccurs="0" maxOccurs="unbounded"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+				<xsd:element name="general" type="com:General" minOccurs="0"/>
+				<xsd:element name="payment" type="com:Payment" minOccurs="0"/>
+				<xsd:element name="clientId" type="com:ClientId" minOccurs="0"/>
+				<xsd:element name="labelPrinterType" type="com:LabelPrinterType" minOccurs="0"/>
+				<xsd:element name="detail" type="com:Detail" minOccurs="0"/>
+			</xsd:all>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="updateRequestResponse">
+		<xsd:complexType>
+			<xsd:all>
+				<xsd:element name="requestId" type="xsd:positiveInteger"/>
+				<xsd:element name="quote" type="com:AvailableQuote" minOccurs="0"/>
+			</xsd:all>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="getRequest">
+		<xsd:complexType>
+			<xsd:all>
+				<xsd:element name="requestId" type="xsd:positiveInteger" minOccurs="0"/>
+				<xsd:element name="bookingNumber" type="com:BookingNumber" minOccurs="0"/>
+				<xsd:element name="reference" type="com:ClientReference" minOccurs="0"/>
+				<xsd:element name="detail" type="com:Detail" minOccurs="0"/>
+				<xsd:element name="labelPrinterType" type="com:LabelPrinterType" minOccurs="0"/>
+			</xsd:all>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="getRequestResponse">
+		<xsd:complexType>
+			<xsd:all>
+				<xsd:element name="request" type="com:Request"/>
+			</xsd:all>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="getRequestsRequiringBooking"/>
+	<xsd:element name="getRequestsRequiringBookingResponse">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="request" type="com:Request" minOccurs="0" maxOccurs="unbounded"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="addBookingDetails">
+		<xsd:complexType>
+			<xsd:all>
+				<xsd:element name="requestId" type="xsd:positiveInteger"/>
+				<xsd:element name="bookingNumber" type="com:BookingNumber"/>
+				<xsd:element name="consignmentNumber" type="com:ConsignmentNumber" minOccurs="0"/>
+				<xsd:element name="consignmentDocument" type="com:ConsignmentDocument" minOccurs="0"/>
+				<xsd:element name="consignmentDocumentType" type="com:ConsignmentDocumentType" minOccurs="0"/>
+			</xsd:all>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="addBookingDetailsResponse"/>
+
+	<xsd:element name="createClient">
+		<xsd:complexType>
+			<xsd:all>
+				<xsd:element name="loginDetails" type="com:LoginDetails"/>
+				<xsd:element name="client" type="com:Client"/>
+				<xsd:element name="promotionCode" type="com:PromotionCode" minOccurs="0"/>
+			</xsd:all>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="createClientResponse">
+		<xsd:complexType>
+			<xsd:all>
+				<xsd:element name="clientId" type="com:ClientId"/>
+			</xsd:all>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="updateClient">
+		<xsd:complexType>
+			<xsd:all>
+				<xsd:element name="client" type="com:Client"/>
+			</xsd:all>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="updateClientResponse"/>
+
+	<xsd:element name="getClient">
+		<xsd:complexType>
+			<xsd:all>
+				<xsd:element name="loginDetails" type="com:LoginDetails" minOccurs="0"/>
+				<xsd:element name="clientId" type="com:ClientId" minOccurs="0"/>
+			</xsd:all>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="getClientResponse">
+		<xsd:complexType>
+			<xsd:all>
+				<xsd:element name="client" type="com:Client"/>
+			</xsd:all>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="lodgeDispatch">
+		<xsd:complexType>
+			<xsd:all>
+				<xsd:element name="requestId" type="xsd:positiveInteger" minOccurs="0"/>
+				<xsd:element name="bookingNumber" type="com:BookingNumber" minOccurs="0"/>
+				<xsd:element name="dispatchDetails" type="com:DispatchDetails"/>
+			</xsd:all>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="lodgeDispatchResponse"/>
+
+	<xsd:element name="cancelRequest">
+		<xsd:complexType>
+			<xsd:all>
+				<xsd:element name="requestId" type="xsd:positiveInteger" minOccurs="0"/>
+				<xsd:element name="reference" type="com:ClientReference" minOccurs="0"/>
+			</xsd:all>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="cancelRequestResponse"/>
+
+	<xsd:element name="updateTrackingDetails">
+		<xsd:complexType>
+			<xsd:all>
+				<xsd:element name="requestId" type="xsd:positiveInteger" minOccurs="0"/>
+				<xsd:element name="bookingNumber" type="com:BookingNumber" minOccurs="0"/>
+				<xsd:element name="trackingStatus" type="com:TrackingStatus"/>
+				<xsd:element name="trackingStatusOccurred" type="com:Datetime"/>
+				<xsd:element name="trackingFurtherDetails" type="com:TrackingFurtherDetails" minOccurs="0"/>
+			</xsd:all>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="updateTrackingDetailsResponse"/>
+
+	<xsd:element name="getManifest">
+		<xsd:complexType>
+			<xsd:all>
+				<xsd:element name="type" type="com:ManifestType" minOccurs="0"/>
+				<xsd:element name="labelPrinterType" type="com:LabelPrinterType" minOccurs="0"/>
+				<xsd:element name="carrierId" type="com:CarrierId" minOccurs="0"/>
+				<xsd:element name="clientId" type="com:ClientId" minOccurs="0"/>
+				<xsd:element name="location" type="com:LocationName" minOccurs="0"/>
+				<xsd:element name="readyDate" type="com:Date" minOccurs="0"/>
+				<xsd:element name="lastConfirmed" type="com:YesNoOption" minOccurs="0"/>
+				<xsd:element name="listRequests" type="com:YesNoOption" minOccurs="0"/>
+			</xsd:all>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="getManifestResponse">
+		<xsd:complexType>
+			<xsd:all>
+				<xsd:element name="requests" minOccurs="0">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element name="request" type="com:Request" minOccurs="0" maxOccurs="unbounded"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+				<xsd:element name="manifestDocument" type="com:ManifestDocument"/>
+				<xsd:element name="manifestDocumentType" type="com:ManifestDocumentType"/>
+				<xsd:element name="labelDocument" type="com:LabelDocument" minOccurs="0"/>
+				<xsd:element name="labelDocumentType" type="com:LabelDocumentType" minOccurs="0"/>
+				<xsd:element name="labelPrinterType" type="com:LabelPrinterType" minOccurs="0"/>
+			</xsd:all>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="confirmManifest">
+		<xsd:complexType>
+			<xsd:all>
+				<xsd:element name="carrierId" type="com:CarrierId" minOccurs="0"/>
+				<xsd:element name="clientId" type="com:ClientId" minOccurs="0"/>
+				<xsd:element name="location" type="com:LocationName" minOccurs="0"/>
+				<xsd:element name="startReadyDate" type="com:Date" minOccurs="0"/>
+				<xsd:element name="endReadyDate" type="com:Date" minOccurs="0"/>
+				<xsd:element name="confirmedReadyDate" type="com:Date" minOccurs="0"/>
+				<xsd:element name="listRequests" type="com:YesNoOption" minOccurs="0"/>
+				<xsd:element name="labelPrinterType" type="com:LabelPrinterType" minOccurs="0"/>
+			</xsd:all>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="confirmManifestResponse">
+		<xsd:complexType>
+			<xsd:all>
+				<xsd:element name="requests" minOccurs="0">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element name="request" type="com:Request" minOccurs="0" maxOccurs="unbounded"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+<!--
+				<xsd:element name="manifests" minOccurs="0">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element name="manifest" type="com:Manifest" minOccurs="0" maxOccurs="unbounded"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+-->
+				<xsd:element name="manifestDocument" type="com:ManifestDocument"/>
+				<xsd:element name="manifestDocumentType" type="com:ManifestDocumentType"/>
+				<xsd:element name="labelDocument" type="com:LabelDocument" minOccurs="0"/>
+				<xsd:element name="labelDocumentType" type="com:LabelDocumentType" minOccurs="0"/>
+				<xsd:element name="labelPrinterType" type="com:LabelPrinterType" minOccurs="0"/>
+			</xsd:all>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="getLocations">
+		<xsd:complexType>
+			<xsd:all>
+				<xsd:element name="clientId" type="com:ClientId" minOccurs="0"/>
+				<xsd:element name="description" type="com:LocationName" minOccurs="0"/>
+				<xsd:element name="type" type="com:LocationPosition" minOccurs="0"/>
+			</xsd:all>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="getLocationsResponse">
+		<xsd:complexType>
+			<xsd:all>
+				<xsd:element name="locations">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element name="location" type="com:Location" minOccurs="0" maxOccurs="unbounded"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:all>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="createLocation">
+		<xsd:complexType>
+			<xsd:all>
+				<xsd:element name="clientId" type="com:ClientId" minOccurs="0"/>
+				<xsd:element name="location" type="com:Location"/>
+			</xsd:all>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="createLocationResponse"/>
+
+	<xsd:element name="updateLocation">
+		<xsd:complexType>
+			<xsd:all>
+				<xsd:element name="clientId" type="com:ClientId" minOccurs="0"/>
+				<xsd:element name="location" type="com:Location"/>
+			</xsd:all>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="updateLocationResponse"/>
+
+
+
+	<!-- End Operation Request or Response Types -->
+
+</xsd:schema>

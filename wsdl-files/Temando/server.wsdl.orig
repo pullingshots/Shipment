@@ -1,0 +1,391 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<definitions
+	name="quoting"
+	targetNamespace="http://api.temando.com/schema/2009_06/server.wsdl"
+	xmlns:tns="http://api.temando.com/schema/2009_06/server.wsdl"
+	xmlns:com="http://api.temando.com/schema/2009_06/common.xsd"
+	xmlns:server="http://api.temando.com/schema/2009_06/server.xsd"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+	xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/04/secext"
+	xmlns="http://schemas.xmlsoap.org/wsdl/">
+
+	<import namespace="http://api.temando.com/schema/2009_06/server.xsd" location="server.xsd"/>
+	<import namespace="http://api.temando.com/schema/2009_06/common.xsd" location="common.xsd"/>
+
+	<message name="getQuotesByRequest">
+		<part name="getQuotesByRequest" element="server:getQuotesByRequest" />
+	</message>
+	<message name="getQuotesByRequestResponse">
+		<part name="getQuotesByRequestResponse" element="server:getQuotesByRequestResponse" />
+	</message>
+	<message name="makeBookingByRequest">
+		<part name="makeBookingByRequest" element="server:makeBookingByRequest" />
+	</message>
+	<message name="makeBookingByRequestResponse">
+		<part name="makeBookingByRequestResponse" element="server:makeBookingByRequestResponse" />
+	</message>
+	<message name="updateRequest">
+		<part name="updateRequest" element="server:updateRequest" />
+	</message>
+	<message name="updateRequestResponse">
+		<part name="updateRequestResponse" element="server:updateRequestResponse" />
+	</message>
+<!--
+	<message name="getRequestIdByReference">
+		<part name="getRequestIdByReference" element="server:getRequestIdByReference" />
+	</message>
+	<message name="getRequestIdByReferenceResponse">
+		<part name="getRequestIdByReferenceResponse" element="server:getRequestIdByReferenceResponse" />
+	</message>
+-->
+<!--
+	<message name="lodgeRequest">
+		<part name="lodgeRequest" element="server:lodgeRequest" />
+	</message>
+	<message name="lodgeRequestResponse">
+		<part name="lodgeRequestResponse" element="server:lodgeRequestResponse" />
+	</message>
+-->
+<!--
+	<message name="makeBookingById">
+		<part name="makeBookingById" element="server:makeBookingById" />
+	</message>
+	<message name="makeBookingByIdResponse">
+		<part name="makeBookingByIdResponse" element="server:makeBookingByIdResponse" />
+	</message>
+-->
+	<message name="getRequest">
+		<part name="getRequest" element="server:getRequest" />
+	</message>
+	<message name="getRequestResponse">
+		<part name="getRequestResponse" element="server:getRequestResponse" />
+	</message>
+	<message name="getRequestsRequiringBooking">
+		<part name="getRequestsRequiringBooking" element="server:getRequestsRequiringBooking" />
+	</message>
+	<message name="getRequestsRequiringBookingResponse">
+		<part name="getRequestsRequiringBookingResponse" element="server:getRequestsRequiringBookingResponse" />
+	</message>
+	<message name="addBookingDetails">
+		<part name="addBookingDetails" element="server:addBookingDetails" />
+	</message>
+	<message name="addBookingDetailsResponse">
+		<part name="addBookingDetailsResponse" element="server:addBookingDetailsResponse" />
+	</message>
+	<message name="createClient">
+		<part name="createClient" element="server:createClient" />
+	</message>
+	<message name="createClientResponse">
+		<part name="createClientResponse" element="server:createClientResponse" />
+	</message>
+	<message name="updateClient">
+		<part name="updateClient" element="server:updateClient" />
+	</message>
+	<message name="updateClientResponse">
+		<part name="updateClientResponse" element="server:updateClientResponse" />
+	</message>
+	<message name="getClient">
+		<part name="getClient" element="server:getClient" />
+	</message>
+	<message name="getClientResponse">
+		<part name="getClientResponse" element="server:getClientResponse" />
+	</message>
+	<message name="lodgeDispatch">
+		<part name="lodgeDispatch" element="server:lodgeDispatch" />
+	</message>
+	<message name="lodgeDispatchResponse">
+		<part name="lodgeDispatchResponse" element="server:lodgeDispatchResponse" />
+	</message>
+	<message name="cancelRequest">
+		<part name="cancelRequest" element="server:cancelRequest" />
+	</message>
+	<message name="cancelRequestResponse">
+		<part name="cancelRequestResponse" element="server:cancelRequestResponse" />
+	</message>
+	<message name="updateTrackingDetails">
+		<part name="updateTrackingDetails" element="server:updateTrackingDetails" />
+	</message>
+	<message name="updateTrackingDetailsResponse">
+		<part name="updateTrackingDetailsResponse" element="server:updateTrackingDetailsResponse" />
+	</message>
+	<message name="getManifest">
+		<part name="getManifest" element="server:getManifest" />
+	</message>
+	<message name="getManifestResponse">
+		<part name="getManifestResponse" element="server:getManifestResponse" />
+	</message>
+	<message name="confirmManifest">
+		<part name="confirmManifest" element="server:confirmManifest" />
+	</message>
+	<message name="confirmManifestResponse">
+		<part name="confirmManifestResponse" element="server:confirmManifestResponse" />
+	</message>
+	<message name="getLocations">
+		<part name="getLocations" element="server:getLocations" />
+	</message>
+	<message name="getLocationsResponse">
+		<part name="getLocationsResponse" element="server:getLocationsResponse" />
+	</message>
+	<message name="createLocation">
+		<part name="createLocation" element="server:createLocation" />
+	</message>
+	<message name="createLocationResponse">
+		<part name="createLocationResponse" element="server:createLocationResponse" />
+	</message>
+	<message name="updateLocation">
+		<part name="updateLocation" element="server:updateLocation" />
+	</message>
+	<message name="updateLocationResponse">
+		<part name="updateLocationResponse" element="server:updateLocationResponse" />
+	</message>
+
+	<portType name="quoting_portType">
+		<operation name="getQuotesByRequest">
+			<documentation>Returns quotes</documentation>
+			<input message="tns:getQuotesByRequest" />
+			<output message="tns:getQuotesByRequestResponse" />
+		</operation>
+		<operation name="makeBookingByRequest">
+			<documentation>Makes a Booking</documentation>
+			<input message="tns:makeBookingByRequest" />
+			<output message="tns:makeBookingByRequestResponse" />
+		</operation>
+		<operation name="updateRequest">
+			<documentation>Updates a Booking</documentation>
+			<input message="tns:updateRequest" />
+			<output message="tns:updateRequestResponse" />
+		</operation>
+		<operation name="getRequest">
+			<documentation>Returns request</documentation>
+			<input message="tns:getRequest" />
+			<output message="tns:getRequestResponse" />
+		</operation>
+		<operation name="getRequestsRequiringBooking">
+			<documentation>Returns requests</documentation>
+			<input message="tns:getRequestsRequiringBooking" />
+			<output message="tns:getRequestsRequiringBookingResponse" />
+		</operation>
+		<operation name="addBookingDetails">
+			<documentation>Makes a Booking</documentation>
+			<input message="tns:addBookingDetails" />
+			<output message="tns:addBookingDetailsResponse" />
+		</operation>
+		<operation name="createClient">
+			<documentation>Creates a Client account</documentation>
+			<input message="tns:createClient" />
+			<output message="tns:createClientResponse" />
+		</operation>
+		<operation name="updateClient">
+			<documentation>Update a Client account</documentation>
+			<input message="tns:updateClient" />
+			<output message="tns:updateClientResponse" />
+		</operation>
+		<operation name="getClient">
+			<documentation>Get a Clients account details.</documentation>
+			<input message="tns:getClient" />
+			<output message="tns:getClientResponse" />
+		</operation>
+		<operation name="lodgeDispatch">
+			<documentation>Lodge dispatch details for a request.</documentation>
+			<input message="tns:lodgeDispatch" />
+			<output message="tns:lodgeDispatchResponse" />
+		</operation>
+		<operation name="cancelRequest">
+			<documentation>Cancel a request.</documentation>
+			<input message="tns:cancelRequest" />
+			<output message="tns:cancelRequestResponse" />
+		</operation>
+		<operation name="updateTrackingDetails">
+			<documentation>Update a requests tracking status.</documentation>
+			<input message="tns:updateTrackingDetails" />
+			<output message="tns:updateTrackingDetailsResponse" />
+		</operation>
+		<operation name="getManifest">
+			<documentation>Retrieve manifest information.</documentation>
+			<input message="tns:getManifest" />
+			<output message="tns:getManifestResponse" />
+		</operation>
+		<operation name="confirmManifest">
+			<documentation>Confirm awaiting manifest.</documentation>
+			<input message="tns:confirmManifest" />
+			<output message="tns:confirmManifestResponse" />
+		</operation>
+		<operation name="getLocations">
+			<documentation>Retrieve locations.</documentation>
+			<input message="tns:getLocations" />
+			<output message="tns:getLocationsResponse" />
+		</operation>
+		<operation name="createLocation">
+			<documentation>Creates a Location</documentation>
+			<input message="tns:createLocation" />
+			<output message="tns:createLocationResponse" />
+		</operation>
+		<operation name="updateLocation">
+			<documentation>Update a Location</documentation>
+			<input message="tns:updateLocation" />
+			<output message="tns:updateLocationResponse" />
+		</operation>
+	</portType>
+	<binding name="quoting_binding" type="tns:quoting_portType">
+		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
+		<operation name="getQuotesByRequest">
+			<soap:operation soapAction="" />
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+		</operation>
+		<operation name="makeBookingByRequest">
+			<soap:operation soapAction="" />
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+		</operation>
+		<operation name="updateRequest">
+			<soap:operation soapAction="" />
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+		</operation>
+		<operation name="getRequest">
+			<soap:operation soapAction="" />
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+		</operation>
+		<operation name="getRequestsRequiringBooking">
+			<soap:operation soapAction="" />
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+		</operation>
+		<operation name="addBookingDetails">
+			<soap:operation soapAction="" />
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+		</operation>
+		<operation name="createClient">
+			<soap:operation soapAction="" />
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+		</operation>
+		<operation name="updateClient">
+			<soap:operation soapAction="" />
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+		</operation>
+		<operation name="getClient">
+			<soap:operation soapAction="" />
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+		</operation>
+		<operation name="lodgeDispatch">
+			<soap:operation soapAction="" />
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+		</operation>
+		<operation name="cancelRequest">
+			<soap:operation soapAction="" />
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+		</operation>
+		<operation name="updateTrackingDetails">
+			<soap:operation soapAction="" />
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+		</operation>
+		<operation name="getManifest">
+			<soap:operation soapAction="" />
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+		</operation>
+		<operation name="confirmManifest">
+			<soap:operation soapAction="" />
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+		</operation>
+		<operation name="getLocations">
+			<soap:operation soapAction="" />
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+		</operation>
+		<operation name="createLocation">
+			<soap:operation soapAction="" />
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+		</operation>
+		<operation name="updateLocation">
+			<soap:operation soapAction="" />
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+		</operation>
+	</binding>
+	<service name="quoting_Service">
+		<port name="quoting_port" binding="tns:quoting_binding">
+			<soap:address location="https://api.temando.com/soapServer.html" />
+		</port>
+	</service>
+</definitions>

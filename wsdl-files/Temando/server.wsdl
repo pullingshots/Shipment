@@ -74,6 +74,7 @@
 				<xsd:element name="anywhere" type="com:Anywhere"/>
 				<xsd:element name="anytime" type="com:Anytime" />
 				<xsd:element name="general" type="com:General" />
+				<xsd:element name="quoteFilter" type="com:QuoteFilter" />
 				<xsd:element name="clientId" type="com:ClientId" />
 			</xsd:all>
 		</xsd:complexType>
@@ -102,6 +103,7 @@
 				<xsd:element name="origin" type="com:Location"/>
 				<xsd:element name="destination" type="com:Location"/>
 				<xsd:element name="quote" type="com:BookingQuote"/>
+				<xsd:element name="quoteFilter" type="com:QuoteFilter" />
 				<xsd:element name="payment" type="com:Payment"/>
 				<xsd:element name="instructions" type="com:Instructions" />
 				<xsd:element name="comments" type="com:Comments" />
@@ -123,6 +125,52 @@
 				<xsd:element name="labelDocument" type="com:LabelDocument" />
 				<xsd:element name="labelDocumentType" type="com:LabelDocumentType" />
 				<xsd:element name="anytime" type="com:Anytime" />
+				<xsd:element name="quote" type="com:AvailableQuote" />
+				<xsd:element name="manifestNumber" type="com:ManifestNumber" />
+				<xsd:element name="articles" >
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element name="article" type="com:Article"  maxOccurs="unbounded"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:all>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="updateRequest">
+		<xsd:complexType>
+			<xsd:all>
+				<xsd:element name="action" type="com:UpdateAction"/>
+				<xsd:element name="requestId" type="xsd:positiveInteger" />
+				<xsd:element name="reference" type="com:ClientReference" />
+				<xsd:element name="anythings">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element name="anything" type="com:Anything" maxOccurs="10"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+				<xsd:element name="articles" >
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element name="article" type="com:Article"  maxOccurs="unbounded"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+				<xsd:element name="general" type="com:General" />
+				<xsd:element name="payment" type="com:Payment" />
+				<xsd:element name="clientId" type="com:ClientId" />
+				<xsd:element name="labelPrinterType" type="com:LabelPrinterType" />
+				<xsd:element name="detail" type="com:Detail" />
+			</xsd:all>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="updateRequestResponse">
+		<xsd:complexType>
+			<xsd:all>
+				<xsd:element name="requestId" type="xsd:positiveInteger"/>
+				<xsd:element name="quote" type="com:AvailableQuote" />
 			</xsd:all>
 		</xsd:complexType>
 	</xsd:element>
@@ -586,6 +634,14 @@
 			<xsd:element name="consignmentDocumentType" type="tns:ConsignmentDocumentType" />
 			<xsd:element name="labelDocument" type="tns:LabelDocument" />
 			<xsd:element name="labelDocumentType" type="tns:LabelDocumentType" />
+			<xsd:element name="manifestNumber" type="tns:ManifestNumber" />
+			<xsd:element name="articles" >
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="article" type="tns:Article"  maxOccurs="unbounded"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
 			<xsd:element name="trackingStatus" type="tns:TrackingStatus" />
 			<xsd:element name="trackingStatusOccurred" type="tns:Datetime" />
 			<xsd:element name="trackingLastChecked" type="tns:Datetime" />
@@ -755,6 +811,25 @@
 			</xsd:element>
 		</xsd:all>
 	</xsd:complexType>
+	<xsd:complexType name="QuoteFilter">
+		<xsd:all>
+			<xsd:element name="preference" type="tns:QuotePreference"/>
+			<xsd:element name="carriers" >
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="carrier" type="tns:CarrierPreference"  maxOccurs="unbounded"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="extras" >
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="summary" type="tns:ExtraSummary"  maxOccurs="unbounded"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:all>
+	</xsd:complexType>
 	<xsd:complexType name="Client">
 		<xsd:all>
 			<xsd:element name="id" type="tns:ClientId" />
@@ -844,7 +919,26 @@
 			<xsd:element name="destinationEmail" type="tns:Email" />
 		</xsd:all>
 	</xsd:complexType>
-
+	<xsd:complexType name="Article">
+		<xsd:all>
+			<xsd:element name="anythingIndex" type="tns:AnythingIndex"/>
+			<xsd:element name="articleNumber" type="tns:ArticleNumber" />
+			<xsd:element name="labelDocument" type="tns:LabelDocument" />
+			<xsd:element name="labelDocumentType" type="tns:LabelDocumentType" />
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="CarrierPreference">
+		<xsd:all>
+			<xsd:element name="carrierId" type="tns:CarrierId"/>
+			<xsd:element name="deliveryMethods" >
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="deliveryMethod" type="tns:DeliveryMethod"  maxOccurs="unbounded"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:all>
+	</xsd:complexType>
 
 	<!-- End Complex Types -->
 
@@ -1526,6 +1620,13 @@
 			<xsd:enumeration value="Summary"/>
 		</xsd:restriction>
 	</xsd:simpleType>
+	<xsd:simpleType name="QuotePreference">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="Cheapest"/>
+			<xsd:enumeration value="Carriers Only"/>
+			<xsd:enumeration value="Carrier Order"/>
+		</xsd:restriction>
+	</xsd:simpleType>
 	<xsd:simpleType name="AuspostMerchantLocationId">
 		<xsd:restriction base="xsd:string">
 			<xsd:maxLength value="3"/>
@@ -1534,6 +1635,28 @@
 	<xsd:simpleType name="AuspostLodgementFacility">
 		<xsd:restriction base="xsd:string">
 			<xsd:maxLength value="40"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ManifestNumber">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="50"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="AnythingIndex">
+		<xsd:restriction base="xsd:int">
+			<xsd:minInclusive value="1"/>
+			<xsd:maxInclusive value="999999999"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ArticleNumber">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="50"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="UpdateAction">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="Add"/>
+			<xsd:enumeration value="Delete"/>
 		</xsd:restriction>
 	</xsd:simpleType>
 

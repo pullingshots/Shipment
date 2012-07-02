@@ -18,3 +18,47 @@
 
 * use command
 /usr/local/bin/wsdl2perl.pl -use_typemap -p Shipment::Temando::WSDL:: -b /home/baerg/Shipment/lib/ file:/home/baerg/Shipment/wsdl-files/Temando/server.wsdl
+
+* use the following search and replace commands to allow for switching between api.temando.com and training-api.temando.com
+perl -p -i -e "s/http:\/\/api.temando.com\/schema\/2009_06\/common.xsd/http:\/\/' . \\\$Shipment::Temando::WSDL::Interfaces::quoting_Service::quoting_port::ns_url . '\/schema\/2009_06\/common.xsd/g" `find /home/baerg/Shipment/lib/Shipment/Temando/WSDL/ -name *.pm`
+perl -p -i -e "s/http:\/\/api.temando.com\/schema\/2009_06\/server.xsd/http:\/\/' . \\\$Shipment::Temando::WSDL::Interfaces::quoting_Service::quoting_port::ns_url . '\/schema\/2009_06\/server.xsd/g" `find /home/baerg/Shipment/lib/Shipment/Temando/WSDL/ -name *.pm`
+
+* also modify Interfaces/quoting_Service/quoting_port.pm with the following
+
+our $ns_url;
+
+# only load if it hasn't been loaded before
+require Shipment::Temando::WSDL::Typemaps::quoting_Service
+    if not Shipment::Temando::WSDL::Typemaps::quoting_Service->can('get_class');
+
+
+sub START {
+ 
+    my $service_address;
+    if ($_[2]->{live}) {
+      $service_address = 'https://api.temando.com/soapServer.html';
+  $ns_url = 'api.temando.com';
+    }
+    else {
+      $service_address = 'http://training-api.temando.com/soapServer.html';
+  $ns_url = 'training-api.temando.com';
+    }
+  
+    $_[0]->set_proxy($service_address) if not $_[2]->{proxy};
+
+    $_[0]->set_class_resolver('Shipment::Temando::WSDL::Typemaps::quoting_Service')
+        if not $_[2]->{class_resolver};
+
+    $_[0]->set_prefix($_[2]->{use_prefix}) if exists $_[2]->{use_prefix};
+}
+
+
+* For authentication, insert the following into the header => { section of each sub in Interfaces/quoting_Service/quoting_port.pm
+
+
+            'use' => 'literal',
+            namespace => 'http://schemas.xmlsoap.org/wsdl/soap/',
+            encodingStyle => '',
+            parts => [qw( Shipment::Temando::WSDL::Elements::TemandoSecurity )],
+
+

@@ -88,11 +88,11 @@ is( $shipment->count_packages, 2, 'shipment has 2 packages');
 ok( defined $shipment->services, 'got services');
 
 ok( defined $shipment->services->{ground}, 'got a ground service');
-is( $shipment->services->{ground}->id, '54429Road Express', 'ground service_id') if defined $shipment->services->{ground};
+is( $shipment->services->{ground}->id, '54440eParcel - Standard', 'ground service_id') if defined $shipment->services->{ground};
 ok( defined $shipment->services->{express}, 'got an express service');
 is( $shipment->services->{express}->id, '54426Pre-scheduled pick-ups only', 'express service_id') if defined $shipment->services->{express};
 ok( defined $shipment->services->{priority}, 'got a priority service');
-is( $shipment->services->{priority}->id, '54359Express Premium (eta metro only)', 'priority service_id') if defined $shipment->services->{priority};
+is( $shipment->services->{priority}->id, '54396Express Premium (eta metro only) - Auth to Leave', 'priority service_id') if defined $shipment->services->{priority};
 
 $shipment = Shipment::Temando->new(
   username => $username,
