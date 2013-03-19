@@ -88,11 +88,11 @@ is( $shipment->count_packages, 2, 'shipment has 2 packages');
 ok( defined $shipment->services, 'got services');
 
 ok( defined $shipment->services->{ground}, 'got a ground service');
-is( $shipment->services->{ground}->id, '54440eParcel - Standard', 'ground service_id') if defined $shipment->services->{ground};
+is( $shipment->services->{ground}->id, '54425Carton Express (Road Service)', 'ground service_id') if defined $shipment->services->{ground};
 ok( defined $shipment->services->{express}, 'got an express service');
-is( $shipment->services->{express}->id, '54426Pre-scheduled pick-ups only', 'express service_id') if defined $shipment->services->{express};
+is( $shipment->services->{express}->id, '54344General (Road)', 'express service_id') if defined $shipment->services->{express};
 ok( defined $shipment->services->{priority}, 'got a priority service');
-is( $shipment->services->{priority}->id, '54396Express Premium (eta metro only) - Auth to Leave', 'priority service_id') if defined $shipment->services->{priority};
+is( $shipment->services->{priority}->id, '60006Air Express', 'priority service_id') if defined $shipment->services->{priority};
 
 $shipment = Shipment::Temando->new(
   username => $username,
@@ -142,7 +142,7 @@ $shipment = Shipment::Temando->new(
   carbon_offset => 1,
   bill_type => 'credit_card',
   credit_card_type => 'Visa',
-  credit_card_expiry => '02-2013',
+  credit_card_expiry => '02-2014',
   credit_card_number => '4111111111111111',
   credit_card_name => 'Foo Bar',
 #  live => 1,
