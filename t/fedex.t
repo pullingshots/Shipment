@@ -9,7 +9,7 @@ $password ||= $ENV{'FEDEX_PASSWORD'};
 $account  ||= $ENV{'FEDEX_ACCOUNT'};
 $meter    ||= $ENV{'FEDEX_METER'};
 
-use Test::More tests => 43;
+use Test::More tests => 44;
 
 SKIP: {
   skip "Tests can only be run with a valid FedEx Developer Key/Password and Account/Meter. The following environment variables are used: FEDEX_KEY FEDEX_PASSWORD FEDEX_ACCOUNT FEDEX_METER You can sign up for a FedEx Web Services developer account at https://www.fedex.com/wpor/web/jsp/drclinks.jsp?links=techresources/index.html", 43 unless $key && $password && $account && $meter;
@@ -60,12 +60,12 @@ my $shipment = Shipment::FedEx->new(
   meter => $meter,
   from_address => $from,
   to_address => $to,
-  packages => \@packages,
   printer_type => 'thermal',
   references => [ qw( foo bar baz ) ],
   bill_type => 'collect',
   residential_address => 1,
 );
+
 
 ok( defined $shipment, 'got a shipment');
 
@@ -92,7 +92,7 @@ if (defined $shipment->from_address) {
   is( $shipment->to_address->phone_components->{phone}, '2040907', 'phone_components->{phone}');
 }
 
-is( $shipment->count_packages, 1, 'shipment has 1 packages');
+is( $shipment->count_packages, 0, 'shipment has zero packages');
 
 ok( defined $shipment->services, 'got services');
 ok( defined $shipment->services->{ground}, 'got a ground service');
@@ -101,6 +101,9 @@ ok( defined $shipment->services->{express}, 'got an express service');
 is( $shipment->services->{express}->id, 'FEDEX_2_DAY', 'express service_id') if defined $shipment->services->{express};
 ok( defined $shipment->services->{priority}, 'got a priority service');
 is( $shipment->services->{priority}->id, 'PRIORITY_OVERNIGHT', 'priority service_id') if defined $shipment->services->{priority};
+
+$shipment->packages(\@packages);
+is( $shipment->count_packages, 1, 'shipment has 1 packages');
 
 $shipment->rate( 'ground' );
 
