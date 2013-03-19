@@ -279,25 +279,36 @@ sub rate {
 
     my @pieces;
     foreach (@{ $self->packages }) {
-      push @pieces,
-        {
-            Weight => {
-              Value => sprintf("%.0f", $_->weight) || 1,
-              WeightUnit => $self->weight_unit,
-            },
-            Length => {
-              Value => $_->length,
-              DimensionUnit => $self->dim_unit,
-            },
-            Width => {
-              Value => $_->width,
-              DimensionUnit => $self->dim_unit,
-            },
-            Height => {
-              Value => $_->height,
-              DimensionUnit => $self->dim_unit,
-            },
-        };
+      if ($self->package_type eq 'custom') {
+        push @pieces,
+          {
+              Weight => {
+                Value => sprintf("%.0f", $_->weight) || 1,
+                WeightUnit => $self->weight_unit,
+              },
+              Length => {
+                Value => $_->length,
+                DimensionUnit => $self->dim_unit,
+              },
+              Width => {
+                Value => $_->width,
+                DimensionUnit => $self->dim_unit,
+              },
+              Height => {
+                Value => $_->height,
+                DimensionUnit => $self->dim_unit,
+              },
+          };
+      }
+      else {
+        push @pieces,
+          {
+              Weight => {
+                Value => sprintf("%.0f", $_->weight) || 1,
+                WeightUnit => $self->weight_unit,
+              },
+          };
+      }
     }
 
     use Shipment::Purolator::WSDL::Interfaces::EstimatingService::EstimatingServiceEndpoint;
@@ -471,25 +482,36 @@ sub ship {
 
     my @pieces;
     foreach (@{ $self->packages }) {
-      push @pieces,
-        {
-            Weight => {
-              Value => sprintf("%.0f", $_->weight) || 1,
-              WeightUnit => $self->weight_unit,
-            },
-            Length => {
-              Value => $_->length,
-              DimensionUnit => $self->dim_unit,
-            },
-            Width => {
-              Value => $_->width,
-              DimensionUnit => $self->dim_unit,
-            },
-            Height => {
-              Value => $_->height,
-              DimensionUnit => $self->dim_unit,
-            },
-        };
+      if ($self->package_type eq 'custom') {
+        push @pieces,
+          {
+              Weight => {
+                Value => sprintf("%.0f", $_->weight) || 1,
+                WeightUnit => $self->weight_unit,
+              },
+              Length => {
+                Value => $_->length,
+                DimensionUnit => $self->dim_unit,
+              },
+              Width => {
+                Value => $_->width,
+                DimensionUnit => $self->dim_unit,
+              },
+              Height => {
+                Value => $_->height,
+                DimensionUnit => $self->dim_unit,
+              },
+          };
+      }
+      else {
+        push @pieces,
+          {
+              Weight => {
+                Value => sprintf("%.0f", $_->weight) || 1,
+                WeightUnit => $self->weight_unit,
+              },
+          };
+      }
     }
 
     use Shipment::Purolator::WSDL::Interfaces::ShippingService::ShippingServiceEndpoint;
