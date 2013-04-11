@@ -62,7 +62,7 @@ my $shipment = Shipment::UPS->new(
   to_address => $to,
   packages => \@packages,
   printer_type => 'thermal',
-  references => [ qw( foo bar ) ],
+  references => [ 'foo', undef, 'bar' ],
   residential_address => 1,
 );
 

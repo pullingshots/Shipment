@@ -61,7 +61,7 @@ my $shipment = Shipment::Purolator->new(
   to_address => $to,
   packages => \@packages,
   printer_type => 'thermal',
-  references => [ qw( foo bar ) ],
+  references => [ 'foo', undef, 'bar' ],
 );
 
 ok( defined $shipment, 'got a shipment');

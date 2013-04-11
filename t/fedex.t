@@ -61,7 +61,7 @@ my $shipment = Shipment::FedEx->new(
   from_address => $from,
   to_address => $to,
   printer_type => 'thermal',
-  references => [ qw( foo bar baz ) ],
+  references => [ 'foo', undef, 'baz' ],
   bill_type => 'collect',
   residential_address => 1,
 );

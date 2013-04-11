@@ -67,7 +67,7 @@ my $shipment = Shipment::Temando->new(
   to_address => $to,
   packages => \@packages,
   printer_type => 'thermal',
-  references => [ qw( foo bar ) ],
+  references => [ 'foo', undef, 'bar' ],
 #  live => 1,
 );
 
