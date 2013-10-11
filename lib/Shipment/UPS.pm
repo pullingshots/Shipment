@@ -158,6 +158,20 @@ has 'control_log_receipt' => (
   isa => 'Shipment::Label',
 );
 
+=head2 carbon_neutral
+
+Set the Carbon Neutral Indicator - http://www.ups.com/content/us/en/resources/ship/carbonneutral/shipping.html
+
+type: Bool
+
+=cut
+
+has 'carbon_neutral' => (
+  is => 'rw',
+  isa => 'Bool',
+  default => undef,
+);
+
 =head1 Type Maps
 
 =head2 service_map
@@ -445,6 +459,9 @@ sub rate {
     my $rating_options;
     $rating_options->{NegotiatedRatesIndicator} = 1 if $self->negotiated_rates;
 
+    my $shipment_options;
+    $shipment_options->{UPScarbonneutralIndicator} = '' if $self->carbon_neutral;
+
     my @pieces;
     foreach (@{ $self->packages }) {
       $options->{DeclaredValue}->{MonetaryValue} = $_->insured_value->value;
@@ -514,6 +531,7 @@ sub rate {
             Code => $service_id,
           },
           Package => \@pieces,
+          ShipmentServiceOptions => $shipment_options,
         },
       },
       {
@@ -596,6 +614,7 @@ sub ship {
       $shipment_options->{Notification}->{EMail}->{EMailAddress} = $self->to_address->email;
       $shipment_options->{Notification}->{EMail}->{SubjectCode} = '03'; 
     }
+    $shipment_options->{UPScarbonneutralIndicator} = '' if $self->carbon_neutral;
 
     my $rating_options;
     $rating_options->{NegotiatedRatesIndicator} = 1 if $self->negotiated_rates;
