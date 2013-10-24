@@ -336,8 +336,20 @@ sub _build_services {
   my $rating_options;
   $rating_options->{NegotiatedRatesIndicator} = 1 if $self->negotiated_rates;
 
+    my @from_addresslines = (
+      $self->from_address->address1, 
+      $self->from_address->address2, 
+      $self->from_address->address3
+    );
+    my @to_addresslines = (
+      $self->to_address->address1, 
+      $self->to_address->address2, 
+      $self->to_address->address3
+    );
+
   my $shipto = { 
             Address => {
+              AddressLine       => \@to_addresslines,
               City              => $self->to_address()->city,
               StateProvinceCode => $self->to_address()->province_code,
               PostalCode        => $self->to_address()->postal_code,
@@ -357,6 +369,7 @@ sub _build_services {
           Shipper => {
             ShipperNumber => $self->account,
             Address => {
+              AddressLine       => \@from_addresslines,
               City              => $self->from_address()->city,
               StateProvinceCode => $self->from_address()->province_code,
               PostalCode        => $self->from_address()->postal_code,
@@ -488,9 +501,21 @@ sub rate {
         };
     }
 
+    my @from_addresslines = (
+      $self->from_address->address1, 
+      $self->from_address->address2, 
+      $self->from_address->address3
+    );
+    my @to_addresslines = (
+      $self->to_address->address1, 
+      $self->to_address->address2, 
+      $self->to_address->address3
+    );
+
 
   my $shipto = { 
             Address => {
+              AddressLine       => \@to_addresslines,
               City              => $self->to_address()->city,
               StateProvinceCode => $self->to_address()->province_code,
               PostalCode        => $self->to_address()->postal_code,
@@ -519,6 +544,7 @@ sub rate {
           Shipper => {
             ShipperNumber => $self->account,
             Address => {
+              AddressLine       => \@from_addresslines,
               City              => $self->from_address->city,
               StateProvinceCode => $self->from_address->province_code,
               PostalCode        => $self->from_address->postal_code,
