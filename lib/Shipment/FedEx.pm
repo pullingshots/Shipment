@@ -783,8 +783,14 @@ sub ship {
       } catch {
           warn $_;
           try {
-            warn $response->get_Notifications()->get_Message;
-            $self->error( $response->get_Notifications()->get_Message->get_value );
+            my $notes = $response->get_Notifications();
+            $notes = [$notes] unless ref($notes) eq 'ARRAY';
+            my @errors;
+            foreach my $note (@$notes) {
+              warn $note->get_Message;
+              push @errors, $note->get_Message->get_value;
+            }
+            $self->error( join("\n", @errors) );
           } catch {
             warn $response->get_faultstring;
             $self->error( $response->get_faultstring->get_value ); 
