@@ -619,183 +619,216 @@ sub ship {
   push @from_streetlines, $self->from_address()->address1;
   push @from_streetlines, $self->from_address()->address2 if $self->from_address()->address2;
 
-    my $response;
-    my $sequence = 1;
-    my $master_tracking_id = {};
+  my $response;
+  my $sequence = 1;
+  my $master_tracking_id = {};
 
-    use Shipment::Label;
-    use MIME::Base64;
-    use Data::Currency;
-    use Shipment::Service;
-    use DateTime;
+  use Shipment::Label;
+  use MIME::Base64;
+  use Data::Currency;
+  use Shipment::Service;
+  use DateTime;
 
-    use Shipment::FedEx::WSDL::ShipInterfaces::ShipService::ShipServicePort;
+  use Shipment::FedEx::WSDL::ShipInterfaces::ShipService::ShipServicePort;
 
-    my $interface = Shipment::FedEx::WSDL::ShipInterfaces::ShipService::ShipServicePort->new(
-      {
-        proxy_domain => $self->proxy_domain,
-      }
-    );
+  my $interface = Shipment::FedEx::WSDL::ShipInterfaces::ShipService::ShipServicePort->new(
+    {
+      proxy_domain => $self->proxy_domain,
+    }
+  );
 
-    foreach (@{ $self->packages }) {
-
-      try {
-        $response = $interface->processShipment( 
-          { 
-            WebAuthenticationDetail =>  {
-              UserCredential =>  { 
-                Key =>  $self->key,
-                Password => $self->password,
-              },
+  foreach my $package (@{ $self->packages }) {
+    try {
+      my $shipment_arguments = { 
+        WebAuthenticationDetail =>  {
+          UserCredential =>  { 
+            Key =>  $self->key,
+            Password => $self->password,
+          },
+        },
+        ClientDetail =>  { 
+          AccountNumber =>  $self->account,
+          MeterNumber =>  $self->meter,
+        },
+        Version =>  {
+          ServiceId =>  'ship',
+          Major =>  9,
+          Intermediate =>  0,
+          Minor =>  0,
+        },
+        RequestedShipment => {
+          ShipTimestamp => DateTime->now->datetime,
+          ServiceType => $service_id,
+          DropoffType => $pickup_type_map{$self->pickup_type} || $self->pickup_type,
+          PackagingType => $package_type_map{$self->package_type} || $self->package_type,
+          TotalWeight => {
+            Value => $total_weight,
+            Units => $units_type_map{$self->weight_unit} || $self->weight_unit,
+          },
+          TotalInsuredValue =>  {
+            Currency => $self->currency,
+            Amount => $total_insured_value,
+          },
+          Shipper =>  {
+            Contact => {
+              PersonName          =>  $self->from_address()->name,
+              CompanyName         =>  $self->from_address()->company,
+              PhoneNumber         =>  $self->from_address()->phone,
             },
-            ClientDetail =>  { 
-              AccountNumber =>  $self->account,
-              MeterNumber =>  $self->meter,
-            },
-            Version =>  {
-              ServiceId =>  'ship',
-              Major =>  9,
-              Intermediate =>  0,
-              Minor =>  0,
-            },
-            RequestedShipment => {
-              ShipTimestamp => DateTime->now->datetime,
-              ServiceType => $service_id,
-              DropoffType => $pickup_type_map{$self->pickup_type} || $self->pickup_type,
-              PackagingType => $package_type_map{$self->package_type} || $self->package_type,
-              TotalWeight => {
-                Value => $total_weight,
-                Units => $units_type_map{$self->weight_unit} || $self->weight_unit,
-              },
-              TotalInsuredValue =>  {
-                Currency =>  $self->currency,
-                Amount =>  $total_insured_value,
-              },
-              Shipper =>  {
-                Contact => {
-                  PersonName          =>  $self->from_address()->name,
-                  CompanyName         =>  $self->from_address()->company,
-                  PhoneNumber         =>  $self->from_address()->phone,
-                },
-                Address =>  { 
-                  StreetLines         =>  \@from_streetlines,
-                  City                =>  $self->from_address()->city,
-                  StateOrProvinceCode =>  $self->from_address()->province_code,
-                  PostalCode          =>  $self->from_address()->postal_code,
-                  CountryCode         =>  $self->from_address()->country_code,
-                },
-              },
-              Recipient =>  {
-                Contact => {
-                  PersonName          =>  $self->to_address()->name,
-                  CompanyName         =>  $self->to_address()->company,
-                  PhoneNumber         =>  $self->to_address()->phone,
-                },
-                Address =>  { 
-                  StreetLines         =>  \@to_streetlines,
-                  City                =>  $self->to_address()->city,
-                  StateOrProvinceCode =>  $self->to_address()->province_code,
-                  PostalCode          =>  $self->to_address()->postal_code,
-                  CountryCode         =>  $self->to_address()->country_code,
-                  Residential         =>  $self->residential_address,
-                },
-              },
-              ShippingChargesPayment =>  { 
-                PaymentType => $bill_type_map{$self->bill_type} || $self->bill_type,
-                Payor =>  { 
-                  AccountNumber =>  $self->bill_account,
-                  CountryCode   =>  ($self->bill_address) ? $self->bill_address->country_code : $self->from_address->country_code,
-                },
-              },
-              SpecialServicesRequested => $shipment_options,
-              RateRequestTypes => 'ACCOUNT',
-              PackageCount =>  $self->count_packages,
-              PackageDetail => 'INDIVIDUAL_PACKAGES',
-              MasterTrackingId => $master_tracking_id,
-              RequestedPackageLineItems => {
-                SequenceNumber => $sequence,
-                InsuredValue =>  {
-                  Currency =>  $self->currency,
-                  Amount =>  $_->insured_value->value,
-                },
-                Weight => {
-                  Value => $_->weight,
-                  Units => $units_type_map{$self->weight_unit} || $self->weight_unit,
-                },
-                Dimensions => {
-                  Length => $_->length,
-                  Width => $_->width,
-                  Height => $_->height,
-                  Units => $units_type_map{$self->dim_unit} || $self->dim_unit,
-                },
-                SpecialServicesRequested => $package_options,
-                CustomerReferences => \@references,
-              },
-              LabelSpecification =>  {
-                LabelFormatType => 'COMMON2D',
-                ImageType       => $printer_type_map{$self->printer_type} || $self->printer_type,
-                LabelStockType  => $self->label_stock_type,
-              },
+            Address =>  { 
+              StreetLines         =>  \@from_streetlines,
+              City                =>  $self->from_address()->city,
+              StateOrProvinceCode =>  $self->from_address()->province_code,
+              PostalCode          =>  $self->from_address()->postal_code,
+              CountryCode         =>  $self->from_address()->country_code,
             },
           },
-        );
-        #warn $response;
-        my $package_details = $response->get_CompletedShipmentDetail->get_CompletedPackageDetails;
-        
-        if ($self->count_packages > 1) {
-          my $master_tracking = $response->get_CompletedShipmentDetail->get_MasterTrackingId;
-          $self->tracking_id( $master_tracking->get_TrackingNumber->get_value );
-          $master_tracking_id = {
-                TrackingIdType => $master_tracking->get_TrackingIdType->get_value,
-                TrackingNumber => $master_tracking->get_TrackingNumber->get_value,
-          };
-        } else {
-          $self->tracking_id( $package_details->get_TrackingIds->get_TrackingNumber->get_value );
-        }
-        $_->tracking_id( $package_details->get_TrackingIds->get_TrackingNumber->get_value );
-
-        if ($package_details->get_PackageRating) {
-          $_->cost(
-            Data::Currency->new(
-              $package_details->get_PackageRating->get_PackageRateDetails->[0]->get_NetCharge->get_Amount->get_value,
-              $package_details->get_PackageRating->get_PackageRateDetails->[0]->get_NetCharge->get_Currency->get_value,
-            ) 
-          );
-        } elsif ($response->get_CompletedShipmentDetail->get_ShipmentRating) {
-          $_->cost(
-            Data::Currency->new(
-              $response->get_CompletedShipmentDetail->get_ShipmentRating->get_ShipmentRateDetails->[0]->get_TotalNetCharge->get_Amount->get_value,
-              $response->get_CompletedShipmentDetail->get_ShipmentRating->get_ShipmentRateDetails->[0]->get_TotalNetCharge->get_Currency->get_value,
-            ) 
-          );
-        }
-        $_->label(
-          Shipment::Label->new(
-            {
-              tracking_id => $package_details->get_TrackingIds->get_TrackingNumber->get_value,
-              content_type => $label_content_type_map{$self->printer_type},
-              data => decode_base64($package_details->get_Label->get_Parts->get_Image->get_value),
-              file_name => $package_details->get_TrackingIds->get_TrackingNumber->get_value . '.' . lc $printer_type_map{$self->printer_type},
+          Recipient =>  {
+            Contact => {
+              PersonName          =>  $self->to_address()->name,
+              CompanyName         =>  $self->to_address()->company,
+              PhoneNumber         =>  $self->to_address()->phone,
             },
-          )
-        );
-        
-      } catch {
-          warn $_;
-          try {
-            my $notes = $response->get_Notifications();
-            $notes = [$notes] unless ref($notes) eq 'ARRAY';
-            my @errors;
-            foreach my $note (@$notes) {
-              warn $note->get_Message;
-              push @errors, $note->get_Message->get_value;
-            }
-            $self->error( join("\n", @errors) );
-          } catch {
-            warn $response->get_faultstring;
-            $self->error( $response->get_faultstring->get_value ); 
-          };
+            Address =>  { 
+              StreetLines         =>  \@to_streetlines,
+              City                =>  $self->to_address()->city,
+              StateOrProvinceCode =>  $self->to_address()->province_code,
+              PostalCode          =>  $self->to_address()->postal_code,
+              CountryCode         =>  $self->to_address()->country_code,
+              Residential         =>  $self->residential_address,
+            },
+          },
+          ShippingChargesPayment =>  { 
+            PaymentType => $bill_type_map{$self->bill_type} || $self->bill_type,
+            Payor =>  { 
+              AccountNumber =>  $self->bill_account,
+              CountryCode   =>  ($self->bill_address) ? $self->bill_address->country_code : $self->from_address->country_code,
+            },
+          },
+          SpecialServicesRequested => $shipment_options,
+          RateRequestTypes => 'ACCOUNT',
+          PackageCount =>  $self->count_packages,
+          PackageDetail => 'INDIVIDUAL_PACKAGES',
+          MasterTrackingId => $master_tracking_id,
+          RequestedPackageLineItems => {
+            SequenceNumber => $sequence,
+            InsuredValue =>  {
+              Currency =>  $self->currency,
+              Amount =>  $package->insured_value->value,
+            },
+            Weight => {
+              Value => $package->weight,
+              Units => $units_type_map{$self->weight_unit} || $self->weight_unit,
+            },
+            Dimensions => {
+              Length => $package->length,
+              Width => $package->width,
+              Height => $package->height,
+              Units => $units_type_map{$self->dim_unit} || $self->dim_unit,
+            },
+            SpecialServicesRequested => $package_options,
+            CustomerReferences => \@references,
+          },
+          LabelSpecification =>  {
+            LabelFormatType => 'COMMON2D',
+            ImageType       => $printer_type_map{$self->printer_type} || $self->printer_type,
+            LabelStockType  => $self->label_stock_type,
+          },
+        },
       };
+
+      if ( $self->from_address()->country_code ne $self->to_address()->country_code ) {
+        $shipment_arguments->{RequestedShipment}{CustomsClearanceDetail} = {
+          DutiesPayment => {
+            PaymentType => 'SENDER',
+            Payor => {
+              AccountNumber => $self->account,
+              CountryCode => $self->from_address()->country_code,
+            },
+          },
+          # This claimst to be required, but isn't and doesn't seem to affect
+          # the need for the Commodities entry.
+          #DocumentContent => 'DOCUMENTS_ONLY',
+          CustomsValue => {
+            Currency => $self->currency,
+            Amount => $total_insured_value,
+          },
+          # 'Commodities' => 'Shipment::FedEx::WSDL::ShipTypes::Commodity',
+          Commodities => {
+            NumberOfPieces => 1,
+            Description => 'Some Description',
+            CountryOfManufacture => $self->from_address()->country_code,
+            Weight => {
+              Value => $package->weight,
+              Units => $units_type_map{$self->weight_unit} || $self->weight_unit,
+            },
+            Quantity => 1,
+            QuantityUnits => 'EA',
+            UnitPrice => {
+              Currency => $self->currency,
+              Amount => $package->insured_value->value,
+            },
+          },
+        };
+      }
+
+      $response = $interface->processShipment( $shipment_arguments );
+      #warn $response;
+      my $package_details = $response->get_CompletedShipmentDetail->get_CompletedPackageDetails;
+      
+      if ($self->count_packages > 1) {
+        my $master_tracking = $response->get_CompletedShipmentDetail->get_MasterTrackingId;
+        $self->tracking_id( $master_tracking->get_TrackingNumber->get_value );
+        $master_tracking_id = {
+              TrackingIdType => $master_tracking->get_TrackingIdType->get_value,
+              TrackingNumber => $master_tracking->get_TrackingNumber->get_value,
+        };
+      } else {
+        $self->tracking_id( $package_details->get_TrackingIds->get_TrackingNumber->get_value );
+      }
+      $package->tracking_id( $package_details->get_TrackingIds->get_TrackingNumber->get_value );
+
+      if ($package_details->get_PackageRating) {
+        $package->cost(
+          Data::Currency->new(
+            $package_details->get_PackageRating->get_PackageRateDetails->[0]->get_NetCharge->get_Amount->get_value,
+            $package_details->get_PackageRating->get_PackageRateDetails->[0]->get_NetCharge->get_Currency->get_value,
+          ) 
+        );
+      } elsif ($response->get_CompletedShipmentDetail->get_ShipmentRating) {
+        $package->cost(
+          Data::Currency->new(
+            $response->get_CompletedShipmentDetail->get_ShipmentRating->get_ShipmentRateDetails->[0]->get_TotalNetCharge->get_Amount->get_value,
+            $response->get_CompletedShipmentDetail->get_ShipmentRating->get_ShipmentRateDetails->[0]->get_TotalNetCharge->get_Currency->get_value,
+          ) 
+        );
+      }
+      $package->label(
+        Shipment::Label->new(
+          {
+            tracking_id => $package_details->get_TrackingIds->get_TrackingNumber->get_value,
+            content_type => $label_content_type_map{$self->printer_type},
+            data => decode_base64($package_details->get_Label->get_Parts->get_Image->get_value),
+            file_name => $package_details->get_TrackingIds->get_TrackingNumber->get_value . '.' . lc $printer_type_map{$self->printer_type},
+          },
+        )
+      );
+    } catch {
+      warn $_;
+      try {
+        my $notes = $response->get_Notifications();
+        $notes = [$notes] unless ref($notes) eq 'ARRAY';
+        my @errors;
+        foreach my $note (@$notes) {
+          warn $note->get_Message;
+          push @errors, $note->get_Message->get_value;
+        }
+        $self->error( join("\n", @errors) );
+      } catch {
+        warn $response->get_faultstring;
+        $self->error( $response->get_faultstring->get_value ); 
+      };
+    };
     last if $self->error;
     $sequence++;
   }
@@ -822,7 +855,6 @@ sub ship {
       )
     );
   }
-
 }
 
 =head2 cancel
