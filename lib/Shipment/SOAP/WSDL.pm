@@ -9312,7 +9312,7 @@ $fatpacked{"SOAP/WSDL/XSD/Typelib/ComplexType.pm"} = <<'SOAP_WSDL_XSD_TYPELIB_CO
                   ? ()
                   : do {
                        croak "unknown field $_ in $class. Valid fields are:\n"
-                       . join(', ', @{ $ELEMENTS_FROM{ $class } }) . "\n"
+                       . join(', ', sort @{ $ELEMENTS_FROM{ $class } }) . "\n"
                        . "Structure given:\n" . Dumper @_ };
           } keys %{ $_[1] };                                      # %$args_of;
           return $self;
