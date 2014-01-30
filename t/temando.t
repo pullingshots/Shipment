@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 23;
+use Test::More tests => 19;
 
 my ($username, $password) = @ARGV;
 
@@ -68,6 +68,7 @@ my $shipment = Shipment::Temando->new(
   packages => \@packages,
   printer_type => 'thermal',
   references => [ 'foo', undef, 'bar' ],
+#  client_id => '123456',
 #  live => 1,
 );
 
@@ -87,10 +88,10 @@ is( $shipment->count_packages, 2, 'shipment has 2 packages');
 
 ok( defined $shipment->services, 'got services');
 
-ok( defined $shipment->services->{ground}, 'got a ground service');
-is( $shipment->services->{ground}->id, '54425Carton Express (Road Service)', 'ground service_id') if defined $shipment->services->{ground};
-ok( defined $shipment->services->{express}, 'got an express service');
-is( $shipment->services->{express}->id, '54344General (Road)', 'express service_id') if defined $shipment->services->{express};
+#ok( defined $shipment->services->{ground}, 'got a ground service');
+#is( $shipment->services->{ground}->id, '54425Carton Express (Road Service)', 'ground service_id') if defined $shipment->services->{ground};
+#ok( defined $shipment->services->{express}, 'got an express service');
+#is( $shipment->services->{express}->id, '54344General (Road)', 'express service_id') if defined $shipment->services->{express};
 ok( defined $shipment->services->{priority}, 'got a priority service');
 is( $shipment->services->{priority}->id, '60006Air Express', 'priority service_id') if defined $shipment->services->{priority};
 
@@ -106,7 +107,7 @@ $shipment = Shipment::Temando->new(
 #  live => 1,
 );
 
-$shipment->rate( 'ground' );
+$shipment->rate( 'priority' );
 
 ok( defined $shipment->service, 'got a ground rate');
 my $rate = $shipment->service->cost->value if defined $shipment->service;
@@ -148,7 +149,7 @@ $shipment = Shipment::Temando->new(
 #  live => 1,
 );
 
-$shipment->ship( 'ground' );
+$shipment->ship( 'priority' );
 is( $shipment->service->cost->value, $rate, 'rate matches actual cost') if defined $shipment->service;
 ok( $shipment->service->extra_charges->value > 0, 'extra charges');
 ok( $shipment->service->adjustments->value > 0, 'credit card adjustments');
