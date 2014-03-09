@@ -251,7 +251,7 @@ UPS provides package types in addition to the defaults in Shipment::Base
 
 =cut
 
-enum 'PackageOptions' => qw( custom envelope tube box pack 25kg_box 10kg_box pallet small_express_box medium_express_box large_express_box );
+enum 'PackageOptions' => [qw( custom envelope tube box pack 25kg_box 10kg_box pallet small_express_box medium_express_box large_express_box )];
 
 has '+package_type' => (
   isa => 'PackageOptions',
@@ -285,7 +285,7 @@ UPS does offer additional thermal options:
 
 =cut
 
-enum 'PrinterOptions' => qw( thermal image ZPL SPL STARPL );
+enum 'PrinterOptions' => [qw( thermal image ZPL SPL STARPL )];
 
 has '+printer_type' => (
   default => 'image',

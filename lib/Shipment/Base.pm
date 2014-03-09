@@ -125,7 +125,7 @@ default: sender
 
 =cut
 
-enum 'BillingOptions' => qw( sender recipient third_party );
+enum 'BillingOptions' => [qw( sender recipient third_party )];
 
 has 'bill_type' => (
   is => 'rw',
@@ -143,7 +143,7 @@ default: pickup
  
 =cut
 
-enum 'PickupOptions' => qw( pickup dropoff );
+enum 'PickupOptions' => [qw( pickup dropoff )];
 
 has 'pickup_type' => (
   is => 'rw',
@@ -161,7 +161,7 @@ default: pdf
 
 =cut
 
-enum 'PrinterOptions' => qw( pdf thermal image );
+enum 'PrinterOptions' => [qw( pdf thermal image )];
 
 has 'printer_type' => (
   is => 'rw',
@@ -179,7 +179,7 @@ default: default (the default setting for the chosen service)
 
 =cut
 
-enum 'SignatureOptions' => qw( default required not_required adult );
+enum 'SignatureOptions' => [qw( default required not_required adult )];
 
 has 'signature_type' => (
   is => 'rw',
@@ -197,7 +197,7 @@ default: custom
 
 =cut
 
-enum 'PackageOptions' => qw( custom envelope tube box pack );
+enum 'PackageOptions' => [qw( custom envelope tube box pack )];
 
 has 'package_type' => (
   is => 'rw',

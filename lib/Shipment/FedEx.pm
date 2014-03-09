@@ -109,7 +109,7 @@ Default: 4x6
 
 =cut
 
-enum 'LabelStockOptions' => qw( 
+enum 'LabelStockOptions' => [qw( 
   STOCK_4X6
   STOCK_4X6.75_LEADING_DOC_TAB
   STOCK_4X6.75_TRAILING_DOC_TAB
@@ -123,7 +123,7 @@ enum 'LabelStockOptions' => qw(
   PAPER_8.5X11_BOTTOM_HALF_LABEL
   PAPER_8.5X11_TOP_HALF_LABEL
   PAPER_LETTER
-);
+)];
 
 has 'label_stock_type' => (
   is => 'rw',
@@ -151,7 +151,7 @@ FedEx offers collect billing (without the need for a billing account #)
 
 =cut
 
-enum 'BillingOptions' => qw( sender recipient third_party collect );
+enum 'BillingOptions' => [qw( sender recipient third_party collect )];
 
 has '+bill_type' => (
   isa => 'BillingOptions',
@@ -211,7 +211,7 @@ FedEx provides package types in addition to the defaults in Shipment::Base
 
 =cut
 
-enum 'PackageOptions' => qw( custom envelope tube box pack FEDEX_10KG_BOX FEDEX_25KG_BOX );
+enum 'PackageOptions' => [qw( custom envelope tube box pack FEDEX_10KG_BOX FEDEX_25KG_BOX )];
 
 has '+package_type' => (
   isa => 'PackageOptions',

@@ -171,7 +171,7 @@ Shipment::Base provides abstract types which need to be mapped to Temando (i.e. 
 
 =cut
 
-enum 'BillingOptions' => qw( sender account credit credit_card );
+enum 'BillingOptions' => [qw( sender account credit credit_card )];
 
 has '+bill_type' => (
   isa => 'BillingOptions',
@@ -225,7 +225,7 @@ Temando provides package types in addition to the defaults in Shipment::Base
 
 =cut
 
-enum 'PackageOptions' => keys %package_type_map;
+enum 'PackageOptions' => [keys %package_type_map];
 
 has '+package_type' => (
   isa => 'PackageOptions',
