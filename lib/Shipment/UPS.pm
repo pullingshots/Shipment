@@ -357,6 +357,8 @@ sub _build_services {
             },
   };
   $shipto->{Address}->{ResidentialAddressIndicator} = 1 if $self->{residential_address};
+  $shipto->{Phone}{Number} = $self->to_address->phone
+     if $self->to_address->phone;
 
   my %services;
   try {
@@ -523,6 +525,8 @@ sub rate {
             },
   };
   $shipto->{Address}->{ResidentialAddressIndicator} = 1 if $self->{residential_address};
+  $shipto->{Phone}{Number} = $self->to_address->phone
+     if $self->to_address->phone;
 
   use Shipment::UPS::WSDL::RateInterfaces::RateService::RatePort;
   
@@ -718,6 +722,8 @@ sub ship {
             },
           };
   $shipto->{Address}->{ResidentialAddressIndicator} = 1 if $self->{residential_address};
+  $shipto->{Phone}{Number} = $self->to_address->phone
+     if $self->to_address->phone;
 
   use Shipment::UPS::WSDL::ShipInterfaces::ShipService::ShipPort;
   
