@@ -360,6 +360,9 @@ sub _build_services {
   $shipto->{Phone}{Number} = $self->to_address->phone
      if $self->to_address->phone;
 
+  my $total_weight;
+  $total_weight += $_->weight for @{ $self->packages };
+
   my %services;
   try {
     $response = $interface->ProcessRate( 
@@ -388,7 +391,7 @@ sub _build_services {
               UnitOfMeasurement => {
                 Code => $units_type_map{$self->weight_unit} || $self->weight_unit,
               },
-              Weight => 1,
+              Weight => $total_weight,
             },
           },
         },
