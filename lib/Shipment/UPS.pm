@@ -184,20 +184,35 @@ my %service_map = (
   '01' => 'UPS Next Day Air',
   '02' => 'UPS Second Day Air',
   '03' => 'UPS Ground',
-  '07' => 'UPS Worldwide ExpressSM',
-  '08' => 'UPS Worldwide ExpeditedSM',
+  '07' => 'UPS Worldwide Express',
+  '08' => 'UPS Worldwide Expedited',
   '11' => 'UPS Standard',
   '12' => 'UPS Three-Day Select',
   '13' => 'UPS Next Day Air Saver',
-  '14' => 'UPS Next Day Air Early A.M. SM',
-  '54' => 'UPS Worldwide Express PlusSM',
+  '14' => 'UPS Next Day Air Early A.M.',
+  '54' => 'UPS Worldwide Express Plus',
   '59' => 'UPS Second Day Air A.M.',
   '65' => 'UPS Saver',
-  '82' => 'UPS Today StandardSM',
-  '83' => 'UPS Today Dedicated CourrierSM',
+  '82' => 'UPS Today Standard',
+  '83' => 'UPS Today Dedicated Courier',
   '85' => 'UPS Today Express',
   '86' => 'UPS Today Express Saver',
-  );
+  'CA' => {
+    '01' => 'UPS Express',
+    '13' => 'UPS Express Saver',
+    '65' => 'UPS Worldwide Express Saver',
+    '02' => 'UPS Expedited',
+  },
+);
+
+## Rating code to Shipping code map for cases when they differ
+my %service_code_map = (
+  'CA' => {
+    '07' => '01',
+    '13' => '65',
+    '02' => '08',
+  },
+);
 
 =head2 Shipment::Base type maps
 
@@ -414,13 +429,20 @@ sub _build_services {
       }
       $services{$service->get_Service()->get_Code()->get_value} = Shipment::Service->new(
           id => $service->get_Service()->get_Code()->get_value,
-          name => $service_map{$service->get_Service()->get_Code()->get_value},
+          name => (
+              $service_map{$self->from_address()->country_code}->{$service->get_Service()->get_Code()->get_value}
+                ||
+              $service_map{$service->get_Service()->get_Code()->get_value}
+            ),
           cost => Data::Currency->new($rate, $currency),
         );
     }
-    $services{ground} = ($services{'03'}) ? $services{'03'} : $services{'11'} if ($services{'03'} || $services{'11'});
-    $services{express} = $services{'02'} if $services{'02'};
-    $services{priority} = $services{'01'} if $services{'01'};
+    $services{ground} = $services{'03'} || $services{'11'} || undef;
+    $services{express} = $services{'02'} || $services{'13'} || $services{'65'} || undef;
+    $services{priority} = $services{'01'} || undef;
+    foreach (qw/ground express priority/) {
+      delete $services{$_} if !$services{$_};
+    }
 
     $self->notice( '' );
     if ( $response->get_Response->get_Alert ) {
@@ -585,7 +607,11 @@ sub rate {
     $self->service( 
       new Shipment::Service( 
         id        => $service_id,
-        name      => $self->services->{$service_id}->name,
+        name      => (
+              $service_map{$self->from_address()->country_code}->{$response->get_RatedShipment->get_Service->get_Code->get_value}
+                ||
+              $service_map{$response->get_RatedShipment->get_Service->get_Code->get_value}
+            ),
         cost      => Data::Currency->new($rate, $currency),
       )
     );
@@ -750,7 +776,7 @@ sub ship {
           ShipTo => $shipto,
           ShipmentRatingOptions => $rating_options,
           Service => {
-            Code => $service_id,
+            Code => ($service_code_map{$self->from_address->country_code}->{$service_id} || $service_id),
           },
           Package => \@pieces,
           PaymentInformation =>  { 
