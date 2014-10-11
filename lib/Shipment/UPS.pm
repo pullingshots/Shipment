@@ -197,6 +197,7 @@ my %service_map = (
   '83' => 'UPS Today Dedicated Courier',
   '85' => 'UPS Today Express',
   '86' => 'UPS Today Express Saver',
+  '93' => 'UPS SurePost 1 lb or Greater',
   'CA' => {
     '01' => 'UPS Express',
     '13' => 'UPS Express Saver',
@@ -316,6 +317,18 @@ has '+currency' => (
   default => 'USD',
 );
 
+=head2 surepost
+
+Enable UPS SurePost
+
+=cut
+
+has 'surepost' => (
+  is => 'rw',
+  isa => 'Bool',
+  default => undef,
+);
+
 =head1 Class Methods
 
 =head2 _build_services
@@ -360,6 +373,10 @@ sub _build_services {
     my @pieces;
     foreach (@{ $self->packages }) {
       $options->{DeclaredValue}->{MonetaryValue} = $_->insured_value->value;
+
+      ## SurePost doesn't accept service options
+      $options = undef if $self->surepost;
+
       push @pieces,
         {
             PackagingType => {
@@ -472,23 +489,34 @@ sub _build_services {
     $self->notice( '' );
     if ( $response->get_Response->get_Alert ) {
       foreach my $alert (@{$response->get_Response->get_Alert}) {
-        warn $alert->get_Description->get_value;
+        warn "Notice: " . $alert->get_Description->get_value;
         $self->add_notice( $alert->get_Description->get_value . "\n" );
       }
     }
 
   } catch {
-      warn $_;
+      #warn $_;
       try {
-        warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description;
+        warn "Error: " . $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description;
         $self->error( $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description->get_value );
       } catch {
-        warn $_;
-        warn $response->get_faultstring;
+        #warn $_;
+        warn "Error: " . $response->get_faultstring;
         $self->error( $response->get_faultstring->get_value );
       };
   };
 
+  if ($self->surepost) {
+    if ($self->error) {
+      $self->add_notice( 'All services other than SurePost failed due to error: ' . $self->error . "\n" );
+      $self->error('');
+    }
+    $services{93} = Shipment::Service->new(
+        id => '93',
+        name => $service_map{93},
+      );
+    $services{surepost} = $services{93};
+  }
 
   \%services;
 }
@@ -505,7 +533,7 @@ sub rate {
   try { 
     $service_id = $self->services->{$service_id}->id;
   } catch {
-    warn $_;
+    #warn $_;
     warn "service ($service_id) not available";
     $self->error( "service ($service_id) not available" );
     $service_id = '';
@@ -525,6 +553,10 @@ sub rate {
     my @pieces;
     foreach (@{ $self->packages }) {
       $options->{DeclaredValue}->{MonetaryValue} = $_->insured_value->value;
+
+      ## SurePost doesn't accept service options
+      $options = undef if $self->surepost && $service_id eq '93';
+
       push @pieces,
         {
             PackagingType => {
@@ -651,12 +683,12 @@ sub rate {
       }
     }
   } catch {
-      warn $_;
+      #warn $_;
       try {
         warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description;
         $self->error( $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description->get_value );
       } catch {
-        warn $_;
+        #warn $_;
         warn $response->get_faultstring;
         $self->error( $response->get_faultstring->get_value );
       };
@@ -676,7 +708,7 @@ sub ship {
   try { 
     $service_id = $self->services->{$service_id}->id;
   } catch {
-    warn $_;
+    #warn $_;
     warn "service ($service_id) not available";
     $self->error( "service ($service_id) not available" );
     $service_id = '';
@@ -702,6 +734,10 @@ sub ship {
     my $reference_index = 1;
     foreach (@{ $self->packages }) {
       $package_options->{DeclaredValue}->{MonetaryValue} = $_->insured_value->value;
+
+      ## SurePost doesn't accept service options
+      $package_options = undef if $self->surepost && $service_id eq '93';
+
       my @references;
       if (
         $self->references && 
@@ -905,12 +941,12 @@ sub ship {
     }
 
   } catch {
-      warn $_;
+      #warn $_;
       try {
         warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description;
         $self->error( $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description->get_value );
       } catch {
-        warn $_;
+        #warn $_;
         warn $response->get_faultstring;
         $self->error( $response->get_faultstring->get_value );
       };
@@ -936,7 +972,7 @@ sub return {
   try { 
     $service_id = $self->services->{$service_id}->id;
   } catch {
-    warn $_;
+    #warn $_;
     warn "service ($service_id) not available";
     $self->error( "service ($service_id) not available" );
     $service_id = '';
@@ -1137,12 +1173,12 @@ sub return {
     }
 
   } catch {
-      warn $_;
+      #warn $_;
       try {
         warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description;
         $self->error( $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description->get_value );
       } catch {
-        warn $_;
+        #warn $_;
         warn $response->get_faultstring;
         $self->error( $response->get_faultstring->get_value );
       };
@@ -1224,12 +1260,12 @@ sub cancel {
     }
 
   } catch {
-      warn $_;
+      #warn $_;
       try {
         warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description;
         $self->error( $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description->get_value );
       } catch {
-        warn $_;
+        #warn $_;
         warn $response->get_faultstring;
         $self->error( $response->get_faultstring->get_value );
       };

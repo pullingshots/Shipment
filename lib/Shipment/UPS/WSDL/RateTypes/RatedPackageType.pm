@@ -22,6 +22,7 @@ Class::Std::initialize();
 { # BLOCK to scope variables
 
 my %TransportationCharges_of :ATTR(:get<TransportationCharges>);
+my %SurePostDasCharges_of :ATTR(:get<SurePostDasCharges>);
 my %ServiceOptionsCharges_of :ATTR(:get<ServiceOptionsCharges>);
 my %TotalCharges_of :ATTR(:get<TotalCharges>);
 my %Weight_of :ATTR(:get<Weight>);
@@ -29,6 +30,7 @@ my %BillingWeight_of :ATTR(:get<BillingWeight>);
 
 __PACKAGE__->_factory(
     [ qw(        TransportationCharges
+        SurePostDasCharges
         ServiceOptionsCharges
         TotalCharges
         Weight
@@ -37,6 +39,7 @@ __PACKAGE__->_factory(
     ) ],
     {
         'TransportationCharges' => \%TransportationCharges_of,
+        'SurePostDasCharges' => \%SurePostDasCharges_of,
         'ServiceOptionsCharges' => \%ServiceOptionsCharges_of,
         'TotalCharges' => \%TotalCharges_of,
         'Weight' => \%Weight_of,
@@ -44,6 +47,7 @@ __PACKAGE__->_factory(
     },
     {
         'TransportationCharges' => 'Shipment::UPS::WSDL::RateTypes::ChargesType',
+        'SurePostDasCharges' => 'Shipment::UPS::WSDL::RateTypes::ChargesType',
         'ServiceOptionsCharges' => 'Shipment::UPS::WSDL::RateTypes::ChargesType',
         'TotalCharges' => 'Shipment::UPS::WSDL::RateTypes::ChargesType',
         'Weight' => 'SOAP::WSDL::XSD::Typelib::Builtin::string',
@@ -52,6 +56,7 @@ __PACKAGE__->_factory(
     {
 
         'TransportationCharges' => 'TransportationCharges',
+        'SurePostDasCharges' => 'SurePostDasCharges',
         'ServiceOptionsCharges' => 'ServiceOptionsCharges',
         'TotalCharges' => 'TotalCharges',
         'Weight' => 'Weight',
