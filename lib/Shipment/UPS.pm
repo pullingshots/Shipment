@@ -347,9 +347,41 @@ sub _build_services {
   );
   my $response;
 
+    my $options;
+    $options->{DeliveryConfirmation}->{DCISType} = $signature_type_map{$self->signature_type} if defined $signature_type_map{$self->signature_type};
+    $options->{DeclaredValue}->{CurrencyCode} = $self->currency;
+    
+    my $rating_options;
+    $rating_options->{NegotiatedRatesIndicator} = 1 if $self->negotiated_rates;
 
-  my $rating_options;
-  $rating_options->{NegotiatedRatesIndicator} = 1 if $self->negotiated_rates;
+    my $shipment_options;
+    $shipment_options->{UPScarbonneutralIndicator} = '' if $self->carbon_neutral;
+
+    my @pieces;
+    foreach (@{ $self->packages }) {
+      $options->{DeclaredValue}->{MonetaryValue} = $_->insured_value->value;
+      push @pieces,
+        {
+            PackagingType => {
+              Code => $package_type_map{$self->package_type} || $self->package_type,
+            },
+            Dimensions => {
+              UnitOfMeasurement => {
+                Code => $units_type_map{$self->dim_unit} || $self->dim_unit,
+              },
+              Length => $_->length,
+              Width => $_->width,
+              Height => $_->height,
+            },
+            PackageWeight => {
+              UnitOfMeasurement => {
+                Code => $units_type_map{$self->weight_unit} || $self->weight_unit,
+              },
+              Weight => $_->weight,
+            },
+            PackageServiceOptions => $options,
+        };
+    }
 
     my @from_addresslines = (
       $self->from_address->address1, 
@@ -395,17 +427,8 @@ sub _build_services {
           },
           ShipTo => $shipto,
           ShipmentRatingOptions => $rating_options,
-          Package => {
-            PackagingType => {
-              Code => $package_type_map{$self->package_type} || $self->package_type,
-            },
-            PackageWeight => {
-              UnitOfMeasurement => {
-                Code => $units_type_map{$self->weight_unit} || $self->weight_unit,
-              },
-              Weight => 1,
-            },
-          },
+          Package => \@pieces,
+          ShipmentServiceOptions => $shipment_options,
         },
       },
       {

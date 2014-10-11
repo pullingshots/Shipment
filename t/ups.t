@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 43;
+use Test::More tests => 45;
 
 my ($username, $password, $key, $account) = @ARGV;
 
@@ -12,7 +12,7 @@ $key      ||= $ENV{'UPS_KEY'};
 $account  ||= $ENV{'UPS_ACCOUNT'};
 
 SKIP: {
-  skip "Tests can only be run with a valid UPS Developer Username/Password/Key and Account. The following environment variables are used: UPS_USERNAME UPS_PASSWORD UPS_KEY UPS_ACCOUNT. You can sign up for a UPS Web Services developer account at https://www.ups.com/upsdeveloperkit", 40 unless $username && $password && $key && $account;
+  skip "Tests can only be run with a valid UPS Developer Username/Password/Key and Account. The following environment variables are used: UPS_USERNAME UPS_PASSWORD UPS_KEY UPS_ACCOUNT. You can sign up for a UPS Web Services developer account at https://www.ups.com/upsdeveloperkit", 42 unless $username && $password && $key && $account;
 }
 
 if ($username && $password && $key && $account) {
@@ -95,6 +95,7 @@ is( $shipment->count_packages, 1, 'shipment has 1 packages');
 
 ok( defined $shipment->services, 'got services');
 ok( defined $shipment->services->{ground}, 'got a ground service');
+my $rate = $shipment->services->{ground}->cost->value if $shipment->services->{ground};
 is( $shipment->services->{ground}->id, '03', 'ground service_id') if defined $shipment->services->{ground};
 ok( defined $shipment->services->{express}, 'got an express service');
 is( $shipment->services->{express}->id, '02', 'express service_id') if defined $shipment->services->{express};
@@ -104,12 +105,13 @@ is( $shipment->services->{priority}->id, '01', 'priority service_id') if defined
 $shipment->rate( 'ground' );
 
 ok( defined $shipment->service, 'got a ground rate');
-my $rate = $shipment->service->cost->value if defined $shipment->service;
+is( $shipment->service->cost->value, $rate, 'rate matches services') if defined $shipment->service;
+$rate = $shipment->service->cost->value if defined $shipment->service;
 is( $shipment->service->cost->code, 'USD', 'currency') if defined $shipment->service;
 
 $shipment->ship( 'ground' );
 
-#is( $shipment->service->cost->value, $rate, 'rate matches actual cost') if defined $shipment->service;
+is( $shipment->service->cost->value, $rate, 'rate matches actual cost') if defined $shipment->service;
 ok( defined $shipment->get_package(0)->label, 'got label' );
 is( $shipment->get_package(0)->label->content_type, 'text/ups-epl', 'label is epl') if defined $shipment->get_package(0)->label;
 
