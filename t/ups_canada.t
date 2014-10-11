@@ -102,6 +102,7 @@ $shipment = Shipment::UPS->new(
   references => [ 'foo', 'bar' ],
   residential_address => 1,
   currency => 'CAD',
+  signature_type => 'not_required',
 );
 
 ok( defined $shipment->services->{ground}, 'got an international ground service');
