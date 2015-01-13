@@ -44,10 +44,16 @@ This is a base class for a shipping service such as UPS or FedEx.
 =cut
 
 use Data::Currency;
+use DateTime::Format::Strptime;
+use Scalar::Util qw/blessed/;
 use Shipment::Service;
-use Moose 2.0000;
-use Moose::Util::TypeConstraints;
-use MooseX::Types::DateTime::ButMaintained qw( DateTime );
+
+use Moo;
+use MooX::Aliases;
+use MooX::HandlesVia;
+use MooX::Types::MooseLike::Base qw(:all);
+use MooX::Types::MooseLike::DateTime qw( DateTime );
+use namespace::clean;
 
 =head1 Class Attributes
 
@@ -61,12 +67,12 @@ type: L<Shipment::Address>
 
 has 'from_address' => ( 
   is => 'rw',
-  isa => 'Shipment::Address',
+  isa => InstanceOf['Shipment::Address'],
 );
 
 has 'to_address' => (
   is => 'rw',
-  isa => 'Shipment::Address',
+  isa => InstanceOf['Shipment::Address'],
 );
 
 =head2 account
@@ -79,7 +85,7 @@ type: String
 
 has 'account' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 =head2 bill_account
@@ -94,13 +100,14 @@ defaults to the account
 
 has 'bill_account' => (
   is => 'rw',
-  isa => 'Str', 
-  default => sub { 
-    my $self = shift;
-    return $self->account;
-  },
+  isa => Str, 
   lazy => 1,
+  builder => 1,
 );
+
+sub _build_bill_account {
+    return shift->account;
+}
 
 =head2 bill_address
 
@@ -112,7 +119,7 @@ type:  L<Shipment::Address>
 
 has 'bill_address' => (
   is => 'rw',
-  isa => 'Shipment::Address',
+  isa => InstanceOf['Shipment::Address'],
 );
 
 =head2 bill_type
@@ -125,11 +132,9 @@ default: sender
 
 =cut
 
-enum 'BillingOptions' => [qw( sender recipient third_party )];
-
 has 'bill_type' => (
   is => 'rw',
-  isa => 'BillingOptions',
+  isa => Enum[qw( sender recipient third_party )],
   default => 'sender',
 );
 
@@ -143,11 +148,9 @@ default: pickup
  
 =cut
 
-enum 'PickupOptions' => [qw( pickup dropoff )];
-
 has 'pickup_type' => (
   is => 'rw',
-  isa => 'PickupOptions',
+  isa => Enum[qw( pickup dropoff )],
   default => 'pickup'
 );
 
@@ -161,11 +164,13 @@ default: pdf
 
 =cut
 
-enum 'PrinterOptions' => [qw( pdf thermal image )];
+# FIXME: this enum was not used before Moo conversion so maybe printer_type
+#        should have isa Enum...?
+# enum 'PrinterOptions' => [qw( pdf thermal image )];
 
 has 'printer_type' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
   default => 'pdf',
 );
 
@@ -179,11 +184,9 @@ default: default (the default setting for the chosen service)
 
 =cut
 
-enum 'SignatureOptions' => [qw( default required not_required adult )];
-
 has 'signature_type' => (
   is => 'rw',
-  isa => 'SignatureOptions',
+  isa => Enum[qw( default required not_required adult )],
   default => 'default',
 );
 
@@ -197,11 +200,9 @@ default: custom
 
 =cut
 
-enum 'PackageOptions' => [qw( custom envelope tube box pack )];
-
 has 'package_type' => (
   is => 'rw',
-  isa => 'PackageOptions',
+  isa => Enum[qw( custom envelope tube box pack )],
   default => 'custom',
 );
 
@@ -220,9 +221,9 @@ methods handled:
 =cut
 
 has 'packages' => (
-  traits => ['Array'],
+  handles_via => 'Array',
   is => 'rw',
-  isa => 'ArrayRef[Shipment::Package]',
+  isa => ArrayRef[InstanceOf['Shipment::Package']],
   default => sub { [] },
   handles => {
     all_packages => 'elements',
@@ -242,13 +243,13 @@ default: lb, in (pounds and inches)
 
 has 'weight_unit' => (
   is => 'rw',
-  isa => enum( [ qw( lb kg ) ] ),
+  isa => Enum[ qw( lb kg ) ],
   default => 'lb',
 );
 
 has 'dim_unit' => (
   is => 'rw',
-  isa => enum( [ qw( in cm ) ] ),
+  isa => Enum[ qw( in cm ) ],
   default => 'in',
 );
 
@@ -262,7 +263,7 @@ default: USD
 
 has 'currency' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
   default => 'USD',
 );
 
@@ -275,9 +276,14 @@ type: DateTime
 =cut
 
 has 'pickup_date' => (
-  is => 'rw',
-  isa => DateTime,
-  coerce => 1,
+  is     => 'rw',
+  isa    => DateTime,
+  coerce => sub {
+    ( blessed( $_[0] ) and ( blessed( $_[0] ) eq 'DateTime' ) )
+      ? $_[0]
+      : DateTime::Format::Strptime->new( pattern => '%F %T' )
+      ->parse_datetime( $_[0] );
+  }
 );
 
 =head2 services
@@ -292,11 +298,9 @@ methods handled:
 =cut
 
 has 'services' => (
-  traits => ['Hash'],
-  is => 'ro',
-  isa => 'HashRef[Shipment::Service]',
-  lazy => 1,
-  builder => '_build_services',
+  handles_via => 'Hash',
+  is => 'lazy',
+  isa => HashRef[InstanceOf['Shipment::Service']],
   handles => {
     all_services => 'values',
   },
@@ -312,7 +316,7 @@ type: L<Shipment::Service>
 
 has 'service' => (
   is => 'rw',
-  isa => 'Shipment::Service',
+  isa => InstanceOf['Shipment::Service'],
 );
 
 =head2 tracking_id
@@ -326,7 +330,7 @@ type: String
 
 has 'tracking_id' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 =head2 documents
@@ -339,7 +343,7 @@ type: L<Shipment::Label>
 
 has 'documents' => (
   is => 'rw',
-  isa => 'Shipment::Label',
+  isa => InstanceOf['Shipment::Label'],
 );
 
 =head2 manifest
@@ -352,7 +356,7 @@ type: L<Shipment::Label>
 
 has 'manifest' => (
   is => 'rw',
-  isa => 'Shipment::Label',
+  isa => InstanceOf['Shipment::Label'],
 );
 
 =head2 error
@@ -365,7 +369,7 @@ type: String
 
 has 'error' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 =head2 notice
@@ -377,9 +381,9 @@ type: String
 =cut
 
 has 'notice' => (
-  traits  => ['String'],
+  handles_via  => 'String',
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
   default => q{},
   handles => {
     add_notice  => 'append',
@@ -401,9 +405,9 @@ methods handled:
 =cut
 
 has 'references' => (
-  traits => ['Array'],
+  handles_via => 'Array',
   is => 'rw',
-  isa => 'ArrayRef[Maybe[Str]]',
+  isa => ArrayRef[Maybe[Str]],
   default => sub { [] },
   handles => {
     all_references => 'elements',
@@ -423,7 +427,7 @@ type: String
 
 has 'special_instructions' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 =head2 carbon_offset
@@ -436,7 +440,7 @@ type: Bool
 
 has 'carbon_offset' => (
   is => 'rw',
-  isa => 'Bool',
+  isa => Bool,
   default => 0,
 );
 
@@ -571,9 +575,6 @@ sub track {
 
   warn "routine 'track' is not implemented for $self";
 }
-
-no Moose::Util::TypeConstraints;
-no Moose;
 
 =head1 AUTHOR
 

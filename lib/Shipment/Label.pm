@@ -24,7 +24,8 @@ It can also be used to store other shipping documents.
 
 =cut
 
-use Moose 2.0000;
+use Moo;
+use MooX::Types::MooseLike::Base qw(:all);
 
 =head1 Class Attributes
 
@@ -38,7 +39,7 @@ type: String
 
 has 'tracking_id' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 =head2 data
@@ -51,7 +52,7 @@ type: String
 
 has 'data' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 =head2 content_type
@@ -65,7 +66,7 @@ type: String
 
 has 'content_type' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 =head2 file_name
@@ -78,7 +79,7 @@ type: String
 
 has 'file_name' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 =head1 Class Methods
@@ -123,8 +124,6 @@ sub save {
     content => $self->data,
   );
 }
-
-no Moose;
 
 =head1 AUTHOR
 

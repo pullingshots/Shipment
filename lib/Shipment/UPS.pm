@@ -41,9 +41,10 @@ It makes extensive use of SOAP::WSDL in order to create/decode xml requests and 
 =cut
 
 use Try::Tiny;
-use Moose 2.0000;
-use Moose::Util::TypeConstraints;
 use Shipment::SOAP::WSDL;
+use Moo;
+use MooX::Types::MooseLike::Base qw(:all);
+use namespace::clean;
 
 extends 'Shipment::Base';
 
@@ -57,17 +58,17 @@ Credentials required to access UPS Online Tools.
 
 has 'username' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 has 'password' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 has 'key' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 =head2 proxy_domain
@@ -80,10 +81,10 @@ This determines whether you will use the UPS Customer Integration Environment (f
 
 has 'proxy_domain' => (
   is => 'rw',
-  isa => enum( [ qw(
+  isa => Enum[ qw(
     wwwcie.ups.com
     onlinetools.ups.com
-  ) ] ),
+  ) ],
   default => 'wwwcie.ups.com',
 );
 
@@ -101,7 +102,7 @@ Default is off.
 
 has 'negotiated_rates' => (
   is => 'rw',
-  isa => 'Bool',
+  isa => Bool,
   default => 0,
 );
 
@@ -115,7 +116,7 @@ Default is false.
 
 has 'residential_address' => (
   is => 'rw',
-  isa => 'Bool',
+  isa => Bool,
   default => 0,
 );
 
@@ -129,7 +130,7 @@ Default is on.
 
 has 'address_validation' => (
   is => 'rw',
-  isa => 'Bool',
+  isa => Bool,
   default => 1,
 );
 
@@ -141,7 +142,7 @@ The label height. Can be either 6" or 8". The label width is fixed at 4".
 
 has 'label_height' => (
   is => 'rw',
-  isa => enum( [ qw( 6 8 ) ] ),
+  isa => Enum[ qw( 6 8 ) ],
   default => 6,
 );
 
@@ -155,7 +156,7 @@ type: Shipment::Label
 
 has 'control_log_receipt' => (
   is => 'rw',
-  isa => 'Shipment::Label',
+  isa => InstanceOf['Shipment::Label'],
 );
 
 =head2 carbon_neutral
@@ -168,7 +169,7 @@ type: Bool
 
 has 'carbon_neutral' => (
   is => 'rw',
-  isa => 'Bool',
+  isa => Bool,
   default => undef,
 );
 
@@ -267,10 +268,8 @@ UPS provides package types in addition to the defaults in Shipment::Base
 
 =cut
 
-enum 'PackageOptions' => [qw( custom envelope tube box pack 25kg_box 10kg_box pallet small_express_box medium_express_box large_express_box )];
-
 has '+package_type' => (
-  isa => 'PackageOptions',
+  isa => Enum[qw( custom envelope tube box pack 25kg_box 10kg_box pallet small_express_box medium_express_box large_express_box )]
 );
 
 my %printer_type_map = (
@@ -301,7 +300,8 @@ UPS does offer additional thermal options:
 
 =cut
 
-enum 'PrinterOptions' => [qw( thermal image ZPL SPL STARPL )];
+# FIXME: check whether this is needed:
+#enum 'PrinterOptions' => [qw( thermal image ZPL SPL STARPL )];
 
 has '+printer_type' => (
   default => 'image',
@@ -325,7 +325,7 @@ Enable UPS SurePost
 
 has 'surepost' => (
   is => 'rw',
-  isa => 'Bool',
+  isa => Bool,
   default => undef,
 );
 
@@ -1274,9 +1274,6 @@ sub cancel {
   return $success;
 
 }
-
-no Moose::Util::TypeConstraints;
-no Moose;
 
 =head1 AUTHOR
 

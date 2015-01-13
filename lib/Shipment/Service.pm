@@ -24,9 +24,11 @@ for listing available services or storing details about a rate.
 
 =cut
 
-use MooseX::Types::DateTime::ButMaintained qw( DateTime );
 use Data::Currency;
-use Moose 2.0000;
+use Moo;
+use MooX::Types::MooseLike::Base qw(:all);
+use MooX::Types::MooseLike::DateTime qw( DateTime );
+use namespace::clean;
 
 =head1 Class Attributes
 
@@ -40,12 +42,12 @@ type: String
 
 has 'id' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 has 'carrier_id' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 =head2 name, carrier_name, service_name
@@ -58,17 +60,17 @@ type: String
 
 has 'name' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 has 'carrier_name' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 has 'service_name' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 =head2 package
@@ -81,7 +83,7 @@ type: Shipment::Package
 
 has 'package' => (
   is => 'rw',
-  isa => 'Shipment::Package',
+  isa => InstanceOf['Shipment::Package'],
 );
 
 =head2 etd, pickup_etd
@@ -94,12 +96,12 @@ type: Number
 
 has 'etd' => (
   is => 'rw',
-  isa => 'Num',
+  isa => Num,
 );
 
 has 'pickup_etd' => (
   is => 'rw',
-  isa => 'Num',
+  isa => Num,
 );
 
 =head2 ship_date
@@ -111,9 +113,14 @@ type: DateTime
 =cut
 
 has 'ship_date' => (
-  is => 'rw',
-  isa => DateTime,
-  coerce => 1,
+    is     => 'rw',
+    isa    => DateTime,
+    coerce => sub {
+        ( blessed( $_[0] ) and ( blessed( $_[0] ) eq 'DateTime' ) )
+          ? $_[0]
+          : DateTime::Format::Strptime->new( pattern => '%F %T' )
+          ->parse_datetime( $_[0] );
+    }
 );
 
 =head2 eta
@@ -125,9 +132,14 @@ type: DateTime
 =cut
 
 has 'eta' => (
-  is => 'rw',
-  isa => DateTime,
-  coerce => 1,
+    is     => 'rw',
+    isa    => DateTime,
+    coerce => sub {
+        ( blessed( $_[0] ) and ( blessed( $_[0] ) eq 'DateTime' ) )
+          ? $_[0]
+          : DateTime::Format::Strptime->new( pattern => '%F %T' )
+          ->parse_datetime( $_[0] );
+    }
 );
 
 =head2 guaranteed
@@ -140,7 +152,7 @@ type: Bool
 
 has 'guaranteed' => (
   is => 'rw',
-  isa => 'Bool',
+  isa => Bool,
   default => 0,
 );
 
@@ -154,19 +166,19 @@ type: Data::Currency
 
 has 'cost' => (
   is => 'rw',
-  isa => 'Data::Currency',
+  isa => InstanceOf['Data::Currency'],
   default => sub { Data::Currency->new(0) },
 );
 
 has 'base_cost' => (
   is => 'rw',
-  isa => 'Data::Currency',
+  isa => InstanceOf['Data::Currency'],
   default => sub { Data::Currency->new(0) },
 );
 
 has 'tax' => (
   is => 'rw',
-  isa => 'Data::Currency',
+  isa => InstanceOf['Data::Currency'],
   default => sub { Data::Currency->new(0) },
 );
 
@@ -180,13 +192,13 @@ type: Data::Currency
 
 has 'extra_charges' => (
   is => 'rw',
-  isa => 'Data::Currency',
+  isa => InstanceOf['Data::Currency'],
   default => sub { Data::Currency->new(0) },
 );
 
 has 'adjustments' => (
   is => 'rw',
-  isa => 'Data::Currency',
+  isa => InstanceOf['Data::Currency'],
   default => sub { Data::Currency->new(0) },
 );
 
@@ -200,7 +212,7 @@ type: HashRef[Str]
 
 has 'options' => (
   is => 'rw',
-  isa => 'HashRef[Str]',
+  isa => HashRef[Str],
 );
 
 =head2 extras
@@ -212,11 +224,9 @@ type: HashRef[L<Shipment::Service>]
 
 has 'extras' => (
   is => 'rw',
-  isa => 'HashRef[Shipment::Service]',
+  isa => HashRef[InstanceOf['Shipment::Service']],
   default => sub { {} },
 );
-
-no Moose;
 
 =head1 AUTHOR
 

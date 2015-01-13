@@ -41,9 +41,11 @@ It makes extensive use of SOAP::WSDL in order to create/decode xml requests and 
 =cut
 
 use Try::Tiny;
-use Moose 2.0000;
-use Moose::Util::TypeConstraints;
 use Shipment::SOAP::WSDL;
+use Moo;
+use MooX::HandlesVia;
+use MooX::Types::MooseLike::Base qw(:all);
+use namespace::clean;
 
 #$Shipment::SOAP::WSDL::Debug = 1;
 
@@ -59,17 +61,17 @@ Credentials required to access the Temando API.
 
 has 'username' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 has 'password' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 has 'client_id' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 =head2 live
@@ -80,7 +82,7 @@ This determines whether you will use the Temando training web service (for devel
 
 has 'live' => (
   is => 'rw',
-  isa => 'Bool',
+  isa => Bool,
   default => 0,
 );
 
@@ -118,7 +120,7 @@ type: String
 
 has 'request_id' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 =head2 comments
@@ -131,7 +133,7 @@ type: String
 
 has 'comments' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 =head2 credit_card_type, credit_card_expiry, credit_card_number, credit_card_name
@@ -146,22 +148,22 @@ credit_card_expiry must be in the format '02-2013'
 
 has 'credit_card_type' => (
   is => 'rw',
-  isa => enum( [ qw( Visa MasterCard ) ] ),
+  isa => Enum[ qw( Visa MasterCard ) ],
 );
 
 has 'credit_card_expiry' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 has 'credit_card_number' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 has 'credit_card_name' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 
@@ -171,10 +173,8 @@ Shipment::Base provides abstract types which need to be mapped to Temando (i.e. 
 
 =cut
 
-enum 'BillingOptions' => [qw( sender account credit credit_card )];
-
 has '+bill_type' => (
-  isa => 'BillingOptions',
+  isa => Enum[qw( sender account credit credit_card )],
 );
 
 my %bill_type_map = (
@@ -225,10 +225,8 @@ Temando provides package types in addition to the defaults in Shipment::Base
 
 =cut
 
-enum 'PackageOptions' => [keys %package_type_map];
-
 has '+package_type' => (
-  isa => 'PackageOptions',
+  isa => Enum[keys %package_type_map],
   default => 'custom',
 );
 

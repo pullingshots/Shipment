@@ -42,9 +42,10 @@ It makes extensive use of SOAP::WSDL in order to create/decode xml requests and 
 =cut
 
 use Try::Tiny;
-use Moose 2.0000;
-use Moose::Util::TypeConstraints;
 use Shipment::SOAP::WSDL;
+use Moo;
+use MooX::Types::MooseLike::Base qw(:all);
+use namespace::clean;
 
 extends 'Shipment::Base';
 
@@ -58,12 +59,12 @@ Credentials required to access Puroator E-Ship Web Services
 
 has 'key' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 has 'password' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 =head2 proxy_domain
@@ -76,10 +77,10 @@ This determines whether you will use the Purolator testing environment (for deve
 
 has 'proxy_domain' => (
   is => 'rw',
-  isa => enum( [ qw(
+  isa => Enum[ qw(
     devwebservices.purolator.com
     webservices.purolator.com
-  ) ] ),
+  ) ],
   default => 'devwebservices.purolator.com',
 );
 
@@ -868,9 +869,6 @@ sub end_of_day {
     };
 
 }
-
-no Moose;
-no Moose::Util::TypeConstraints;
 
 =head1 AUTHOR
 
