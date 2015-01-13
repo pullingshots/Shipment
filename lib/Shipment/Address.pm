@@ -31,9 +31,10 @@ This class defines a shipping address and provides some methods for parsing the 
 
 =cut
 
-use Moose 2.0000;
-use MooseX::Aliases 0.10;
-use Moose::Util::TypeConstraints;
+use Moo;
+use MooX::Aliases;
+use MooX::Types::MooseLike::Base qw(:all);
+use namespace::clean;
 
 =head1 Class Attributes
 
@@ -49,7 +50,7 @@ alias: contact
 
 has 'name' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
   alias => 'contact',
   default => '',
 );
@@ -66,7 +67,7 @@ default: n/a
 
 has 'company' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
   default => 'n/a',
 );
 
@@ -78,7 +79,7 @@ Whether the address is residential or business
 
 has 'address_type' => (
   is => 'rw',
-  isa => enum( [ qw/residential business/ ] ),
+  isa => Enum[ qw/residential business/ ],
   default => 'business',
 );
 
@@ -92,19 +93,19 @@ type: String
 
 has 'address1' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
   default => '',
 );
 
 has 'address2' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
   default => '',
 );
 
 has 'address3' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
   default => '',
 );
 
@@ -120,7 +121,7 @@ alias: town
 
 has 'city' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
   alias => 'town',
   default => '',
 );
@@ -138,7 +139,7 @@ alias: state
 
 has 'province' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
   alias => 'state',
   default => '',
 );
@@ -150,22 +151,22 @@ READONLY access to the province code based on the province attribute.
 =cut
 
 has 'province_code' => (
-  is => 'ro',
-  isa => 'Str',
+  is => 'lazy',
+  isa => Str,
   alias => 'state_code',
-  lazy => 1,
-  default => sub {
+);
+
+sub _build_province_code {
     my $self = shift;
 
     return '' unless ($self->province && $self->country);
 
     use Locale::SubCountry;
-    my $country = new Locale::SubCountry($self->country_code);
+    my $country = Locale::SubCountry->new($self->country_code);
 
     return ($country->code($self->province) eq 'unknown') ? $self->province : $country->code($self->province) if $country;
     return $self->province;
-  },
-);
+}
 
 =head2 postal_code
 
@@ -179,7 +180,7 @@ alias: zip
 
 has 'postal_code' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
   alias => 'zip',
   default => '',
 );
@@ -195,7 +196,7 @@ type: String
 
 has 'country' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
   default => '',
 );
 
@@ -206,20 +207,20 @@ READONLY access to the country code based on the country attribute
 =cut
 
 has 'country_code' => (
-  is => 'ro',
-  lazy => 1,
-  default => sub {
+  is => 'lazy',
+);
+
+sub _build_country_code {
     my $self = shift;
 
     return '' unless $self->country;
 
     use Locale::SubCountry;
-    my $country = new Locale::SubCountry($self->country);
+    my $country = Locale::SubCountry->new($self->country);
 
     return $country->country_code if $country;
     return $self->country;
-  },
-);
+}
 
 =head2 address_components
 
@@ -228,10 +229,8 @@ READONLY access to the address components (street, direction, number)
 =cut
 
 has 'address_components' => (
-  is => 'ro',
-  isa => 'HashRef[Str]',
-  lazy => 1,
-  builder => '_build_address_components',
+  is => 'lazy',
+  isa => HashRef[Str],
 );
 
 sub _build_address_components { 
@@ -260,7 +259,7 @@ type: String
 
 has 'phone' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
   default => "",
 );
 
@@ -271,10 +270,8 @@ READONLY access to the phone components (country, area, phone)
 =cut
 
 has 'phone_components' => (
-  is => 'ro',
-  isa => 'HashRef[Str]',
-  lazy => 1,
-  builder => '_build_phone_components',
+  is => 'lazy',
+  isa => HashRef[Str],
 );
 
 sub _build_phone_components {
@@ -307,11 +304,9 @@ type: String
 
 has 'email' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
   default => "",
 );
-
-no Moose;
 
 =head1 AUTHOR
 
