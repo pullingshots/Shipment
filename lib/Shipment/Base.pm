@@ -44,15 +44,16 @@ This is a base class for a shipping service such as UPS or FedEx.
 =cut
 
 use Data::Currency;
-use DateTime::Format::Strptime;
+use DateTime;
 use Scalar::Util qw/blessed/;
 use Shipment::Service;
 
 use Moo;
 use MooX::Aliases;
 use MooX::HandlesVia;
+use MooX::Types::MooseLike qw(exception_message);
 use MooX::Types::MooseLike::Base qw(:all);
-use MooX::Types::MooseLike::DateTime qw( DateTime );
+use MooX::Types::MooseLike::DateTime qw( DateAndTime );
 use namespace::clean;
 
 =head1 Class Attributes
@@ -271,19 +272,14 @@ has 'currency' => (
 
 When the shipment will be ready for pickup
 
-type: DateTime
+type: DateAndTime
 
 =cut
 
 has 'pickup_date' => (
   is     => 'rw',
-  isa    => DateTime,
-  coerce => sub {
-    ( blessed( $_[0] ) and ( blessed( $_[0] ) eq 'DateTime' ) )
-      ? $_[0]
-      : DateTime::Format::Strptime->new( pattern => '%F %T' )
-      ->parse_datetime( $_[0] );
-  }
+  isa    => DateAndTime,
+  coerce => \&coerce_datetime,
 );
 
 =head2 services
@@ -574,6 +570,35 @@ sub track {
   my $self = shift;
 
   warn "routine 'track' is not implemented for $self";
+}
+
+=head2 coerce_datetime
+
+In the pre-Moo era L<Shipment> used L<MooseX::Types::DateTime::ButMaintained>
+for DateTime types but now we use L<MooX::Types::MooseLike::DateTime> which
+does not do coercion for us.
+
+This method provides coercion for DateTime/DateAndTime types in the way
+existing code expects it to work so we don't break anything.
+
+=cut
+
+sub coerce_datetime {
+    if ( blessed( $_[0] ) and ( blessed( $_[0] ) eq 'DateTime' ) ) {
+        return $_[0];
+    }
+    elsif ( ref($_[0]) eq 'HASH' ) {
+        return DateTime->new( %{$_[0]} );
+    }
+    elsif ( ref($_[0]) eq '' && $_[0] =~ /^\d+/ ) {
+        return DateTime->from_epoch( epoch => $_[0] )
+    }
+    elsif ( ref($_[0]) eq '' && $_[0] eq 'now' ) {
+        return DateTime->now;
+    }
+    else {
+        return return exception_message($_[0], 'a DateTime object');
+    }
 }
 
 =head1 AUTHOR

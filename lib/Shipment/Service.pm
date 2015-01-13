@@ -28,7 +28,8 @@ use Data::Currency;
 use Scalar::Util qw/blessed/;
 use Moo;
 use MooX::Types::MooseLike::Base qw(:all);
-use MooX::Types::MooseLike::DateTime qw( DateTime );
+use MooX::Types::MooseLike::DateTime qw( DateAndTime );
+use Shipment::Base qw/coerce_datetime/;
 use namespace::clean;
 
 =head1 Class Attributes
@@ -109,38 +110,28 @@ has 'pickup_etd' => (
 
 The shipment date
 
-type: DateTime
+type: DateAndTime
 
 =cut
 
 has 'ship_date' => (
     is     => 'rw',
-    isa    => DateTime,
-    coerce => sub {
-        ( blessed( $_[0] ) and ( blessed( $_[0] ) eq 'DateTime' ) )
-          ? $_[0]
-          : DateTime::Format::Strptime->new( pattern => '%F %T' )
-          ->parse_datetime( $_[0] );
-    }
+    isa    => DateAndTime,
+    coerce => \&Shipment::Base::coerce_datetime,
 );
 
 =head2 eta
 
 The estimated time of arrival
 
-type: DateTime
+type: DateAndTime
 
 =cut
 
 has 'eta' => (
     is     => 'rw',
-    isa    => DateTime,
-    coerce => sub {
-        ( blessed( $_[0] ) and ( blessed( $_[0] ) eq 'DateTime' ) )
-          ? $_[0]
-          : DateTime::Format::Strptime->new( pattern => '%F %T' )
-          ->parse_datetime( $_[0] );
-    }
+    isa    => DateAndTime,
+    coerce => \&Shipment::Base::coerce_datetime,
 );
 
 =head2 guaranteed
