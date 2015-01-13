@@ -25,6 +25,7 @@ for listing available services or storing details about a rate.
 =cut
 
 use Data::Currency;
+use Scalar::Util qw/blessed/;
 use Moo;
 use MooX::Types::MooseLike::Base qw(:all);
 use MooX::Types::MooseLike::DateTime qw( DateTime );
