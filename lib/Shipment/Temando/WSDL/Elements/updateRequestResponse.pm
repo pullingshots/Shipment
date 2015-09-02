@@ -1,5 +1,5 @@
 
-package Shipment::Temando::WSDL::Elements::makeBookingByRequestResponse;
+package Shipment::Temando::WSDL::Elements::updateRequestResponse;
 use strict;
 use warnings;
 
@@ -7,7 +7,7 @@ use warnings;
 
 sub get_xmlns { 'http://' . $Shipment::Temando::WSDL::Interfaces::quoting_Service::quoting_port::ns_url . '/schema/2009_06/server.xsd' }
 
-__PACKAGE__->__set_name('makeBookingByRequestResponse');
+__PACKAGE__->__set_name('updateRequestResponse');
 __PACKAGE__->__set_nillable();
 __PACKAGE__->__set_minOccurs();
 __PACKAGE__->__set_maxOccurs();
@@ -33,123 +33,30 @@ Class::Std::initialize();
 { # BLOCK to scope variables
 
 my %requestId_of :ATTR(:get<requestId>);
-my %bookingNumber_of :ATTR(:get<bookingNumber>);
-my %consignmentNumber_of :ATTR(:get<consignmentNumber>);
-my %consignmentDocument_of :ATTR(:get<consignmentDocument>);
-my %consignmentDocumentType_of :ATTR(:get<consignmentDocumentType>);
-my %labelDocument_of :ATTR(:get<labelDocument>);
-my %labelDocumentType_of :ATTR(:get<labelDocumentType>);
-my %anytime_of :ATTR(:get<anytime>);
 my %quote_of :ATTR(:get<quote>);
-my %manifestNumber_of :ATTR(:get<manifestNumber>);
-my %articles_of :ATTR(:get<articles>);
 
 __PACKAGE__->_factory(
     [ qw(        requestId
-        bookingNumber
-        consignmentNumber
-        consignmentDocument
-        consignmentDocumentType
-        labelDocument
-        labelDocumentType
-        anytime
         quote
-        manifestNumber
-        articles
 
     ) ],
     {
         'requestId' => \%requestId_of,
-        'bookingNumber' => \%bookingNumber_of,
-        'consignmentNumber' => \%consignmentNumber_of,
-        'consignmentDocument' => \%consignmentDocument_of,
-        'consignmentDocumentType' => \%consignmentDocumentType_of,
-        'labelDocument' => \%labelDocument_of,
-        'labelDocumentType' => \%labelDocumentType_of,
-        'anytime' => \%anytime_of,
         'quote' => \%quote_of,
-        'manifestNumber' => \%manifestNumber_of,
-        'articles' => \%articles_of,
     },
     {
         'requestId' => 'SOAP::WSDL::XSD::Typelib::Builtin::positiveInteger',
-        'bookingNumber' => 'Shipment::Temando::WSDL::Types::BookingNumber',
-        'consignmentNumber' => 'Shipment::Temando::WSDL::Types::ConsignmentNumber',
-        'consignmentDocument' => 'Shipment::Temando::WSDL::Types::ConsignmentDocument',
-        'consignmentDocumentType' => 'Shipment::Temando::WSDL::Types::ConsignmentDocumentType',
-        'labelDocument' => 'Shipment::Temando::WSDL::Types::LabelDocument',
-        'labelDocumentType' => 'Shipment::Temando::WSDL::Types::LabelDocumentType',
-        'anytime' => 'Shipment::Temando::WSDL::Types::Anytime',
         'quote' => 'Shipment::Temando::WSDL::Types::AvailableQuote',
-        'manifestNumber' => 'Shipment::Temando::WSDL::Types::ManifestNumber',
-
-        'articles' => 'Shipment::Temando::WSDL::Elements::makeBookingByRequestResponse::_articles',
     },
     {
 
         'requestId' => 'requestId',
-        'bookingNumber' => 'bookingNumber',
-        'consignmentNumber' => 'consignmentNumber',
-        'consignmentDocument' => 'consignmentDocument',
-        'consignmentDocumentType' => 'consignmentDocumentType',
-        'labelDocument' => 'labelDocument',
-        'labelDocumentType' => 'labelDocumentType',
-        'anytime' => 'anytime',
         'quote' => 'quote',
-        'manifestNumber' => 'manifestNumber',
-        'articles' => 'articles',
     }
 );
 
 } # end BLOCK
 
-
-
-
-package Shipment::Temando::WSDL::Elements::makeBookingByRequestResponse::_articles;
-use strict;
-use warnings;
-{
-our $XML_ATTRIBUTE_CLASS;
-undef $XML_ATTRIBUTE_CLASS;
-
-sub __get_attr_class {
-    return $XML_ATTRIBUTE_CLASS;
-}
-
-use Class::Std::Fast::Storable constructor => 'none';
-use base qw(SOAP::WSDL::XSD::Typelib::ComplexType);
-
-Class::Std::initialize();
-
-{ # BLOCK to scope variables
-
-my %article_of :ATTR(:get<article>);
-
-__PACKAGE__->_factory(
-    [ qw(        article
-
-    ) ],
-    {
-        'article' => \%article_of,
-    },
-    {
-        'article' => 'Shipment::Temando::WSDL::Types::Article',
-    },
-    {
-
-        'article' => 'article',
-    }
-);
-
-} # end BLOCK
-
-
-
-
-
-
-}
 
 
 
@@ -166,12 +73,12 @@ __PACKAGE__->_factory(
 
 =head1 NAME
 
-Shipment::Temando::WSDL::Elements::makeBookingByRequestResponse
+Shipment::Temando::WSDL::Elements::updateRequestResponse
 
 =head1 DESCRIPTION
 
 Perl data type class for the XML Schema defined element
-makeBookingByRequestResponse from the namespace http://' . $Shipment::Temando::WSDL::Interfaces::quoting_Service::quoting_port::ns_url . '/schema/2009_06/server.xsd.
+updateRequestResponse from the namespace http://' . $Shipment::Temando::WSDL::Interfaces::quoting_Service::quoting_port::ns_url . '/schema/2009_06/server.xsd.
 
 
 
@@ -194,82 +101,10 @@ methods:
 
 
 
-=item * bookingNumber
-
- $element->set_bookingNumber($data);
- $element->get_bookingNumber();
-
-
-
-
-=item * consignmentNumber
-
- $element->set_consignmentNumber($data);
- $element->get_consignmentNumber();
-
-
-
-
-=item * consignmentDocument
-
- $element->set_consignmentDocument($data);
- $element->get_consignmentDocument();
-
-
-
-
-=item * consignmentDocumentType
-
- $element->set_consignmentDocumentType($data);
- $element->get_consignmentDocumentType();
-
-
-
-
-=item * labelDocument
-
- $element->set_labelDocument($data);
- $element->get_labelDocument();
-
-
-
-
-=item * labelDocumentType
-
- $element->set_labelDocumentType($data);
- $element->get_labelDocumentType();
-
-
-
-
-=item * anytime
-
- $element->set_anytime($data);
- $element->get_anytime();
-
-
-
-
 =item * quote
 
  $element->set_quote($data);
  $element->get_quote();
-
-
-
-
-=item * manifestNumber
-
- $element->set_manifestNumber($data);
- $element->get_manifestNumber();
-
-
-
-
-=item * articles
-
- $element->set_articles($data);
- $element->get_articles();
 
 
 
@@ -282,22 +117,12 @@ methods:
 
 =head2 new
 
- my $element = Shipment::Temando::WSDL::Elements::makeBookingByRequestResponse->new($data);
+ my $element = Shipment::Temando::WSDL::Elements::updateRequestResponse->new($data);
 
 Constructor. The following data structure may be passed to new():
 
  {
    requestId =>  $some_value, # positiveInteger
-   bookingNumber => $some_value, # BookingNumber
-   consignmentNumber => $some_value, # ConsignmentNumber
-   consignmentDocument => $some_value, # ConsignmentDocument
-   consignmentDocumentType => $some_value, # ConsignmentDocumentType
-   labelDocument => $some_value, # LabelDocument
-   labelDocumentType => $some_value, # LabelDocumentType
-   anytime =>  { # Shipment::Temando::WSDL::Types::Anytime
-     readyDate => $some_value, # Date
-     readyTime => $some_value, # ReadyTime
-   },
    quote =>  { # Shipment::Temando::WSDL::Types::AvailableQuote
      generated => $some_value, # GeneratedType
      accepted => $some_value, # YesNoOption
@@ -394,15 +219,6 @@ Constructor. The following data structure may be passed to new():
        instructions => $some_value, # DepotInstructions
      },
      destinationDepot => {}, # Shipment::Temando::WSDL::Types::Depot
-   },
-   manifestNumber => $some_value, # ManifestNumber
-   articles =>  {
-     article =>  { # Shipment::Temando::WSDL::Types::Article
-       anythingIndex => $some_value, # AnythingIndex
-       articleNumber => $some_value, # ArticleNumber
-       labelDocument => $some_value, # LabelDocument
-       labelDocumentType => $some_value, # LabelDocumentType
-     },
    },
  },
 

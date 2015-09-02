@@ -30,8 +30,7 @@ This class provides a Generic interface for a shipping service.
 
 =cut
 
-use Moose 2.0000;
-
+use Moo;
 extends 'Shipment::Base';
 
 =head1 Class Attributes
@@ -163,8 +162,6 @@ sub cancel {
 
   return 'success';
 }
-
-no Moose;
 
 =head1 AUTHOR
 

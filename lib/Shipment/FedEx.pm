@@ -41,9 +41,11 @@ It makes extensive use of SOAP::WSDL in order to create/decode xml requests and 
 =cut
 
 use Try::Tiny;
-use Moose 2.0000;
-use Moose::Util::TypeConstraints;
 use Shipment::SOAP::WSDL;
+
+use Moo;
+use MooX::Types::MooseLike::Base qw(:all);
+use namespace::clean;
 
 extends 'Shipment::Base';
 
@@ -57,17 +59,17 @@ Credentials required to access FedEx Web Services
 
 has 'meter' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 has 'key' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 has 'password' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 =head2 proxy_domain
@@ -80,10 +82,10 @@ This determines whether you will use the FedEx Web Services Testing Environment 
 
 has 'proxy_domain' => (
   is => 'rw',
-  isa => enum( [ qw(
+  isa => Enum[ qw(
     wsbeta.fedex.com:443
     ws.fedex.com:443
-  ) ] ),
+  ) ],
   default => 'wsbeta.fedex.com:443',
 );
 
@@ -97,7 +99,7 @@ Default is false.
 
 has 'residential_address' => (
   is => 'rw',
-  isa => 'Bool',
+  isa => Bool,
   default => 0,
 );
 
@@ -109,33 +111,33 @@ Default: 4x6
 
 =cut
 
-enum 'LabelStockOptions' => qw( 
-  STOCK_4X6
-  STOCK_4X6.75_LEADING_DOC_TAB
-  STOCK_4X6.75_TRAILING_DOC_TAB
-  STOCK_4X8
-  STOCK_4X9_LEADING_DOC_TAB
-  STOCK_4X9_TRAILING_DOC_TAB
-  PAPER_4X6
-  PAPER_4X8
-  PAPER_4X9
-  PAPER_7X4.75
-  PAPER_8.5X11_BOTTOM_HALF_LABEL
-  PAPER_8.5X11_TOP_HALF_LABEL
-  PAPER_LETTER
+has 'label_stock_type' => (
+    is  => 'rw',
+    isa => Enum [
+        qw(
+          STOCK_4X6
+          STOCK_4X6.75_LEADING_DOC_TAB
+          STOCK_4X6.75_TRAILING_DOC_TAB
+          STOCK_4X8
+          STOCK_4X9_LEADING_DOC_TAB
+          STOCK_4X9_TRAILING_DOC_TAB
+          PAPER_4X6
+          PAPER_4X8
+          PAPER_4X9
+          PAPER_7X4.75
+          PAPER_8.5X11_BOTTOM_HALF_LABEL
+          PAPER_8.5X11_TOP_HALF_LABEL
+          PAPER_LETTER
+          )
+    ],
+    lazy    => 1,
+    builder => 1,
 );
 
-has 'label_stock_type' => (
-  is => 'rw',
-  isa => 'LabelStockOptions',
-  lazy => 1,
-  default => sub { 
-    my $self = shift;
-    
-    return 'STOCK_4X6' if $self->printer_type eq 'thermal';
+sub _build_label_stock_type {
+    return 'STOCK_4X6' if shift->printer_type eq 'thermal';
     return 'PAPER_4X6';
-  },
-);
+}
 
 =head1 Type Maps
 
@@ -151,10 +153,8 @@ FedEx offers collect billing (without the need for a billing account #)
 
 =cut
 
-enum 'BillingOptions' => qw( sender recipient third_party collect );
-
 has '+bill_type' => (
-  isa => 'BillingOptions',
+  isa => Enum[qw( sender recipient third_party collect )],
 );
 
 my %bill_type_map = (
@@ -211,10 +211,8 @@ FedEx provides package types in addition to the defaults in Shipment::Base
 
 =cut
 
-enum 'PackageOptions' => qw( custom envelope tube box pack FEDEX_10KG_BOX FEDEX_25KG_BOX );
-
 has '+package_type' => (
-  isa => 'PackageOptions',
+  isa => Enum[qw( custom envelope tube box pack FEDEX_10KG_BOX FEDEX_25KG_BOX )]
 );
 
 =head2 default currency
@@ -268,6 +266,50 @@ sub _build_services {
   push @from_streetlines, $self->from_address()->address1;
   push @from_streetlines, $self->from_address()->address2 if $self->from_address()->address2;
 
+  my $total_weight;
+  $total_weight += $_->weight for @{ $self->packages };
+  $total_weight ||= 1;
+
+  my $options;
+  $options->{SpecialServiceTypes} = 'SIGNATURE_OPTION';
+  $options->{SignatureOptionDetail}->{OptionType} = $signature_type_map{$self->signature_type} || $self->signature_type;
+
+  my @pieces;
+  if ($self->count_packages) {
+    my $sequence = 1;
+    foreach (@{ $self->packages }) {
+      push @pieces,
+        { 
+            SequenceNumber => $sequence,
+            InsuredValue =>  {
+              Currency =>  $_->insured_value->code || $self->currency,
+              Amount =>  $_->insured_value->value,
+            },
+            Weight => {
+              Value => $_->weight,
+              Units => $units_type_map{$self->weight_unit} || $self->weight_unit,
+            },
+            Dimensions => {
+              Length => $_->length,
+              Width => $_->width,
+              Height => $_->height,
+              Units => $units_type_map{$self->dim_unit} || $self->dim_unit,
+            },
+            SpecialServicesRequested => $options,
+        };
+      $sequence++;
+    }
+  }
+  else {
+    push @pieces,
+      {
+        Weight => {
+          Value => $total_weight,
+          Units => $units_type_map{$self->weight_unit} || $self->weight_unit,
+        }, 
+      };
+  }
+
   try {
     $response = $interface->getRates( 
       { 
@@ -310,14 +352,9 @@ sub _build_services {
               Residential         =>  $self->residential_address,
             },
           },
-          PackageCount =>  1,
+          PackageCount =>  $self->count_packages || 1,
           PackageDetail => 'INDIVIDUAL_PACKAGES',
-          RequestedPackageLineItems =>  { 
-            Weight => {
-              Value => 1,
-              Units => $units_type_map{$self->weight_unit} || $self->weight_unit,
-            }, 
-          },
+          RequestedPackageLineItems =>  \@pieces,
         },
       },
     );
@@ -330,6 +367,10 @@ sub _build_services {
           package => Shipment::Package->new(
             id => 'YOUR_PACKAGING',
             name => 'Customer Supplied',
+          ),
+          cost => Data::Currency->new(
+            $service->get_RatedShipmentDetails->[0]->get_ShipmentRateDetail->get_TotalNetCharge->get_Amount,
+            $service->get_RatedShipmentDetails->[0]->get_ShipmentRateDetail->get_TotalNetCharge->get_Currency
           ),
         );
     }
@@ -913,9 +954,6 @@ sub end_of_day {
     };
   };
 }
-
-no Moose::Util::TypeConstraints;
-no Moose;
 
 =head1 AUTHOR
 

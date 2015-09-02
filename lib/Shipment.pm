@@ -1,8 +1,6 @@
 # ABSTRACT: Interface to Popular Shipping Services
 package Shipment;
 
-use Moose;
-
 use Shipment::Address;
 use Shipment::Package;
 

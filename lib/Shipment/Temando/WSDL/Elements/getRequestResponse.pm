@@ -252,6 +252,15 @@ Constructor. The following data structure may be passed to new():
          consignmentDocumentType => $some_value, # ConsignmentDocumentType
          labelDocument => $some_value, # LabelDocument
          labelDocumentType => $some_value, # LabelDocumentType
+         manifestNumber => $some_value, # ManifestNumber
+         articles =>  {
+           article =>  { # Shipment::Temando::WSDL::Types::Article
+             anythingIndex => $some_value, # AnythingIndex
+             articleNumber => $some_value, # ArticleNumber
+             labelDocument => $some_value, # LabelDocument
+             labelDocumentType => $some_value, # LabelDocumentType
+           },
+         },
          trackingStatus => $some_value, # TrackingStatus
          trackingStatusOccurred => $some_value, # Datetime
          trackingLastChecked => $some_value, # Datetime

@@ -39,6 +39,7 @@ my %general_of :ATTR(:get<general>);
 my %origin_of :ATTR(:get<origin>);
 my %destination_of :ATTR(:get<destination>);
 my %quote_of :ATTR(:get<quote>);
+my %quoteFilter_of :ATTR(:get<quoteFilter>);
 my %payment_of :ATTR(:get<payment>);
 my %instructions_of :ATTR(:get<instructions>);
 my %comments_of :ATTR(:get<comments>);
@@ -55,6 +56,7 @@ __PACKAGE__->_factory(
         origin
         destination
         quote
+        quoteFilter
         payment
         instructions
         comments
@@ -72,6 +74,7 @@ __PACKAGE__->_factory(
         'origin' => \%origin_of,
         'destination' => \%destination_of,
         'quote' => \%quote_of,
+        'quoteFilter' => \%quoteFilter_of,
         'payment' => \%payment_of,
         'instructions' => \%instructions_of,
         'comments' => \%comments_of,
@@ -89,6 +92,7 @@ __PACKAGE__->_factory(
         'origin' => 'Shipment::Temando::WSDL::Types::Location',
         'destination' => 'Shipment::Temando::WSDL::Types::Location',
         'quote' => 'Shipment::Temando::WSDL::Types::BookingQuote',
+        'quoteFilter' => 'Shipment::Temando::WSDL::Types::QuoteFilter',
         'payment' => 'Shipment::Temando::WSDL::Types::Payment',
         'instructions' => 'Shipment::Temando::WSDL::Types::Instructions',
         'comments' => 'Shipment::Temando::WSDL::Types::Comments',
@@ -106,6 +110,7 @@ __PACKAGE__->_factory(
         'origin' => 'origin',
         'destination' => 'destination',
         'quote' => 'quote',
+        'quoteFilter' => 'quoteFilter',
         'payment' => 'payment',
         'instructions' => 'instructions',
         'comments' => 'comments',
@@ -253,6 +258,14 @@ methods:
 
  $element->set_quote($data);
  $element->get_quote();
+
+
+
+
+=item * quoteFilter
+
+ $element->set_quoteFilter($data);
+ $element->get_quoteFilter();
 
 
 
@@ -504,6 +517,20 @@ Constructor. The following data structure may be passed to new():
            },
          },
        },
+     },
+   },
+   quoteFilter =>  { # Shipment::Temando::WSDL::Types::QuoteFilter
+     preference => $some_value, # QuotePreference
+     carriers =>  {
+       carrier =>  { # Shipment::Temando::WSDL::Types::CarrierPreference
+         carrierId => $some_value, # CarrierId
+         deliveryMethods =>  {
+           deliveryMethod => $some_value, # DeliveryMethod
+         },
+       },
+     },
+     extras =>  {
+       summary => $some_value, # ExtraSummary
      },
    },
    payment =>  { # Shipment::Temando::WSDL::Types::Payment

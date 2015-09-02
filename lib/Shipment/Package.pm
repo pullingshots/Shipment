@@ -26,7 +26,9 @@ are set after a shipment has been created (label, cost, tracking_id)
 
 use Data::Currency;
 
-use Moose 2.0000;
+use Moo;
+use MooX::Types::MooseLike::Base qw(:all);
+use namespace::clean;
 
 =head1 Class Attributes
 
@@ -40,7 +42,7 @@ type: String
 
 has 'id' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 =head2 type
@@ -53,7 +55,7 @@ type: String
 
 has 'type' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 =head2 name
@@ -66,7 +68,7 @@ type: String
 
 has 'name' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 =head2 notes
@@ -79,7 +81,7 @@ type: String
 
 has 'notes' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 =head2 fragile
@@ -90,7 +92,7 @@ Whether or not the items being sent are fragile
 
 has 'fragile' => (
   is => 'rw',
-  isa => 'Bool',
+  isa => Bool,
   default => 0,
 );
 
@@ -104,7 +106,7 @@ type: Number
 
 has 'weight' => (
   is => 'rw',
-  isa => 'Num',
+  isa => Num,
 );
 
 =head2 length, width, height
@@ -117,17 +119,17 @@ type: Number
 
 has 'length' => (
   is => 'rw',
-  isa => 'Num',
+  isa => Num,
 );
 
 has 'width' => (
   is => 'rw',
-  isa => 'Num',
+  isa => Num,
 );
 
 has 'height' => (
   is => 'rw',
-  isa => 'Num',
+  isa => Num,
 );
 
 =head2 insured_value
@@ -140,7 +142,7 @@ type: Data::Currency
 
 has 'insured_value' => (
   is => 'rw',
-  isa => 'Data::Currency',
+  isa => InstanceOf['Data::Currency'],
   default => sub { Data::Currency->new(0) }, 
 );
 
@@ -154,13 +156,14 @@ type: Data::Currency
 
 has 'goods_value' => (
   is => 'rw',
-  isa => 'Data::Currency',
+  isa => InstanceOf['Data::Currency'],
   lazy => 1,
-  default => sub {
-    my $self = shift;
-    return $self->insured_value;
-  },
+  builder => 1,
 );
+
+sub _build_goods_value {
+    return shift->insured_value;
+}
 
 =head2 label
 
@@ -172,7 +175,7 @@ type: Shipment::Label
 
 has 'label' => (
   is => 'rw',
-  isa => 'Shipment::Label',
+  isa => InstanceOf['Shipment::Label'],
 );
 
 =head2 tracking_id
@@ -187,7 +190,7 @@ type: String
 
 has 'tracking_id' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 =head2 cost
@@ -200,11 +203,9 @@ type: Data::Currency
 
 has 'cost' => (
   is => 'rw',
-  isa => 'Data::Currency',
+  isa => InstanceOf['Data::Currency'],
   default => sub { Data::Currency->new(0) },
 );
-
-no Moose;
 
 =head1 AUTHOR
 

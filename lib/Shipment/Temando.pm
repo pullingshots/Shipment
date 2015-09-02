@@ -41,9 +41,11 @@ It makes extensive use of SOAP::WSDL in order to create/decode xml requests and 
 =cut
 
 use Try::Tiny;
-use Moose 2.0000;
-use Moose::Util::TypeConstraints;
 use Shipment::SOAP::WSDL;
+use Moo;
+use MooX::HandlesVia;
+use MooX::Types::MooseLike::Base qw(:all);
+use namespace::clean;
 
 #$Shipment::SOAP::WSDL::Debug = 1;
 
@@ -51,7 +53,7 @@ extends 'Shipment::Base';
 
 =head1 Class Attributes
 
-=head2 user, password
+=head2 user, password, client_id
 
 Credentials required to access the Temando API.
 
@@ -59,12 +61,17 @@ Credentials required to access the Temando API.
 
 has 'username' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 has 'password' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
+);
+
+has 'client_id' => (
+  is => 'rw',
+  isa => Str,
 );
 
 =head2 live
@@ -75,7 +82,7 @@ This determines whether you will use the Temando training web service (for devel
 
 has 'live' => (
   is => 'rw',
-  isa => 'Bool',
+  isa => Bool,
   default => 0,
 );
 
@@ -113,7 +120,7 @@ type: String
 
 has 'request_id' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 =head2 comments
@@ -126,7 +133,7 @@ type: String
 
 has 'comments' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 =head2 credit_card_type, credit_card_expiry, credit_card_number, credit_card_name
@@ -141,22 +148,22 @@ credit_card_expiry must be in the format '02-2013'
 
 has 'credit_card_type' => (
   is => 'rw',
-  isa => enum( [ qw( Visa MasterCard ) ] ),
+  isa => Enum[ qw( Visa MasterCard ) ],
 );
 
 has 'credit_card_expiry' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 has 'credit_card_number' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 has 'credit_card_name' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 
@@ -166,10 +173,8 @@ Shipment::Base provides abstract types which need to be mapped to Temando (i.e. 
 
 =cut
 
-enum 'BillingOptions' => qw( sender account credit credit_card );
-
 has '+bill_type' => (
-  isa => 'BillingOptions',
+  isa => Enum[qw( sender account credit credit_card )],
 );
 
 my %bill_type_map = (
@@ -220,10 +225,8 @@ Temando provides package types in addition to the defaults in Shipment::Base
 
 =cut
 
-enum 'PackageOptions' => keys %package_type_map;
-
 has '+package_type' => (
-  isa => 'PackageOptions',
+  isa => Enum[keys %package_type_map],
   default => 'custom',
 );
 
@@ -340,7 +343,8 @@ sub _build_services {
         anytime => $anytime,
         general => {
           goodsValue => $goods_value,
-        }
+        },
+        clientId => $self->client_id,
       },
       {
         UsernameToken => {
@@ -369,41 +373,46 @@ sub _build_services {
           guaranteed    => ($quote->get_guaranteedEta->get_value eq 'Y') ? 1 : 0,
         );
 
-      my $adjustments;
-      foreach my $adjustment (@{ $quote->get_adjustments->get_adjustment }) {
-        if ($self->bill_type eq 'credit_card' && $adjustment->get_description->get_value eq 'Credit Card Payment Adjustment') {
-          $adjustments += $adjustment->get_amount->get_value + $adjustment->get_tax->get_value;
-        }
-        if ($self->bill_type eq 'credit' && $adjustment->get_description->get_value eq 'Credit Payment Adjustment') {
-          $adjustments += $adjustment->get_amount->get_value + $adjustment->get_tax->get_value;
-        }
+      my $adjustments = 0;
+      if ($quote->get_adjustments->get_adjustment) {
+	      foreach my $adjustment (@{ $quote->get_adjustments->get_adjustment }) {
+		if ($self->bill_type eq 'credit_card' && $adjustment->get_description->get_value eq 'Credit Card Payment Adjustment') {
+		  $adjustments += $adjustment->get_amount->get_value + $adjustment->get_tax->get_value;
+		}
+		if ($self->bill_type eq 'credit' && $adjustment->get_description->get_value eq 'Credit Payment Adjustment') {
+		  $adjustments += $adjustment->get_amount->get_value + $adjustment->get_tax->get_value;
+		}
+	      }
       }
 
-      my $extra_charges;
-      foreach my $extra (@{ $quote->get_extras->get_extra }) {
-        #warn $extra;
-        $services{$id}->extras->{$extra->get_summary->get_value} = Shipment::Service->new(
-            id        => $extra->get_summary->get_value,
-            name      => $extra->get_details->get_value,
-            cost      => Data::Currency->new($extra->get_totalPrice->get_value, $quote->get_currency->get_value),
-            base_cost => Data::Currency->new($extra->get_basePrice->get_value, $quote->get_currency->get_value),
-            tax       => Data::Currency->new($extra->get_tax->get_value, $quote->get_currency->get_value),
-          );
-        if ($insured_value && $extra->get_summary->get_value eq 'Insurance') {
-          $extra_charges += $extra->get_totalPrice->get_value;
-        }
-        if ($self->carbon_offset && $extra->get_summary->get_value eq 'Carbon Offset') {
-          $extra_charges += $extra->get_totalPrice->get_value;
-        }
+      my $extra_charges = 0;
+      if ($quote->get_extras->get_extra) {
+	      foreach my $extra (@{ $quote->get_extras->get_extra }) {
+		$services{$id}->extras->{$extra->get_summary->get_value} = Shipment::Service->new(
+		    id        => $extra->get_summary->get_value,
+		    name      => $extra->get_details->get_value,
+		    cost      => Data::Currency->new($extra->get_totalPrice->get_value, $quote->get_currency->get_value),
+		    base_cost => Data::Currency->new($extra->get_basePrice->get_value, $quote->get_currency->get_value),
+		    tax       => Data::Currency->new($extra->get_tax->get_value, $quote->get_currency->get_value),
+		  );
+		if ($insured_value && $extra->get_summary->get_value eq 'Insurance') {
+		  $extra_charges += $extra->get_totalPrice->get_value;
+		}
+		if ($self->carbon_offset && $extra->get_summary->get_value eq 'Carbon Offset') {
+		  $extra_charges += $extra->get_totalPrice->get_value;
+		}
 
-        foreach my $adjustment (@{ $quote->get_adjustments->get_adjustment }) {
-          if ($self->bill_type eq 'credit_card' && $adjustment->get_description->get_value eq 'Credit Card Payment Adjustment') {
-            $adjustments += $adjustment->get_amount->get_value + $adjustment->get_tax->get_value;
-          }
-          if ($self->bill_type eq 'credit' && $adjustment->get_description->get_value eq 'Credit Payment Adjustment') {
-            $adjustments += $adjustment->get_amount->get_value + $adjustment->get_tax->get_value;
-          }
-        }
+		if ($quote->get_adjustments->get_adjustment) {
+			foreach my $adjustment (@{ $quote->get_adjustments->get_adjustment }) {
+			  if ($self->bill_type eq 'credit_card' && $adjustment->get_description->get_value eq 'Credit Card Payment Adjustment') {
+			    $adjustments += $adjustment->get_amount->get_value + $adjustment->get_tax->get_value;
+			  }
+			  if ($self->bill_type eq 'credit' && $adjustment->get_description->get_value eq 'Credit Payment Adjustment') {
+			    $adjustments += $adjustment->get_amount->get_value + $adjustment->get_tax->get_value;
+			  }
+			}
+		}
+	      }
       }
       $services{$id}->extra_charges(Data::Currency->new($extra_charges, $quote->get_currency->get_value));
       $services{$id}->adjustments(Data::Currency->new($adjustments, $quote->get_currency->get_value));
@@ -619,6 +628,7 @@ sub ship {
         reference => join(" ", $self->all_references),
         comments => $self->comments,
         labelPrinterType => $printer_type_map{$self->printer_type},
+        clientId => $self->client_id,
       },
       {
         UsernameToken => {

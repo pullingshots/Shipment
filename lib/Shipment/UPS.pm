@@ -41,9 +41,10 @@ It makes extensive use of SOAP::WSDL in order to create/decode xml requests and 
 =cut
 
 use Try::Tiny;
-use Moose 2.0000;
-use Moose::Util::TypeConstraints;
 use Shipment::SOAP::WSDL;
+use Moo;
+use MooX::Types::MooseLike::Base qw(:all);
+use namespace::clean;
 
 extends 'Shipment::Base';
 
@@ -57,17 +58,17 @@ Credentials required to access UPS Online Tools.
 
 has 'username' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 has 'password' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 has 'key' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 =head2 proxy_domain
@@ -80,10 +81,10 @@ This determines whether you will use the UPS Customer Integration Environment (f
 
 has 'proxy_domain' => (
   is => 'rw',
-  isa => enum( [ qw(
+  isa => Enum[ qw(
     wwwcie.ups.com
     onlinetools.ups.com
-  ) ] ),
+  ) ],
   default => 'wwwcie.ups.com',
 );
 
@@ -101,7 +102,7 @@ Default is off.
 
 has 'negotiated_rates' => (
   is => 'rw',
-  isa => 'Bool',
+  isa => Bool,
   default => 0,
 );
 
@@ -115,7 +116,7 @@ Default is false.
 
 has 'residential_address' => (
   is => 'rw',
-  isa => 'Bool',
+  isa => Bool,
   default => 0,
 );
 
@@ -129,7 +130,7 @@ Default is on.
 
 has 'address_validation' => (
   is => 'rw',
-  isa => 'Bool',
+  isa => Bool,
   default => 1,
 );
 
@@ -141,7 +142,7 @@ The label height. Can be either 6" or 8". The label width is fixed at 4".
 
 has 'label_height' => (
   is => 'rw',
-  isa => enum( [ qw( 6 8 ) ] ),
+  isa => Enum[ qw( 6 8 ) ],
   default => 6,
 );
 
@@ -155,7 +156,21 @@ type: Shipment::Label
 
 has 'control_log_receipt' => (
   is => 'rw',
-  isa => 'Shipment::Label',
+  isa => InstanceOf['Shipment::Label'],
+);
+
+=head2 carbon_neutral
+
+Set the Carbon Neutral Indicator - http://www.ups.com/content/us/en/resources/ship/carbonneutral/shipping.html
+
+type: Bool
+
+=cut
+
+has 'carbon_neutral' => (
+  is => 'rw',
+  isa => Bool,
+  default => undef,
 );
 
 =head1 Type Maps
@@ -170,20 +185,36 @@ my %service_map = (
   '01' => 'UPS Next Day Air',
   '02' => 'UPS Second Day Air',
   '03' => 'UPS Ground',
-  '07' => 'UPS Worldwide ExpressSM',
-  '08' => 'UPS Worldwide ExpeditedSM',
+  '07' => 'UPS Worldwide Express',
+  '08' => 'UPS Worldwide Expedited',
   '11' => 'UPS Standard',
   '12' => 'UPS Three-Day Select',
   '13' => 'UPS Next Day Air Saver',
-  '14' => 'UPS Next Day Air Early A.M. SM',
-  '54' => 'UPS Worldwide Express PlusSM',
+  '14' => 'UPS Next Day Air Early A.M.',
+  '54' => 'UPS Worldwide Express Plus',
   '59' => 'UPS Second Day Air A.M.',
   '65' => 'UPS Saver',
-  '82' => 'UPS Today StandardSM',
-  '83' => 'UPS Today Dedicated CourrierSM',
+  '82' => 'UPS Today Standard',
+  '83' => 'UPS Today Dedicated Courier',
   '85' => 'UPS Today Express',
   '86' => 'UPS Today Express Saver',
-  );
+  '93' => 'UPS SurePost 1 lb or Greater',
+  'CA' => {
+    '01' => 'UPS Express',
+    '13' => 'UPS Express Saver',
+    '65' => 'UPS Worldwide Express Saver',
+    '02' => 'UPS Expedited',
+  },
+);
+
+## Rating code to Shipping code map for cases when they differ
+my %service_code_map = (
+  'CA' => {
+    '07' => '01',
+    '13' => '65',
+    '02' => '08',
+  },
+);
 
 =head2 Shipment::Base type maps
 
@@ -237,10 +268,8 @@ UPS provides package types in addition to the defaults in Shipment::Base
 
 =cut
 
-enum 'PackageOptions' => qw( custom envelope tube box pack 25kg_box 10kg_box pallet small_express_box medium_express_box large_express_box );
-
 has '+package_type' => (
-  isa => 'PackageOptions',
+  isa => Enum[qw( custom envelope tube box pack 25kg_box 10kg_box pallet small_express_box medium_express_box large_express_box )]
 );
 
 my %printer_type_map = (
@@ -271,7 +300,8 @@ UPS does offer additional thermal options:
 
 =cut
 
-enum 'PrinterOptions' => qw( thermal image ZPL SPL STARPL );
+# FIXME: check whether this is needed:
+#enum 'PrinterOptions' => [qw( thermal image ZPL SPL STARPL )];
 
 has '+printer_type' => (
   default => 'image',
@@ -285,6 +315,18 @@ The default currency is USD
 
 has '+currency' => (
   default => 'USD',
+);
+
+=head2 surepost
+
+Enable UPS SurePost
+
+=cut
+
+has 'surepost' => (
+  is => 'rw',
+  isa => Bool,
+  default => undef,
 );
 
 =head1 Class Methods
@@ -318,12 +360,60 @@ sub _build_services {
   );
   my $response;
 
+    my $options;
+    $options->{DeliveryConfirmation}->{DCISType} = $signature_type_map{$self->signature_type} if defined $signature_type_map{$self->signature_type};
+    $options->{DeclaredValue}->{CurrencyCode} = $self->currency;
+    
+    my $rating_options;
+    $rating_options->{NegotiatedRatesIndicator} = 1 if $self->negotiated_rates;
 
-  my $rating_options;
-  $rating_options->{NegotiatedRatesIndicator} = 1 if $self->negotiated_rates;
+    my $shipment_options;
+    $shipment_options->{UPScarbonneutralIndicator} = '' if $self->carbon_neutral;
+
+    my @pieces;
+    foreach (@{ $self->packages }) {
+      $options->{DeclaredValue}->{MonetaryValue} = $_->insured_value->value;
+
+      ## SurePost doesn't accept service options
+      $options = undef if $self->surepost;
+
+      push @pieces,
+        {
+            PackagingType => {
+              Code => $package_type_map{$self->package_type} || $self->package_type,
+            },
+            Dimensions => {
+              UnitOfMeasurement => {
+                Code => $units_type_map{$self->dim_unit} || $self->dim_unit,
+              },
+              Length => $_->length,
+              Width => $_->width,
+              Height => $_->height,
+            },
+            PackageWeight => {
+              UnitOfMeasurement => {
+                Code => $units_type_map{$self->weight_unit} || $self->weight_unit,
+              },
+              Weight => $_->weight,
+            },
+            PackageServiceOptions => $options,
+        };
+    }
+
+    my @from_addresslines = (
+      $self->from_address->address1, 
+      $self->from_address->address2, 
+      $self->from_address->address3
+    );
+    my @to_addresslines = (
+      $self->to_address->address1, 
+      $self->to_address->address2, 
+      $self->to_address->address3
+    );
 
   my $shipto = { 
             Address => {
+              AddressLine       => \@to_addresslines,
               City              => $self->to_address()->city,
               StateProvinceCode => $self->to_address()->province_code,
               PostalCode        => $self->to_address()->postal_code,
@@ -331,6 +421,8 @@ sub _build_services {
             },
   };
   $shipto->{Address}->{ResidentialAddressIndicator} = 1 if $self->{residential_address};
+  $shipto->{Phone}{Number} = $self->to_address->phone
+     if $self->to_address->phone;
 
   my %services;
   try {
@@ -343,6 +435,7 @@ sub _build_services {
           Shipper => {
             ShipperNumber => $self->account,
             Address => {
+              AddressLine       => \@from_addresslines,
               City              => $self->from_address()->city,
               StateProvinceCode => $self->from_address()->province_code,
               PostalCode        => $self->from_address()->postal_code,
@@ -351,17 +444,8 @@ sub _build_services {
           },
           ShipTo => $shipto,
           ShipmentRatingOptions => $rating_options,
-          Package => {
-            PackagingType => {
-              Code => $package_type_map{$self->package_type} || $self->package_type,
-            },
-            PackageWeight => {
-              UnitOfMeasurement => {
-                Code => $units_type_map{$self->weight_unit} || $self->weight_unit,
-              },
-              Weight => 1,
-            },
-          },
+          Package => \@pieces,
+          ShipmentServiceOptions => $shipment_options,
         },
       },
       {
@@ -387,34 +471,52 @@ sub _build_services {
       }
       $services{$service->get_Service()->get_Code()->get_value} = Shipment::Service->new(
           id => $service->get_Service()->get_Code()->get_value,
-          name => $service_map{$service->get_Service()->get_Code()->get_value},
+          name => (
+              $service_map{$self->from_address()->country_code}->{$service->get_Service()->get_Code()->get_value}
+                ||
+              $service_map{$service->get_Service()->get_Code()->get_value}
+            ),
           cost => Data::Currency->new($rate, $currency),
         );
     }
-    $services{ground} = ($services{'03'}) ? $services{'03'} : $services{'11'} if ($services{'03'} || $services{'11'});
-    $services{express} = $services{'02'} if $services{'02'};
-    $services{priority} = $services{'01'} if $services{'01'};
+    $services{ground} = $services{'03'} || $services{'11'} || undef;
+    $services{express} = $services{'02'} || $services{'13'} || $services{'65'} || undef;
+    $services{priority} = $services{'01'} || undef;
+    foreach (qw/ground express priority/) {
+      delete $services{$_} if !$services{$_};
+    }
 
     $self->notice( '' );
     if ( $response->get_Response->get_Alert ) {
       foreach my $alert (@{$response->get_Response->get_Alert}) {
-        #warn $alert->get_Description->get_value;
+        warn "Notice: " . $alert->get_Description->get_value;
         $self->add_notice( $alert->get_Description->get_value . "\n" );
       }
     }
 
   } catch {
-      warn $_;
+      #warn $_;
       try {
-        warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description;
+        warn "Error: " . $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description;
         $self->error( $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description->get_value );
       } catch {
-        warn $_;
-        warn $response->get_faultstring;
+        #warn $_;
+        warn "Error: " . $response->get_faultstring;
         $self->error( $response->get_faultstring->get_value );
       };
   };
 
+  if ($self->surepost) {
+    if ($self->error) {
+      $self->add_notice( 'All services other than SurePost failed due to error: ' . $self->error . "\n" );
+      $self->error('');
+    }
+    $services{93} = Shipment::Service->new(
+        id => '93',
+        name => $service_map{93},
+      );
+    $services{surepost} = $services{93};
+  }
 
   \%services;
 }
@@ -431,7 +533,7 @@ sub rate {
   try { 
     $service_id = $self->services->{$service_id}->id;
   } catch {
-    warn $_;
+    #warn $_;
     warn "service ($service_id) not available";
     $self->error( "service ($service_id) not available" );
     $service_id = '';
@@ -445,9 +547,16 @@ sub rate {
     my $rating_options;
     $rating_options->{NegotiatedRatesIndicator} = 1 if $self->negotiated_rates;
 
+    my $shipment_options;
+    $shipment_options->{UPScarbonneutralIndicator} = '' if $self->carbon_neutral;
+
     my @pieces;
     foreach (@{ $self->packages }) {
       $options->{DeclaredValue}->{MonetaryValue} = $_->insured_value->value;
+
+      ## SurePost doesn't accept service options
+      $options = undef if $self->surepost && $service_id eq '93';
+
       push @pieces,
         {
             PackagingType => {
@@ -471,9 +580,21 @@ sub rate {
         };
     }
 
+    my @from_addresslines = (
+      $self->from_address->address1, 
+      $self->from_address->address2, 
+      $self->from_address->address3
+    );
+    my @to_addresslines = (
+      $self->to_address->address1, 
+      $self->to_address->address2, 
+      $self->to_address->address3
+    );
+
 
   my $shipto = { 
             Address => {
+              AddressLine       => \@to_addresslines,
               City              => $self->to_address()->city,
               StateProvinceCode => $self->to_address()->province_code,
               PostalCode        => $self->to_address()->postal_code,
@@ -481,6 +602,8 @@ sub rate {
             },
   };
   $shipto->{Address}->{ResidentialAddressIndicator} = 1 if $self->{residential_address};
+  $shipto->{Phone}{Number} = $self->to_address->phone
+     if $self->to_address->phone;
 
   use Shipment::UPS::WSDL::RateInterfaces::RateService::RatePort;
   
@@ -502,6 +625,7 @@ sub rate {
           Shipper => {
             ShipperNumber => $self->account,
             Address => {
+              AddressLine       => \@from_addresslines,
               City              => $self->from_address->city,
               StateProvinceCode => $self->from_address->province_code,
               PostalCode        => $self->from_address->postal_code,
@@ -514,6 +638,7 @@ sub rate {
             Code => $service_id,
           },
           Package => \@pieces,
+          ShipmentServiceOptions => $shipment_options,
         },
       },
       {
@@ -541,7 +666,11 @@ sub rate {
     $self->service( 
       new Shipment::Service( 
         id        => $service_id,
-        name      => $self->services->{$service_id}->name,
+        name      => (
+              $service_map{$self->from_address()->country_code}->{$response->get_RatedShipment->get_Service->get_Code->get_value}
+                ||
+              $service_map{$response->get_RatedShipment->get_Service->get_Code->get_value}
+            ),
         cost      => Data::Currency->new($rate, $currency),
       )
     );
@@ -554,12 +683,12 @@ sub rate {
       }
     }
   } catch {
-      warn $_;
+      #warn $_;
       try {
         warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description;
         $self->error( $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description->get_value );
       } catch {
-        warn $_;
+        #warn $_;
         warn $response->get_faultstring;
         $self->error( $response->get_faultstring->get_value );
       };
@@ -671,7 +800,7 @@ sub ship {
   try { 
     $service_id = $self->services->{$service_id}->id;
   } catch {
-    warn $_;
+    #warn $_;
     warn "service ($service_id) not available";
     $self->error( "service ($service_id) not available" );
     $service_id = '';
@@ -688,6 +817,7 @@ sub ship {
       $shipment_options->{Notification}->{EMail}->{EMailAddress} = $self->to_address->email;
       $shipment_options->{Notification}->{EMail}->{SubjectCode} = '03'; 
     }
+    $shipment_options->{UPScarbonneutralIndicator} = '' if $self->carbon_neutral;
 
     my $rating_options;
     $rating_options->{NegotiatedRatesIndicator} = 1 if $self->negotiated_rates;
@@ -696,6 +826,10 @@ sub ship {
     my $reference_index = 1;
     foreach (@{ $self->packages }) {
       $package_options->{DeclaredValue}->{MonetaryValue} = $_->insured_value->value;
+
+      ## SurePost doesn't accept service options
+      $package_options = undef if $self->surepost && $service_id eq '93';
+
       my @references;
       if (
         $self->references && 
@@ -778,6 +912,8 @@ sub ship {
             },
           };
   $shipto->{Address}->{ResidentialAddressIndicator} = 1 if $self->{residential_address};
+  $shipto->{Phone}{Number} = $self->to_address->phone
+     if $self->to_address->phone;
 
   use Shipment::UPS::WSDL::ShipInterfaces::ShipService::ShipPort;
   
@@ -810,7 +946,7 @@ sub ship {
           ShipTo => $shipto,
           ShipmentRatingOptions => $rating_options,
           Service => {
-            Code => $service_id,
+            Code => ($service_code_map{$self->from_address->country_code}->{$service_id} || $service_id),
           },
           Package => \@pieces,
           PaymentInformation =>  { 
@@ -910,12 +1046,12 @@ sub ship {
     }
 
   } catch {
-    #  warn $_;
+      #warn $_;
       try {
         warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description;
         $self->error( $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description->get_value );
       } catch {
-        warn $_;
+        #warn $_;
         warn $response->get_faultstring;
         $self->error( $response->get_faultstring->get_value );
       };
@@ -941,7 +1077,7 @@ sub return {
   try { 
     $service_id = $self->services->{$service_id}->id;
   } catch {
-    warn $_;
+    #warn $_;
     warn "service ($service_id) not available";
     $self->error( "service ($service_id) not available" );
     $service_id = '';
@@ -1234,12 +1370,12 @@ sub return {
 	    }
 
   } catch {
-      warn $_;
+      #warn $_;
       try {
         warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description;
         $self->error( $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description->get_value );
       } catch {
-        warn $_;
+        #warn $_;
         warn $response->get_faultstring;
         $self->error( $response->get_faultstring->get_value );
       };
@@ -1326,7 +1462,7 @@ sub cancel {
         #warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description;
         $self->error( $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description->get_value );
       } catch {
-        warn $_;
+        #warn $_;
         warn $response->get_faultstring;
         $self->error( $response->get_faultstring->get_value );
       };
@@ -1335,9 +1471,6 @@ sub cancel {
   return $success;
 
 }
-
-no Moose::Util::TypeConstraints;
-no Moose;
 
 =head1 AUTHOR
 
