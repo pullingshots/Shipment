@@ -244,7 +244,7 @@ default: lb, in (pounds and inches)
 
 has 'weight_unit' => (
   is => 'rw',
-  isa => Enum[ qw( lb kg ) ],
+  isa => Enum[ qw( lb kg oz) ],
   default => 'lb',
 );
 
@@ -325,7 +325,7 @@ type: L<Shipment::Tracking>
 
 has 'tracking' => (
   is => 'rw',
-  isa => 'Shipment::Tracking',
+  isa => InstanceOf['Shipment::Tracking'],
 );
 
 =head2 tracking_id
@@ -416,7 +416,7 @@ methods handled:
 has 'references' => (
   handles_via => 'Array',
   is => 'rw',
-  isa => ArrayRef[Maybe[Str]],
+  isa => ArrayRef[],
   default => sub { [] },
   handles => {
     all_references => 'elements',
@@ -464,9 +464,10 @@ type: String
 
 has 'customer_ref' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
   default => '',
 );
+
 
 =head1 Class Methods
 

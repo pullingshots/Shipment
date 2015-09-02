@@ -1,7 +1,6 @@
 package Shipment::Tracking;
 use strict;
 use warnings;
-use Data::Dumper;
 
 =head1 NAME
 
@@ -27,7 +26,11 @@ are set after a shipment has been created (label, cost, tracking_id)
 
 use Data::Currency;
 
-use Moose 2.0000;
+use Moo;
+use MooX::Aliases;
+use MooX::HandlesVia;
+use MooX::Types::MooseLike::Base qw(:all);
+use namespace::clean;
 
 =head1 Class Attributes
 
@@ -41,7 +44,7 @@ type: String
 
 has 'inquiryNumber' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 =head2 type
@@ -54,12 +57,12 @@ type: String
 
 has 'shipmentType' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 has 'service' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 =head2 name
@@ -72,7 +75,7 @@ type: String
 
 has 'shipperNumber' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 =head2 notes
@@ -85,7 +88,7 @@ type: String
 
 has 'description' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 =head2 fragile
@@ -95,9 +98,17 @@ Whether or not the items being sent are fragile
 =cut
 
 has 'referenceNumber' => (
-  is => 'rw',
-#  isa => 'Str',
-#  default =>'',
+    handles_via => 'Array',
+    is  => 'rw',
+    isa => ArrayRef[],
+    default => sub { [] },
+    handles => {
+        all_referenceNumber    => 'elements',
+        get_referenceNumber    => 'get',
+        add_referenceNumber    => 'push',
+        count_referenceNumber  => 'count',
+        sorted_referenceNumber => 'sort',
+    },
 );
 
 =head2 weight
@@ -108,10 +119,11 @@ type: Number
 
 =cut
 
-has 'referenceNumberCode' => (
-  is => 'rw',
-  isa => 'Str',
-);
+#TODO why is this here?
+#has 'referenceNumberCode' => (
+#  is => 'rw',
+#  isa => 'Str',
+#);
 
 =head2 length, width, height
 
@@ -123,7 +135,7 @@ type: Number
 
 has 'pickupDate' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 =head2 activity 
@@ -135,9 +147,9 @@ type: Shipment::Activity
 =cut
 
 has 'activity' => (
-  traits => ['Array'],
+  handles_via => 'Array',
   is => 'rw',
-  isa => 'ArrayRef[Shipment::Activity]',
+  isa => ArrayRef[InstanceOf['Shipment::Activity']],
   default => sub { [] },
   handles => {
     all_activity => 'elements',
@@ -149,20 +161,20 @@ has 'activity' => (
 
 );
 
+#TODO isa => ??
 # UPS activity doesn't seem to be in order so we sort by time and date
 has 'status' => (
-  is => 'ro',
-  lazy => 1,
-  default => sub {
+  is => 'lazy',
+);
+
+sub _build_status {
 	my $self = shift;
 
         my @sort = sort { $$a{time} <=> $$b{time} }  $self->all_activity;
         my @sorted = reverse sort { $$a{date} <=> $$b{date} } @sort;
 	return  $sorted[0]->status;
-  }, 
+} 
   
-
-);
 =head2 tracking_id
 
 The tracking id. Set by a Shipment::Base class. 
@@ -175,7 +187,7 @@ type: String
 
 has 'tracking_id' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 
@@ -185,6 +197,18 @@ sub set_attr {
     my $set_method = lcfirst($attr);
     my $get_method = "get_$attr";
     my $val = $shipment->$get_method();
+
+    if ( $attr eq "ReferenceNumber")
+    {
+       return unless defined $val;
+
+       for (@$val)
+       {
+           $self->add_referenceNumber( $_->get_Value->get_value ); 
+       }
+         
+       return;
+    }
 
     for my $meth (@rest) {
         return unless defined $val;

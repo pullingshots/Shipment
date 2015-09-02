@@ -410,7 +410,7 @@ sub rate {
       ($y, $m, $d) = split('-', $response->get_ShipmentEstimates()->[0]->get_ShipmentEstimate()->get_ExpectedDeliveryDate()->get_value);
       my $eta = { year => $y, month => $m, day => $d };
       $self->service( 
-        new Shipment::Service( 
+         Shipment::Service->new( 
           id        => $service_id,
           name      => $self->services->{$service_id}->name,
           etd       => $response->get_ShipmentEstimates()->[0]->get_ShipmentEstimate()->get_EstimatedTransitDays()->get_value,

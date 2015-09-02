@@ -4,27 +4,13 @@ use warnings;
 
 =head1 NAME
 
-Shipment::Label - a shipping label/document
-
-=head1 SYNOPSIS
-
-  use Shipment::Label;
-
-  my $label = Shipment::Label->new(
-    data => $file_contents,
-    file_name => 'label.pdf',
-  );
-
-  $label->save('/tmp/') ## writes label to disk at /tmp/label.pdf
-
-=head1 ABOUT
-
-This class defines a shipping label and provides a method for saving to disk.
-It can also be used to store other shipping documents.
+Shipment::Activity - Used for Tracking
 
 =cut
 
-use Moose 2.0000;
+use Moo;
+use MooX::Types::MooseLike::Base qw(:all);
+use namespace::clean;
 
 =head1 Class Attributes
 
@@ -32,17 +18,17 @@ use Moose 2.0000;
 
 has 'status' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 has 'date' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 has 'time' => (
   is => 'rw',
-  isa => 'Str',
+  isa => Str,
 );
 
 sub set_attr {
@@ -61,21 +47,13 @@ sub set_attr {
     $self->$set_method($val);
 }
 
-no Moose;
-
 =head1 AUTHOR
 
-Andrew Baerg @ <andrew at pullingshots dot ca>
-
-http://pullingshots.ca/
+William Taylor @ <williamt@corp.sonic.net>
 
 =head1 BUGS
 
-Please contact me directly.
-
-=head1 COPYRIGHT
-
-Copyright (C) 2010 Andrew J Baerg, All Rights Reserved
+Maybe?
 
 =head1 NO WARRANTY
 
