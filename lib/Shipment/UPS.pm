@@ -1599,22 +1599,30 @@ sub cancel {
 UPS Address validation
 
 This method calls ProcessXAV from the Shipping API
+request_option defaults to 1
+1 address validation
+2 address classification
+3 address validation and classification
 
 =cut
 
 sub xav {
-    my ( $self ) = @_;
+    my ( $self, $request_option ) = @_;
 
     use Shipment::UPS::WSDL::XAVInterfaces::XAVService::XAVPort;
-    my $interface = Shipment::UPS::WSDL::XAVInterfaces::XAVService::XAVPort->new(
-		       {
-		           proxy_domain => $self->proxy_domain,
-		       }
-    		     );
+    my $interface =
+      Shipment::UPS::WSDL::XAVInterfaces::XAVService::XAVPort->new(
+        {
+            proxy_domain => $self->proxy_domain,
+        }
+      );
+
+    $request_option //= 1;
 
     my $response;
     my $success;
     my $result;
+    my $classification;
     my @candidates;
 
     my @to_addresslines = (
@@ -1628,7 +1636,7 @@ sub xav {
   	$response = $interface->ProcessXAV(
   	{
             Request => {
-                RequestOption => 1,    # string
+                RequestOption => $request_option,
               },
               AddressKeyFormat => {
                 AddressLine        => \@to_addresslines,
@@ -1650,6 +1658,15 @@ sub xav {
 
   	);
 	#warn $response;
+	
+    if ( $request_option =~ m/[23]/ ) {
+        try {
+            my $ac = $response->get_AddressClassification;
+            $classification->{code}        = $ac->get_Code->get_value();
+            $classification->{description} = $ac->get_Description->get_value();
+        }
+        catch {};
+    }
 
     try {
         if ( defined( $response->get_ValidAddressIndicator->get_value() ) ) {
@@ -1677,17 +1694,38 @@ sub xav {
     catch {};
 
     if ( $result && $result ne "nocandidates" ) {
+
+        # If we are asking for address classification, canidites will also
+        # include classification results
         try {
 
             for my $candidate ( @{ $response->get_Candidate() } ) {
-	    my %a_hash = (
-		address1    => $candidate->get_AddressKeyFormat()->get_AddressLine()->get_value(),
-		city        => $candidate->get_AddressKeyFormat()->get_PoliticalDivision2()->get_value(),
-		province    => $candidate->get_AddressKeyFormat()->get_PoliticalDivision1()->get_value(),
-		postal_code => $candidate->get_AddressKeyFormat()->get_PostcodePrimaryLow()->get_value() . "-" . $candidate->get_AddressKeyFormat()->get_PostcodeExtendedLow()->get_value(),
-		country     => $candidate->get_AddressKeyFormat()->get_CountryCode()->get_value(),
-	    );
-		push @candidates, \%a_hash; 
+                my %a_hash = (
+                    address1 =>
+                      $candidate->get_AddressKeyFormat()->get_AddressLine()
+                      ->get_value(),
+                    city => $candidate->get_AddressKeyFormat()
+                      ->get_PoliticalDivision2()->get_value(),
+                    province => $candidate->get_AddressKeyFormat()
+                      ->get_PoliticalDivision1()->get_value(),
+                    postal_code => $candidate->get_AddressKeyFormat()
+                      ->get_PostcodePrimaryLow()->get_value() . "-"
+                      . $candidate->get_AddressKeyFormat()
+                      ->get_PostcodeExtendedLow()->get_value(),
+                    country =>
+                      $candidate->get_AddressKeyFormat()->get_CountryCode()
+                      ->get_value(),
+                );
+
+                if ( $request_option == 3 ) {
+                    $a_hash{classification}{code} =
+                      $candidate->get_AddressClassification->get_Code
+                      ->get_value();
+                    $a_hash{classification}{description} =
+                      $candidate->get_AddressClassification->get_Description
+                      ->get_value();
+                }
+                push @candidates, \%a_hash;
             }
 
         }
@@ -1706,7 +1744,7 @@ sub xav {
       };
   };
 
-    return { 'result' => $result, 'candidate' => \@candidates };
+    return { 'result' => $result, 'candidate' => \@candidates, 'classification' => $classification };
 }
 
 =head1 AUTHOR
