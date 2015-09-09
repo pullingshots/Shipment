@@ -244,7 +244,7 @@ default: lb, in (pounds and inches)
 
 has 'weight_unit' => (
   is => 'rw',
-  isa => Enum[ qw( lb kg ) ],
+  isa => Enum[ qw( lb kg oz) ],
   default => 'lb',
 );
 
@@ -313,6 +313,19 @@ type: L<Shipment::Service>
 has 'service' => (
   is => 'rw',
   isa => InstanceOf['Shipment::Service'],
+);
+
+=head2 tracking
+
+Details of what was returned from a call to track
+
+type: L<Shipment::Tracking>
+
+=cut
+
+has 'tracking' => (
+  is => 'rw',
+  isa => InstanceOf['Shipment::Tracking'],
 );
 
 =head2 tracking_id
@@ -403,7 +416,7 @@ methods handled:
 has 'references' => (
   handles_via => 'Array',
   is => 'rw',
-  isa => ArrayRef[Maybe[Str]],
+  isa => ArrayRef[],
   default => sub { [] },
   handles => {
     all_references => 'elements',
@@ -439,6 +452,22 @@ has 'carbon_offset' => (
   isa => Bool,
   default => 0,
 );
+
+=head2 customer_ref
+
+Something to reference your customer by ( customer id, order id, name, etc )
+Used in tracking
+
+type: String
+
+=cut
+
+has 'customer_ref' => (
+  is => 'rw',
+  isa => Str,
+  default => '',
+);
+
 
 =head1 Class Methods
 

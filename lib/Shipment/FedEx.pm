@@ -529,7 +529,7 @@ sub rate {
     use Data::Currency;
     use Shipment::Service;
     $self->service( 
-      new Shipment::Service( 
+       Shipment::Service->new( 
         id        => $service_id,
         name      => $self->services->{$service_id}->name,
         cost      => Data::Currency->new(
@@ -804,7 +804,7 @@ sub ship {
       #warn $_;
     };
     $self->service( 
-      new Shipment::Service( 
+       Shipment::Service->new( 
         id        => $service_id,
         name      => $self->services->{$service_id}->name,
         cost      => Data::Currency->new(
