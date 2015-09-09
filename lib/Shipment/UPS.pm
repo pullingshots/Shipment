@@ -1326,7 +1326,9 @@ sub return {
               PostalCode        => $self->to_address->postal_code,
               CountryCode       => $self->to_address->country_code,
             },
-            EmailAddress => $self->from_address->email,
+            # ShipFrom doesn't have an EMailAddress field
+            # See /UPS/WSDL/ShipTypes/ShipFromType.pm
+            #EMailAddress => $self->from_address->email,
           },
           ShipTo => {
             Name => $self->from_address->company,
@@ -1338,7 +1340,7 @@ sub return {
               PostalCode        => $self->from_address->postal_code,
               CountryCode       => $self->from_address->country_code,
             },
-            EmailAddress => $self->to_address->email,
+            EMailAddress => $self->to_address->email,
           },
           Service => {
             Code => $service_id,
