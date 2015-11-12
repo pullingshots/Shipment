@@ -175,6 +175,7 @@ sub _build_services {
   
     my %services;
 
+    $Shipment::SOAP::WSDL::Debug = 1 if $self->debug > 1;
     $response = $interface->GetServicesOptions( {
         BillingAccountNumber => $self->account,
         SenderAddress => {
@@ -197,7 +198,8 @@ sub _build_services {
                   'RequestReference'  =>  'Shipment::Purolator::_build_services'
       },
     );
-    #warn $response;
+    $Shipment::SOAP::WSDL::Debug = 0;
+    warn "Response\n" . $response if $self->debug > 1;
 
     try {
       foreach my $service (@{ $response->get_Services()->get_Service() }) {
@@ -219,20 +221,20 @@ sub _build_services {
       }
       $services{ground} = $services{express} if (!$services{ground} && $services{express});
     } catch {
-      warn $_;
+      warn $_ if $self->debug;
       try {
-        warn $response->get_ResponseInformation()->get_Errors()->get_Error()->[0]->get_Description;
+        warn $response->get_ResponseInformation()->get_Errors()->get_Error()->[0]->get_Description if $self->debug;
         $self->error( $response->get_ResponseInformation()->get_Errors()->get_Error()->[0]->get_Description->get_value );
       } catch {
-        warn $_;
-        warn $response->get_faultstring;
+        warn $_ if $self->debug;
+        warn $response->get_faultstring if $self->debug;
         $self->error( $response->get_faultstring->get_value );
       };
     };
     \%services;
   }
   else {
-    warn 'services not fetched. both from and to address required.';
+    warn 'services not fetched. both from and to address required.' if $self->debug;
     $self->error( 'services not fetched. both from and to address required.' );
 
     {};
@@ -251,8 +253,8 @@ sub rate {
   try { 
     $service_id = $self->services->{$service_id}->id;
   } catch {
-    warn $_;
-    warn "service ($service_id) not available";
+    warn $_ if $self->debug;
+    warn "service ($service_id) not available" if $self->debug;
     $self->error( "service ($service_id) not available" );
     $service_id = '';
   };
@@ -321,6 +323,7 @@ sub rate {
       }
     );
 
+    $Shipment::SOAP::WSDL::Debug = 1 if $self->debug > 1;
     my $response = $interface->GetFullEstimate(
       {
         Shipment => {
@@ -400,7 +403,8 @@ sub rate {
                   'RequestReference'  =>  'Shipment::Purolator::rate'
       },
     );
-    #warn $response;
+    $Shipment::SOAP::WSDL::Debug = 0;
+    warn "Response\n" . $response if $self->debug > 1;
 
     try {
       use Data::Currency;
@@ -420,13 +424,13 @@ sub rate {
         )
       );
     } catch {
-      warn $_;
+      warn $_ if $self->debug;
       try {
-        warn $response->get_ResponseInformation()->get_Errors()->get_Error()->[0]->get_Description;
+        warn $response->get_ResponseInformation()->get_Errors()->get_Error()->[0]->get_Description if $self->debug;
         $self->error( $response->get_ResponseInformation()->get_Errors()->get_Error()->[0]->get_Description->get_value );
       } catch {
-        warn $_;
-        warn $response->get_faultstring;
+        warn $_ if $self->debug;
+        warn $response->get_faultstring if $self->debug;
         $self->error( $response->get_faultstring->get_value );
       };
     };
@@ -447,8 +451,8 @@ sub ship {
   try { 
     $service_id = $self->services->{$service_id}->id;
   } catch {
-    warn $_;
-    warn "service ($service_id) not available";
+    warn $_ if $self->debug;
+    warn "service ($service_id) not available" if $self->debug;
     $self->error( "service ($service_id) not available" );
     $service_id = '';
   };
@@ -524,6 +528,7 @@ sub ship {
       }
     );
 
+    $Shipment::SOAP::WSDL::Debug = 1 if $self->debug > 1;
     my $response = $interface->CreateShipment(
       {
         Shipment => {
@@ -607,7 +612,8 @@ sub ship {
                   'RequestReference'  =>  'Shipment::Purolator::ship'
       },
     );
-    #warn $response;
+    $Shipment::SOAP::WSDL::Debug = 0;
+    warn "Response\n" . $response if $self->debug > 1;
 
     try {
       $self->tracking_id( $response->get_ShipmentPIN()->get_Value()->get_value );
@@ -626,12 +632,12 @@ sub ship {
       }
     } catch {
       try {
-        warn $_;
-        warn $response->get_ResponseInformation()->get_Errors()->get_Error()->[0]->get_Description;
+        warn $_ if $self->debug;
+        warn $response->get_ResponseInformation()->get_Errors()->get_Error()->[0]->get_Description if $self->debug;
         $self->error( $response->get_ResponseInformation()->get_Errors()->get_Error()->[0]->get_Description->get_value );
       } catch {
-        warn $_;
-        warn $response->get_faultstring;
+        warn $_ if $self->debug;
+        warn $response->get_faultstring if $self->debug;
         $self->error( $response->get_faultstring->get_value );
       };
     };
@@ -668,6 +674,7 @@ sub fetch_documents {
       }
     );
 
+    $Shipment::SOAP::WSDL::Debug = 1 if $self->debug > 1;
     my $response = $interface->GetDocuments(
       {
         DocumentCriterium => {
@@ -685,19 +692,20 @@ sub fetch_documents {
                   'RequestReference'  =>  'Shipment::Purolator::fetch_documents'
       },
     );
-    #warn $response;
+    $Shipment::SOAP::WSDL::Debug = 0;
+    warn "Response\n" . $response if $self->debug > 1;
 
     my $document_url;
     try {
       $document_url = $response->get_Documents()->get_Document()->get_DocumentDetails()->[0]->get_DocumentDetail()->get_URL()->get_value;
     } catch {
-      warn $_;
+      warn $_ if $self->debug;
       try {
-        warn $response->get_ResponseInformation()->get_Errors()->get_Error()->[0]->get_Description;
+        warn $response->get_ResponseInformation()->get_Errors()->get_Error()->[0]->get_Description if $self->debug;
         $self->error( $response->get_ResponseInformation()->get_Errors()->get_Error()->[0]->get_Description->get_value );
       } catch {
-        warn $_;
-        warn $response->get_faultstring;
+        warn $_ if $self->debug;
+        warn $response->get_faultstring if $self->debug;
         $self->error( $response->get_faultstring->get_value );
       };
     };
@@ -733,11 +741,11 @@ sub fetch_documents {
 
     if (!$label_success) {
       if (!$res->is_success) {
-        warn $res->status_line;
+        warn $res->status_line if $self->debug;
         $self->error( "Failed to retrieve label(s) from " . $document_url . ": " . $res->status_line );
       }
       else {
-        warn "No content returned from label url: " . $document_url;
+        warn "No content returned from label url: " . $document_url if $self->debug;
         $self->error( "Failed to retrieve label(s) from " . $document_url );
       }
       $self->cancel;
@@ -771,6 +779,7 @@ sub cancel {
       }
     );
 
+    $Shipment::SOAP::WSDL::Debug = 1 if $self->debug > 1;
     my $response = $interface->VoidShipment(
       {
         PIN => {
@@ -784,19 +793,20 @@ sub cancel {
                   'RequestReference'  =>  'Shipment::Purolator::cancel'
       },
     );
-    #warn $response;
+    $Shipment::SOAP::WSDL::Debug = 0;
+    warn "Response\n" . $response if $self->debug > 1;
 
     my $success;
     try {
       $success = $response->get_ShipmentVoided->get_value;
     } catch {
       try {
-        warn $_;
-        warn $response->get_ResponseInformation()->get_Errors()->get_Error()->[0]->get_Description;
+        warn $_ if $self->debug;
+        warn $response->get_ResponseInformation()->get_Errors()->get_Error()->[0]->get_Description if $self->debug;
         $self->error( $response->get_ResponseInformation()->get_Errors()->get_Error()->[0]->get_Description->get_value );
       } catch {
-        warn $_;
-        warn $response->get_faultstring;
+        warn $_ if $self->debug;
+        warn $response->get_faultstring if $self->debug;
         $self->error( $response->get_faultstring->get_value );
       };
     };
@@ -827,6 +837,7 @@ sub end_of_day {
 
     #TODO: call Consolidate before getting manifest document
 
+    $Shipment::SOAP::WSDL::Debug = 1 if $self->debug > 1;
     my $response = $interface->GetShipmentManifestDocument(
       {
         ShipmentManifestDocumentCriterium => {
@@ -842,7 +853,8 @@ sub end_of_day {
                   'RequestReference'  =>  'Shipment::Purolator::end_of_day'
       },
     );
-    #warn $response;
+    $Shipment::SOAP::WSDL::Debug = 0;
+    warn "Response\n" . $response if $self->debug > 1;
 
     try {
       use LWP::UserAgent;
@@ -857,13 +869,13 @@ sub end_of_day {
         )
       );
     } catch {
-      warn $_;
+      warn $_ if $self->debug;
       try {
-        warn $response->get_ResponseInformation()->get_Errors()->get_Error()->[0]->get_Description;
+        warn $response->get_ResponseInformation()->get_Errors()->get_Error()->[0]->get_Description if $self->debug;
         $self->error( $response->get_ResponseInformation()->get_Errors()->get_Error()->[0]->get_Description->get_value );
       } catch {
-        warn $_;
-        warn $response->get_faultstring;
+        warn $_ if $self->debug;
+        warn $response->get_faultstring if $self->debug;
         $self->error( $response->get_faultstring->get_value );
       };
     };

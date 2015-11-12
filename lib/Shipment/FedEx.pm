@@ -311,6 +311,7 @@ sub _build_services {
   }
 
   try {
+    $Shipment::SOAP::WSDL::Debug = 1 if $self->debug > 1;
     $response = $interface->getRates( 
       { 
         WebAuthenticationDetail =>  {
@@ -358,7 +359,14 @@ sub _build_services {
         },
       },
     );
-    #warn $response;
+    $Shipment::SOAP::WSDL::Debug = 0;
+    warn "Response\n" . $response if $self->debug > 1;
+
+    $self->notice('');
+    foreach my $notification (@{ $response->get_Notifications() }) {
+      warn $notification->get_Message->get_value if $self->debug;
+      $self->add_notice( $notification->get_Message->get_value . "\n" );
+    }
 
     foreach my $service (@{ $response->get_RateReplyDetails() }) {
       $services{$service->get_ServiceType()->get_value} = Shipment::Service->new(
@@ -379,13 +387,13 @@ sub _build_services {
     $services{priority} = $services{'PRIORITY_OVERNIGHT'} || $services{'INTERNATIONAL_PRIORITY'} || Shipment::Service->new();
 
   } catch {
-      warn $_;
+      warn $_ if $self->debug;
       try {
-        warn $response->get_Notifications()->get_Message;
-        $self->error( $response->get_Notifications()->get_Message->get_value );
+        $self->error( $response->get_Notifications()->[0]->get_Message->get_value );
+        warn $response->get_Notifications()->[0]->get_Message->get_value if $self->debug;
       } catch {
-        warn $response->get_faultstring;
-        $self->error( $response->get_faultstring->get_value ); 
+        $self->error( $response->get_faultstring->get_value );
+        warn $response->get_faultstring->get_value if $self->debug;
       };
   };
 
@@ -404,8 +412,8 @@ sub rate {
   try { 
     $service_id = $self->services->{$service_id}->id;
   } catch {
-    warn $_;
-    warn "service ($service_id) not available";
+    warn $_ if $self->debug;
+    warn "service ($service_id) not available" if $self->debug;
     $self->error( "service ($service_id) not available" );
     $service_id = '';
   };
@@ -468,6 +476,7 @@ sub rate {
   my %services;
 
   try {
+    $Shipment::SOAP::WSDL::Debug = 1 if $self->debug > 1;
     $response = $interface->getRates( 
       { 
         WebAuthenticationDetail =>  {
@@ -524,7 +533,14 @@ sub rate {
         },
       },
     );
-    #warn $response;
+    $Shipment::SOAP::WSDL::Debug = 0;
+    warn "Response\n" . $response if $self->debug > 1;
+
+    $self->notice('');
+    foreach my $notification (@{ $response->get_Notifications() }) {
+      warn $notification->get_Message->get_value if $self->debug;
+      $self->add_notice( $notification->get_Message->get_value . "\n" );
+    }
 
     use Data::Currency;
     use Shipment::Service;
@@ -539,13 +555,13 @@ sub rate {
       )
     );
   } catch {
-      warn $_;
+      warn $_ if $self->debug;
       try {
-        warn $response->get_Notifications()->get_Message;
-        $self->error( $response->get_Notifications()->get_Message->get_value );
+        $self->error( $response->get_Notifications()->[0]->get_Message->get_value );
+        warn $response->get_Notifications()->[0]->get_Message->get_value if $self->debug;
       } catch {
-        warn $response->get_faultstring;
-        $self->error( $response->get_faultstring->get_value ); 
+        $self->error( $response->get_faultstring->get_value );
+        warn $response->get_faultstring->get_value if $self->debug;
       };
   };
 }
@@ -562,8 +578,8 @@ sub ship {
   try { 
     $service_id = $self->services->{$service_id}->id;
   } catch {
-    warn $_;
-    warn "service ($service_id) not available";
+    warn $_ if $self->debug;
+    warn "service ($service_id) not available" if $self->debug;
     $self->error( "service ($service_id) not available" );
     $service_id = '';
   };
@@ -638,6 +654,7 @@ sub ship {
     foreach (@{ $self->packages }) {
 
       try {
+        $Shipment::SOAP::WSDL::Debug = 1 if $self->debug > 1;
         $response = $interface->processShipment( 
           { 
             WebAuthenticationDetail =>  {
@@ -737,7 +754,15 @@ sub ship {
             },
           },
         );
-        #warn $response;
+        $Shipment::SOAP::WSDL::Debug = 0;
+        warn "Response\n" . $response if $self->debug > 1;
+
+        $self->notice('');
+        foreach my $notification (@{ $response->get_Notifications() }) {
+          warn $notification->get_Message->get_value if $self->debug;
+          $self->add_notice( $notification->get_Message->get_value . "\n" );
+        }
+
         my $package_details = $response->get_CompletedShipmentDetail->get_CompletedPackageDetails;
         
         if ($self->count_packages > 1) {
@@ -779,13 +804,13 @@ sub ship {
         );
         
       } catch {
-          warn $_;
+          warn $_ if $self->debug;
           try {
-            warn $response->get_Notifications()->get_Message;
-            $self->error( $response->get_Notifications()->get_Message->get_value );
+            $self->error( $response->get_Notifications()->[0]->get_Message->get_value );
+            warn $response->get_Notifications()->[0]->get_Message->get_value if $self->debug;
           } catch {
-            warn $response->get_faultstring;
-            $self->error( $response->get_faultstring->get_value ); 
+            $self->error( $response->get_faultstring->get_value );
+            warn $response->get_faultstring->get_value if $self->debug;
           };
       };
     last if $self->error;
@@ -851,6 +876,7 @@ sub cancel {
   my $success;
 
   try {
+    $Shipment::SOAP::WSDL::Debug = 1 if $self->debug > 1;
     $response = $interface->deleteShipment(
           { 
             WebAuthenticationDetail =>  {
@@ -876,16 +902,24 @@ sub cancel {
             DeletionControl => 'DELETE_ONE_PACKAGE',
           },
         );
-    #warn $response;
+    $Shipment::SOAP::WSDL::Debug = 0;
+    warn "Response\n" . $response if $self->debug > 1;
+
+    $self->notice('');
+    foreach my $notification (@{ $response->get_Notifications() }) {
+      warn $notification->get_Message->get_value if $self->debug;
+      $self->add_notice( $notification->get_Message->get_value . "\n" );
+    }
+
     $success = $response->get_HighestSeverity->get_value; 
   } catch {
-      warn $_;
+      warn $_ if $self->debug;
       try {
-        warn $response->get_Notifications()->get_Message;
-        $self->error( $response->get_Notifications()->get_Message->get_value );
+        $self->error( $response->get_Notifications()->[0]->get_Message->get_value );
+        warn $response->get_Notifications()->[0]->get_Message->get_value if $self->debug;
       } catch {
-        warn $response->get_faultstring;
-        $self->error( $response->get_faultstring->get_value ); 
+        $self->error( $response->get_faultstring->get_value );
+        warn $response->get_faultstring->get_value if $self->debug;
       };
   };
 
@@ -913,6 +947,7 @@ sub end_of_day {
   my $response;
 
   try {
+    $Shipment::SOAP::WSDL::Debug = 1 if $self->debug > 1;
     $response = $interface->groundClose(
       { 
         WebAuthenticationDetail =>  {
@@ -934,7 +969,14 @@ sub end_of_day {
         TimeUpToWhichShipmentsAreToBeClosed =>  DateTime->now->datetime,
       },
     );
-    #warn $response;
+    $Shipment::SOAP::WSDL::Debug = 0;
+    warn "Response\n" . $response if $self->debug > 1;
+
+    $self->notice('');
+    foreach my $notification (@{ $response->get_Notifications() }) {
+      warn $notification->get_Message->get_value if $self->debug;
+      $self->add_notice( $notification->get_Message->get_value . "\n" );
+    }
     
     $self->manifest(
       Shipment::Label->new(
@@ -944,13 +986,13 @@ sub end_of_day {
       )
     );
   } catch {
-    warn $_;
+    warn $_ if $self->debug;
     try {
-      warn $response->get_Notifications()->get_Message;
-      $self->error( $response->get_Notifications()->get_Message->get_value );
+      $self->error( $response->get_Notifications()->[0]->get_Message->get_value );
+      warn $response->get_Notifications()->[0]->get_Message->get_value if $self->debug;
     } catch {
-      warn $response->get_faultstring;
-      $self->error( $response->get_faultstring->get_value ); 
+      $self->error( $response->get_faultstring->get_value );
+      warn $response->get_faultstring->get_value if $self->debug;
     };
   };
 }

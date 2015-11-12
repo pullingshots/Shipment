@@ -426,6 +426,7 @@ sub _build_services {
 
   my %services;
   try {
+    $Shipment::SOAP::WSDL::Debug = 1 if $self->debug > 1;
     $response = $interface->ProcessRate( 
       {
         Request => {
@@ -458,7 +459,8 @@ sub _build_services {
              },
       },
     );
-    #warn $response;
+    $Shipment::SOAP::WSDL::Debug = 0;
+    warn "Response\n" . $response if $self->debug > 1;
 
     foreach my $service (@{ $response->get_RatedShipment() }) {
       my $rate = $service->get_TotalCharges->get_MonetaryValue;
@@ -489,19 +491,19 @@ sub _build_services {
     $self->notice( '' );
     if ( $response->get_Response->get_Alert ) {
       foreach my $alert (@{$response->get_Response->get_Alert}) {
-        warn "Notice: " . $alert->get_Description->get_value;
+        warn "Notice: " . $alert->get_Description->get_value if $self->debug;
         $self->add_notice( $alert->get_Description->get_value . "\n" );
       }
     }
 
   } catch {
-      #warn $_;
+      warn $_ if $self->debug;
       try {
-        warn "Error: " . $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description;
+        warn "Error: " . $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description if $self->debug;
         $self->error( $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description->get_value );
       } catch {
-        #warn $_;
-        warn "Error: " . $response->get_faultstring;
+        warn $_ if $self->debug;
+        warn "Error: " . $response->get_faultstring if $self->debug;
         $self->error( $response->get_faultstring->get_value );
       };
   };
@@ -533,8 +535,8 @@ sub rate {
   try { 
     $service_id = $self->services->{$service_id}->id;
   } catch {
-    #warn $_;
-    warn "service ($service_id) not available";
+    warn $_ if $self->debug;
+    warn "service ($service_id) not available" if $self->debug;
     $self->error( "service ($service_id) not available" );
     $service_id = '';
   };
@@ -615,7 +617,7 @@ sub rate {
 
   my $response;
   try {
-
+    $Shipment::SOAP::WSDL::Debug = 1 if $self->debug > 1;
     $response = $interface->ProcessRate( 
       {
         Request => {
@@ -651,7 +653,8 @@ sub rate {
              },
       },
     );
-    #warn $response;
+    $Shipment::SOAP::WSDL::Debug = 0;
+    warn "Response\n" . $response if $self->debug > 1;
 
     use Data::Currency;
     use Shipment::Service;
@@ -678,18 +681,18 @@ sub rate {
     $self->notice( '' );
     if ( $response->get_Response->get_Alert ) {
       foreach my $alert (@{$response->get_Response->get_Alert}) {
-        warn $alert->get_Description->get_value;
+        warn $alert->get_Description->get_value if $self->debug;
         $self->add_notice( $alert->get_Description->get_value . "\n" );
       }
     }
   } catch {
-      #warn $_;
+      warn $_ if $self->debug;
       try {
-        warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description;
+        warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description if $self->debug;
         $self->error( $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description->get_value );
       } catch {
-        #warn $_;
-        warn $response->get_faultstring;
+        warn $_ if $self->debug;
+        warn $response->get_faultstring if $self->debug;
         $self->error( $response->get_faultstring->get_value );
       };
   };
@@ -708,8 +711,8 @@ sub ship {
   try { 
     $service_id = $self->services->{$service_id}->id;
   } catch {
-    #warn $_;
-    warn "service ($service_id) not available";
+    warn $_ if $self->debug;
+    warn "service ($service_id) not available" if $self->debug;
     $self->error( "service ($service_id) not available" );
     $service_id = '';
   };
@@ -820,6 +823,7 @@ sub ship {
 
   my $response;
   try {
+    $Shipment::SOAP::WSDL::Debug = 1 if $self->debug > 1;
     $response = $interface->ProcessShipment( 
       {
         Request => {
@@ -869,7 +873,8 @@ sub ship {
              },
       },
     );
-    #warn $response;
+    $Shipment::SOAP::WSDL::Debug = 0;
+    warn "Response\n" . $response if $self->debug > 1;
 
     $self->tracking_id( $response->get_ShipmentResults()->get_ShipmentIdentificationNumber()->get_value );
     use Data::Currency;
@@ -935,19 +940,19 @@ sub ship {
     $self->notice( '' );
     if ( $response->get_Response->get_Alert ) {
       foreach my $alert (@{$response->get_Response->get_Alert}) {
-        warn $alert->get_Description->get_value;
+        warn $alert->get_Description->get_value if $self->debug;
         $self->add_notice( $alert->get_Description->get_value . "\n" );
       }
     }
 
   } catch {
-      #warn $_;
+      warn $_ if $self->debug;
       try {
-        warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description;
+        warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description if $self->debug;
         $self->error( $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description->get_value );
       } catch {
-        #warn $_;
-        warn $response->get_faultstring;
+        warn $_ if $self->debug;
+        warn $response->get_faultstring if $self->debug;
         $self->error( $response->get_faultstring->get_value );
       };
   };
@@ -972,8 +977,8 @@ sub return {
   try { 
     $service_id = $self->services->{$service_id}->id;
   } catch {
-    #warn $_;
-    warn "service ($service_id) not available";
+    warn $_ if $self->debug;
+    warn "service ($service_id) not available" if $self->debug;
     $self->error( "service ($service_id) not available" );
     $service_id = '';
   };
@@ -1036,6 +1041,7 @@ sub return {
 
   my $response;
   try {
+    $Shipment::SOAP::WSDL::Debug = 1 if $self->debug > 1;
     $response = $interface->ProcessShipment( 
       {
         Request => {
@@ -1109,7 +1115,8 @@ sub return {
              },
       },
     );
-    #warn $response;
+    $Shipment::SOAP::WSDL::Debug = 0;
+    warn "Response\n" . $response if $self->debug > 1;
 
     $self->tracking_id( $response->get_ShipmentResults()->get_ShipmentIdentificationNumber()->get_value );
     use Data::Currency;
@@ -1167,19 +1174,19 @@ sub return {
     $self->notice( '' );
     if ( $response->get_Response->get_Alert ) {
       foreach my $alert (@{$response->get_Response->get_Alert}) {
-        warn $alert->get_Description->get_value;
+        warn $alert->get_Description->get_value if $self->debug;
         $self->add_notice( $alert->get_Description->get_value . "\n" );
       }
     }
 
   } catch {
-      #warn $_;
+      warn $_ if $self->debug;
       try {
-        warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description;
+        warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description if $self->debug;
         $self->error( $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description->get_value );
       } catch {
-        #warn $_;
-        warn $response->get_faultstring;
+        warn $_ if $self->debug;
+        warn $response->get_faultstring if $self->debug;
         $self->error( $response->get_faultstring->get_value );
       };
   };
@@ -1230,6 +1237,7 @@ sub cancel {
   my $success;
 
   try {
+    $Shipment::SOAP::WSDL::Debug = 1 if $self->debug > 1;
     $response = $interface->ProcessVoid(
       {
         Request =>  { 
@@ -1247,26 +1255,27 @@ sub cancel {
              },
       },
     );
-    #warn $response;
+    $Shipment::SOAP::WSDL::Debug = 0;
+    warn "Response\n" . $response if $self->debug > 1;
 
     $success = $response->get_SummaryResult->get_Status->get_Description->get_value;
 
     $self->notice( '' );
     if ( $response->get_Response->get_Alert ) {
       foreach my $alert (@{$response->get_Response->get_Alert}) {
-        warn $alert->get_Description->get_value;
+        warn $alert->get_Description->get_value if $self->debug;
         $self->add_notice( $alert->get_Description->get_value . "\n" );
       }
     }
 
   } catch {
-      #warn $_;
+      warn $_ if $self->debug;
       try {
-        warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description;
+        warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description if $self->debug;
         $self->error( $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description->get_value );
       } catch {
-        #warn $_;
-        warn $response->get_faultstring;
+        warn $_ if $self->debug;
+        warn $response->get_faultstring if $self->debug;
         $self->error( $response->get_faultstring->get_value );
       };
   };

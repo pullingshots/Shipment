@@ -9,7 +9,7 @@ $password ||= $ENV{'FEDEX_PASSWORD'};
 $account  ||= $ENV{'FEDEX_ACCOUNT'};
 $meter    ||= $ENV{'FEDEX_METER'};
 
-use Test::More tests => 41;
+use Test::More tests => 31;
 
 SKIP: {
   skip "Tests can only be run with a valid FedEx Developer Key/Password and Account/Meter. The following environment variables are used: FEDEX_KEY FEDEX_PASSWORD FEDEX_ACCOUNT FEDEX_METER You can sign up for a FedEx Web Services developer account at https://www.fedex.com/wpor/web/jsp/drclinks.jsp?links=techresources/index.html", 44 unless $key && $password && $account && $meter;
@@ -95,15 +95,17 @@ if (defined $shipment->from_address) {
 is( $shipment->count_packages, 0, 'shipment has zero packages');
 
 ok( defined $shipment->services, 'got services');
-ok( defined $shipment->services->{ground}, 'got a ground service');
-is( $shipment->services->{ground}->id, 'GROUND_HOME_DELIVERY', 'ground service_id') if defined $shipment->services->{ground};
+ok( defined $shipment->services->{express}, 'got an express service');
+is( $shipment->services->{express}->id, 'FEDEX_2_DAY', 'express service_id') if defined $shipment->services->{express};
+ok( defined $shipment->services->{priority}, 'got a priority service');
+is( $shipment->services->{priority}->id, 'PRIORITY_OVERNIGHT', 'priority service_id') if defined $shipment->services->{priority};
 
 $shipment->packages(\@packages);
 is( $shipment->count_packages, 1, 'shipment has 1 packages');
 
-$shipment->rate( 'ground' );
+$shipment->rate( 'express' );
 
-ok( defined $shipment->service, 'got a ground rate');
+ok( defined $shipment->service, 'got an express rate');
 my $rate = $shipment->service->cost->value if defined $shipment->service;
 is( $shipment->service->cost->code, 'USD', 'currency') if defined $shipment->service;
 
@@ -117,120 +119,16 @@ $shipment = Shipment::FedEx->new(
   packages => \@packages,
   printer_type => 'thermal',
   references => [ qw( foo bar baz ) ],
-  bill_type => 'collect',
+  bill_type => 'sender',
 );
 
-$shipment->ship( 'ground' );
+$shipment->ship( 'express' );
 
 ok( defined $shipment->service, 'got a shipment');
-is( $shipment->service->cost->value, '0', 'zero rating for collect') if defined $shipment->service;
 ok( defined $shipment->get_package(0)->label, 'got label' );
 is( $shipment->get_package(0)->label->content_type, 'text/fedex-epl', 'label is thermal') if defined $shipment->get_package(0)->label;
 
-## TODO test saving file to disk
-#$shipment->get_package(0)->label->save;
-
-## this currently fails on the FedEx testing services
-#$shipment->end_of_day;
-#ok( defined $shipment->manifest, 'got end of day manifest' );
-## TODO test saving file to disk
-#$shipment->manifest->save;
-
 is( $shipment->cancel, 'SUCCESS', 'successfully cancelled shipment');
 
-@packages = (
-  Shipment::Package->new(
-    weight => 10,
-    length => 18,
-    width => 18,
-    height => 24,
-  ),
-  Shipment::Package->new(
-    weight => 12,
-    length => 20,
-    width => 20,
-    height => 24,
-  ),
-);
-
-$shipment = Shipment::FedEx->new(
-  key => $key,
-  password => $password,
-  account => $account,
-  meter => $meter,
-  from_address => $from,
-  from_address => $from,
-  to_address => $to,
-  packages => \@packages,
-  printer_type => 'thermal',
-);
-
-is( $shipment->count_packages, 2, 'shipment has 2 packages');
-
-$shipment->rate( 'ground' );
-
-ok( defined $shipment->service, 'got a ground rate');
-$rate = $shipment->service->cost->value if defined $shipment->service;
-is( $shipment->service->cost->code, 'USD', 'currency') if defined $shipment->service;
-
-$shipment = Shipment::FedEx->new(
-  key => $key,
-  password => $password,
-  account => $account,
-  meter => $meter,
-  from_address => $from,
-  from_address => $from,
-  to_address => $to,
-  packages => \@packages,
-  printer_type => 'thermal',
-);
-
-$shipment->ship( 'ground' );
-
-ok( defined $shipment->service, 'got a shipment');
-ok( defined $shipment->get_package(0)->label, 'got first label' );
-ok( defined $shipment->get_package(1)->label, 'got second label' );
-is( $shipment->get_package(0)->label->content_type, 'text/fedex-epl', 'first label is thermal') if defined $shipment->get_package(0)->label;
-is( $shipment->get_package(1)->label->content_type, 'text/fedex-epl', 'second label is thermal') if defined $shipment->get_package(1)->label;
-
-is( $shipment->cancel, 'SUCCESS', 'successfully cancelled shipment');
-
-## TODO test saving file to disk
-#$shipment->get_package(0)->label->save;
-#$shipment->get_package(1)->label->save;
-
-
-@packages = (
-  Shipment::Package->new(
-    weight => 100,
-    length => 18,
-    width => 18,
-    height => 24,
-  ),
-  Shipment::Package->new(
-    weight => 120,
-    length => 20,
-    width => 20,
-    height => 24,
-  ),
-);
-
-$shipment = Shipment::FedEx->new(
-  key => $key,
-  password => $password,
-  account => $account,
-  meter => $meter,
-  from_address => $from,
-  from_address => $from,
-  to_address => $to,
-  packages => \@packages,
-  printer_type => 'thermal',
-);
-
-is( $shipment->count_packages, 2, 'shipment has 2 packages');
-
-$shipment->rate( 'ground' );
-
-ok( defined $shipment->service, 'got ground rate for shipment over 150lbs');
 
 }
