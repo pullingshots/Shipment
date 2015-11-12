@@ -135,7 +135,11 @@ has 'label_stock_type' => (
 );
 
 sub _build_label_stock_type {
-    return 'STOCK_4X6' if shift->printer_type eq 'thermal';
+    my $self = shift;
+    return 'STOCK_4X6' if $self->printer_type eq 'thermal'
+                       or $self->printer_type eq 'ZPLII'
+                       or $self->printer_type eq 'EPL2'
+                       or $self->printer_type eq 'DPL';
     return 'PAPER_4X6';
 }
 
@@ -200,6 +204,9 @@ my %printer_type_map = (
 my %label_content_type_map = (
   'pdf'        => 'application/pdf',
   'thermal'        => 'text/fedex-epl',
+  'ZPLII'      => 'text/fedex-zplii',
+  'EPL2'       => 'text/fedex-epl',
+  'DPL'        => 'text/fedex-dpl',
   'image'      => 'image/png',
 );
 
