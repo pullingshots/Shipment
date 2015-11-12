@@ -9162,6 +9162,7 @@ $fatpacked{"SOAP/WSDL/XSD/Typelib/ComplexType.pm"} = <<'SOAP_WSDL_XSD_TYPELIB_CO
           my $type = $CLASSES_OF{ $class }->{ $name }
               or croak "No class given for $name";
   
+          use Class::Load;
           Class::Load::is_class_loaded($type)
              or eval { Class::Load::load_class $type }
                   or croak $@;
