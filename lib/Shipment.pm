@@ -44,7 +44,7 @@ use Shipment::Temando;
 
 =cut
 
-=over 1
+=over
 
 =item generic
 
@@ -120,8 +120,38 @@ sub address {
 
 =cut
 
+=back
+
 sub package {
     shift; return Shipment::Package->new(@_)
 }
+
+=head1 AUTHOR
+
+Andrew Baerg @ <andrew at pullingshots dot ca>
+
+http://pullingshots.ca/
+
+=head1 BUGS
+
+Issues can be submitted at https://github.com/pullingshots/Shipment/issues
+
+=head1 COPYRIGHT
+
+Copyright (C) 2016 Andrew J Baerg, All Rights Reserved
+
+=head1 NO WARRANTY
+
+Absolutely, positively NO WARRANTY, neither express or implied, is
+offered with this software.  You use this software at your own risk.  In
+case of loss, no person or entity owes you anything whatsoever.  You
+have been warned.
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+=cut
 
 1;

@@ -215,11 +215,11 @@ http://pullingshots.ca/
 
 =head1 BUGS
 
-Please contact me directly.
+Issues can be submitted at https://github.com/pullingshots/Shipment/issues
 
 =head1 COPYRIGHT
 
-Copyright (C) 2010 Andrew J Baerg, All Rights Reserved
+Copyright (C) 2016 Andrew J Baerg, All Rights Reserved
 
 =head1 NO WARRANTY
 
