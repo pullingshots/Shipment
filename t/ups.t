@@ -12,7 +12,7 @@ $key      ||= $ENV{'UPS_KEY'};
 $account  ||= $ENV{'UPS_ACCOUNT'};
 
 SKIP: {
-  skip "Tests can only be run with a valid UPS Developer Username/Password/Key and Account. The following environment variables are used: UPS_USERNAME UPS_PASSWORD UPS_KEY UPS_ACCOUNT. You can sign up for a UPS Web Services developer account at https://www.ups.com/upsdeveloperkit", 45 unless $username && $password && $key && $account;
+  skip "Tests can only be run with a valid UPS Developer Username/Password/Key and Account. The following environment variables are used: UPS_USERNAME UPS_PASSWORD UPS_KEY UPS_ACCOUNT. You can sign up for a UPS Web Services developer account at https://www.ups.com/upsdeveloperkit", 46 unless $username && $password && $key && $account;
 }
 
 if ($username && $password && $key && $account) {
