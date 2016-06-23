@@ -30,11 +30,21 @@ Shipment::UPS - Interface to UPS Shipping Web Services
 
 =head1 ABOUT
 
-This class provides an interface to the UPS Online Tools. You must sign up for a developer access key in order to make use of this module.
+This class provides an interface to the UPS Online Tools.
+
+For code examples, see https://github.com/pullingshots/Shipment/tree/master/eg
+
+You must sign up for a developer access key in order to make use of this module.
 
 https://www.ups.com/upsdeveloperkit
 
-It is an extension of L<Shipment::Base>.
+See related modules for documentation on options and how to access rates and labels:
+  
+L<Shipment::Base> - common attributes and methods for all interfaces
+L<Shipment::Address> - define an from or to address
+L<Shipment::Package> - define package details, weight, dimensions, etc
+L<Shipment::Service> - access information about a service, rate, etd, etc
+L<Shipment::Label> - access the label file
 
 It makes extensive use of SOAP::WSDL in order to create/decode xml requests and responses. The Shipment::UPS::WSDL interface was created primarily using the wsdl2perl.pl script from SOAP::WSDL.
 

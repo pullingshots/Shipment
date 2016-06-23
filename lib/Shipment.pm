@@ -4,9 +4,11 @@ package Shipment;
 use Shipment::Address;
 use Shipment::Package;
 
+use Shipment::Generic;
 use Shipment::FedEx;
 use Shipment::Purolator;
 use Shipment::UPS;
+use Shipment::Temando;
 
 =head1 SYNOPSIS
 
@@ -14,11 +16,11 @@ use Shipment::UPS;
 
   my $shipment = Shipment->new;
      
-     $shipment->ups(
-        from_address => $shipment->address(...),
-        to_address => $shipment->address(...),
-        packages => [$shipment->package(...)]
-     );
+  $shipment->ups(
+    from_address => $shipment->address(...),
+    to_address => $shipment->address(...),
+    packages => [$shipment->package(...)]
+  );
 
   foreach my $service ( $shipment->all_services ) {
     print $service->id . "\n";
@@ -30,18 +32,24 @@ use Shipment::UPS;
   $shipment->ship( 'ground' );
   $shipment->get_package(0)->label->save;
 
+=cut
+
 =head1 DESCRIPTION
 
-This library provides an interface to popular shipping/courier services. See the
-eg (examples) directory for clues about getting up-and-running. Better
-documentation coming soon...
+  This library provides an interface to popular shipping/courier services.
+
+  See the relevant module for details on usage.
+
+  For code examples, see https://github.com/pullingshots/Shipment/tree/master/eg
 
 =cut
 
-=method generic
+=over 1
 
-The generic method returns a L<Shipment::Generic> object. See L<Shipment::Generic> for
-more details.
+=item generic
+
+  The generic method returns a L<Shipment::Generic> object. See L<Shipment::Generic> for
+  more details.
 
 =cut
 
@@ -50,10 +58,10 @@ sub generic {
 }
 
 
-=method fedex
+=item fedex
 
-The fedex method returns a L<Shipment::FedEx> object. See L<Shipment::FedEx> for
-more details.
+  The fedex method returns a L<Shipment::FedEx> object. See L<Shipment::FedEx> for
+  more details.
 
 =cut
 
@@ -61,10 +69,10 @@ sub fedex {
     shift; return Shipment::FedEx->new(@_)
 }
 
-=method purolator
+=item purolator
 
-The purolator method returns a L<Shipment::Purolator> object. See
-L<Shipment::Purolator> for more details.
+  The purolator method returns a L<Shipment::Purolator> object. See
+  L<Shipment::Purolator> for more details.
 
 =cut
 
@@ -72,10 +80,10 @@ sub purolator {
     shift; return Shipment::Purolator->new(@_)
 }
 
-=method ups
+=item ups
 
-The ups method returns a L<Shipment::UPS> object. See L<Shipment::UPS> for
-more details.
+  The ups method returns a L<Shipment::UPS> object. See L<Shipment::UPS> for
+  more details.
 
 =cut
 
@@ -83,21 +91,21 @@ sub ups {
     shift; return Shipment::UPS->new(@_)
 }
 
-=method temando
+=item temando
 
-The temando method returns a L<Shipment::Temando> object. See L<Shipment::Temando> for
-more details.
+  The temando method returns a L<Shipment::Temando> object. See L<Shipment::Temando> for
+  more details.
 
 =cut
 
 sub temando {
-    shift; return Shipment::UPS->new(@_)
+    shift; return Shipment::Temando->new(@_)
 }
 
-=method address
+=item address
 
-The address method returns a L<Shipment::Address> object.
-See L<Shipment::Address> for more details.
+  The address method returns a L<Shipment::Address> object.
+  See L<Shipment::Address> for more details.
 
 =cut
 
@@ -105,10 +113,10 @@ sub address {
     shift; return Shipment::Address->new(@_)
 }
 
-=method package
+=item package
 
-The package method returns a L<Shipment::Package> object.
-See L<Shipment::Package> for more details.
+  The package method returns a L<Shipment::Package> object.
+  See L<Shipment::Package> for more details.
 
 =cut
 
