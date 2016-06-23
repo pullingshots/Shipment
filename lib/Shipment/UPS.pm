@@ -792,8 +792,8 @@ sub ship {
     my $payment_option;
     $payment_option->{Type} = '01';
     $payment_option->{$bill_type_map{$self->bill_type}}->{AccountNumber} = $self->bill_account;
-    $payment_option->{$bill_type_map{$self->bill_type}}->{Address}->{PostalCode} = $self->bill_address->postal_code if $self->bill_type =~ /(recipient|third_party)/; 
-    $payment_option->{$bill_type_map{$self->bill_type}}->{Address}->{CountryCode} = $self->bill_address->country_code if $self->bill_type eq 'third_party'; 
+    $payment_option->{$bill_type_map{$self->bill_type}}->{Address}->{PostalCode} = $self->bill_address->postal_code if $self->bill_address && $self->bill_type =~ /(recipient|third_party)/; 
+    $payment_option->{$bill_type_map{$self->bill_type}}->{Address}->{CountryCode} = $self->bill_address->country_code if $self->bill_address && $self->bill_type eq 'third_party'; 
 
     my @from_addresslines = (
       $self->from_address->address1, 
@@ -1025,8 +1025,8 @@ sub return {
     my $payment_option;
     $payment_option->{Type} = '01';
     $payment_option->{$bill_type_map{$self->bill_type}}->{AccountNumber} = $self->bill_account;
-    $payment_option->{$bill_type_map{$self->bill_type}}->{Address}->{PostalCode} = $self->bill_address->postal_code if $self->bill_type =~ /(recipient|third_party)/; 
-    $payment_option->{$bill_type_map{$self->bill_type}}->{Address}->{CountryCode} = $self->bill_address->country_code if $self->bill_type eq 'third_party'; 
+    $payment_option->{$bill_type_map{$self->bill_type}}->{Address}->{PostalCode} = $self->bill_address->postal_code if $self->bill_address && $self->bill_type =~ /(recipient|third_party)/; 
+    $payment_option->{$bill_type_map{$self->bill_type}}->{Address}->{CountryCode} = $self->bill_address->country_code if $self->bill_address && $self->bill_type eq 'third_party'; 
 
     my @from_addresslines = (
       $self->from_address->address1, 

@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 45;
+use Test::More tests => 46;
 
 my ($username, $password, $key, $account) = @ARGV;
 
@@ -243,8 +243,26 @@ is( $shipment->count_packages, 1, 'shipment has 1 package');
 
 $shipment->rate( 'ground' );
 
-ok( defined $shipment->service, 'got an express rate');
+ok( defined $shipment->service, 'got a ground rate');
 $rate = $shipment->service->cost->value if defined $shipment->service;
 is( $shipment->service->cost->code, 'USD', 'currency') if defined $shipment->service;
+
+$shipment = Shipment::UPS->new(
+  username => $username,
+  password => $password,
+  key => $key,
+  account => $account,
+  from_address => $from,
+  to_address => $to,
+  packages => \@packages,
+  printer_type => 'thermal',
+  residential_address => 1,
+  negotiated_rates => 1,
+  bill_type => 'third_party',
+  bill_account => $account,
+);
+
+$shipment->ship( 'ground' );
+is( $shipment->error, 'Missing bill third party address information.', 'UPS error regarding bill third party address information');
 
 }
