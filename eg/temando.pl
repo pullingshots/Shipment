@@ -6,8 +6,14 @@ use Test::More tests => 19;
 
 my ($username, $password) = @ARGV;
 
-$username    ||= $ENV{'TEMANDO_USERNAME'} || 'temandotest';
-$password ||= $ENV{'TEMANDO_PASSWORD'} || 'password';
+$username    ||= $ENV{'TEMANDO_USERNAME'};
+$password ||= $ENV{'TEMANDO_PASSWORD'};
+
+SKIP: {
+  skip "Tests can only be run with a valid Temando Username/Password. The following environment variables are used: TEMANDO_USERNAME TEMANDO_PASSWORD.", 19 unless $username && $password;
+}
+
+if ($username && $password) {
 
 use Shipment::Temando;
 use Shipment::Address;
@@ -43,12 +49,14 @@ my @packages = (
     length => 18,
     width => 18,
     height => 24,
+    goods_value => Data::Currency->new(50, 'AUD'),
   ),
   Shipment::Package->new(
     weight => 10.1,
     length => 18,
     width => 18,
     height => 24,
+    goods_value => Data::Currency->new(100, 'AUD'),
   ),
 );
 
@@ -59,7 +67,8 @@ my $shipment = Shipment::Temando->new(
   to_address => $to,
   packages => \@packages,
   printer_type => 'thermal',
-  references => [ qw( foo bar ) ],
+  references => [ 'foo', undef, 'bar' ],
+#  client_id => '123456',
 #  live => 1,
 );
 
@@ -79,12 +88,12 @@ is( $shipment->count_packages, 2, 'shipment has 2 packages');
 
 ok( defined $shipment->services, 'got services');
 
-ok( defined $shipment->services->{ground}, 'got a ground service');
-is( $shipment->services->{ground}->id, '54429Road Express', 'ground service_id') if defined $shipment->services->{ground};
-ok( defined $shipment->services->{express}, 'got an express service');
-is( $shipment->services->{express}->id, '54426Pre-scheduled pick-ups only', 'express service_id') if defined $shipment->services->{express};
+#ok( defined $shipment->services->{ground}, 'got a ground service');
+#is( $shipment->services->{ground}->id, '54425Carton Express (Road Service)', 'ground service_id') if defined $shipment->services->{ground};
+#ok( defined $shipment->services->{express}, 'got an express service');
+#is( $shipment->services->{express}->id, '54344General (Road)', 'express service_id') if defined $shipment->services->{express};
 ok( defined $shipment->services->{priority}, 'got a priority service');
-is( $shipment->services->{priority}->id, '54359Express Premium (eta metro only)', 'priority service_id') if defined $shipment->services->{priority};
+is( $shipment->services->{priority}->id, '60006Air Express', 'priority service_id') if defined $shipment->services->{priority};
 
 $shipment = Shipment::Temando->new(
   username => $username,
@@ -94,14 +103,34 @@ $shipment = Shipment::Temando->new(
   packages => \@packages,
   printer_type => 'thermal',
   references => [ qw( foo bar ) ],
+  bill_type => 'credit',
 #  live => 1,
 );
 
-$shipment->rate( 'ground' );
+$shipment->rate( 'priority' );
 
 ok( defined $shipment->service, 'got a ground rate');
 my $rate = $shipment->service->cost->value if defined $shipment->service;
+ok( $shipment->service->extra_charges->value == 0, 'zero extra charges');
+ok( $shipment->service->adjustments->value < 0, 'credit adjustments');
 is( $shipment->service->cost->code, 'AUD', 'currency') if defined $shipment->service;
+
+@packages = (
+  Shipment::Package->new(
+    weight => 10.1,
+    length => 18,
+    width => 18,
+    height => 24,
+    insured_value => Data::Currency->new(50, 'AUD'),
+  ),
+  Shipment::Package->new(
+    weight => 10.1,
+    length => 18,
+    width => 18,
+    height => 24,
+    insured_value => Data::Currency->new(100, 'AUD'),
+  ),
+);
 
 $shipment = Shipment::Temando->new(
   username => $username,
@@ -111,12 +140,19 @@ $shipment = Shipment::Temando->new(
   packages => \@packages,
   printer_type => 'thermal',
   references => [ qw( foo bar ) ],
+  carbon_offset => 1,
+  bill_type => 'credit_card',
+  credit_card_type => 'Visa',
+  credit_card_expiry => '02-2014',
+  credit_card_number => '4111111111111111',
+  credit_card_name => 'Foo Bar',
 #  live => 1,
 );
 
-$shipment->ship( 'ground' );
-
+$shipment->ship( 'priority' );
 is( $shipment->service->cost->value, $rate, 'rate matches actual cost') if defined $shipment->service;
+ok( $shipment->service->extra_charges->value > 0, 'extra charges');
+ok( $shipment->service->adjustments->value > 0, 'credit card adjustments');
 ok( defined $shipment->documents, 'got labels' );
 is( $shipment->documents->content_type, 'application/pdf', 'labels are a pdf') if defined $shipment->documents;
 
@@ -134,3 +170,4 @@ $shipment = Shipment::Temando->new(
 $shipment->cancel;
 is( $shipment->error, undef, 'successfully cancelled shipment');
 
+}

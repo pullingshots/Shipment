@@ -2,17 +2,25 @@
 use strict;
 use warnings;
 
-use Test::More tests => 41;
+use Test::More tests => 45;
+
+my ($username, $password, $key, $account) = @ARGV;
+
+$username    ||= $ENV{'UPS_USERNAME'};
+$password ||= $ENV{'UPS_PASSWORD'};
+$key      ||= $ENV{'UPS_KEY'};
+$account  ||= $ENV{'UPS_ACCOUNT'};
+
+SKIP: {
+  skip "Tests can only be run with a valid UPS Developer Username/Password/Key and Account. The following environment variables are used: UPS_USERNAME UPS_PASSWORD UPS_KEY UPS_ACCOUNT. You can sign up for a UPS Web Services developer account at https://www.ups.com/upsdeveloperkit", 45 unless $username && $password && $key && $account;
+}
+
+if ($username && $password && $key && $account) {
 
 use Shipment::UPS;
 use Shipment::Address;
 use Shipment::Package;
 
-my ($username, $password, $key, $account, $save, $live) = @ARGV;
-
-if (!$username || !$password || !$key || !$account) {
-  die "ERROR: tests can only be run with a valid UPS User ID, Password, Access Key, and Account.\n";
-}
 
 my $from = Shipment::Address->new( 
   name => 'Andrew Baerg',
@@ -54,10 +62,9 @@ my $shipment = Shipment::UPS->new(
   to_address => $to,
   packages => \@packages,
   printer_type => 'thermal',
-  references => [ qw( foo bar ) ],
+  references => [ 'foo', undef, 'bar' ],
+  residential_address => 1,
 );
-
-$shipment->proxy_domain( 'onlinetools.ups.com' ) if $live;
 
 ok( defined $shipment, 'got a shipment');
 
@@ -88,6 +95,7 @@ is( $shipment->count_packages, 1, 'shipment has 1 packages');
 
 ok( defined $shipment->services, 'got services');
 ok( defined $shipment->services->{ground}, 'got a ground service');
+my $rate = $shipment->services->{ground}->cost->value if $shipment->services->{ground};
 is( $shipment->services->{ground}->id, '03', 'ground service_id') if defined $shipment->services->{ground};
 ok( defined $shipment->services->{express}, 'got an express service');
 is( $shipment->services->{express}->id, '02', 'express service_id') if defined $shipment->services->{express};
@@ -97,7 +105,8 @@ is( $shipment->services->{priority}->id, '01', 'priority service_id') if defined
 $shipment->rate( 'ground' );
 
 ok( defined $shipment->service, 'got a ground rate');
-my $rate = $shipment->service->cost->value if defined $shipment->service;
+is( $shipment->service->cost->value, $rate, 'rate matches services') if defined $shipment->service;
+$rate = $shipment->service->cost->value if defined $shipment->service;
 is( $shipment->service->cost->code, 'USD', 'currency') if defined $shipment->service;
 
 $shipment->ship( 'ground' );
@@ -107,11 +116,8 @@ ok( defined $shipment->get_package(0)->label, 'got label' );
 is( $shipment->get_package(0)->label->content_type, 'text/ups-epl', 'label is epl') if defined $shipment->get_package(0)->label;
 
 ## TODO test saving file to disk
-$shipment->get_package(0)->label->save if $save;
+#$shipment->get_package(0)->label->save;
 
-is( $shipment->cancel, 'Voided', 'successfully cancelled shipment: ' . $shipment->tracking_id ) if $live;
-
-if (!$live) {
   $shipment = Shipment::UPS->new(
     username => $username,
     password => $password,
@@ -121,7 +127,6 @@ if (!$live) {
   );
 
   is( $shipment->cancel, 'Voided', 'successfully cancelled shipment');
-}
 
 @packages = (
   Shipment::Package->new(
@@ -147,9 +152,11 @@ $shipment = Shipment::UPS->new(
   to_address => $to,
   packages => \@packages,
   printer_type => 'thermal',
+  residential_address => 1,
+  negotiated_rates => 1,
+  # needed to test UPS Next Day Air Early AM
+  signature_type => 'not_required',
 );
-
-$shipment->proxy_domain( 'onlinetools.ups.com' ) if $live;
 
 is( $shipment->count_packages, 2, 'shipment has 2 packages');
 
@@ -159,21 +166,27 @@ ok( defined $shipment->service, 'got an express rate');
 $rate = $shipment->service->cost->value if defined $shipment->service;
 is( $shipment->service->cost->code, 'USD', 'currency') if defined $shipment->service;
 
-$shipment->ship( 'express' );
+# If possible, test against UPS Next Day Air Early AM, which requires a phone
+# number.
+my @service_codes = grep { $shipment->services->{$_}{name} =~ /Next Day Air Early/ }
+    keys %{ $shipment->services };
+my $service_code = shift @service_codes;
 
-is( $shipment->service->cost->value, $rate, 'rate matches actual cost') if defined $shipment->service;
+$service_code = 'express' if not $service_code;
+
+$shipment->ship( $service_code );
+
+#is( $shipment->service->cost->value, $rate, 'rate matches actual cost') if defined $shipment->service;
+ok( defined $shipment->service, "got an express rate for service code $service_code");
 ok( defined $shipment->get_package(0)->label, 'got first label' );
 ok( defined $shipment->get_package(1)->label, 'got second label' );
 is( $shipment->get_package(0)->label->content_type, 'text/ups-epl', 'first label is epl') if defined $shipment->get_package(0)->label;
 is( $shipment->get_package(1)->label->content_type, 'text/ups-epl', 'second label is epl') if defined $shipment->get_package(1)->label;
 
 ## TODO test saving file to disk
-$shipment->get_package(0)->label->save if $save;
-$shipment->get_package(1)->label->save if $save;
+#$shipment->get_package(0)->label->save;
+#$shipment->get_package(1)->label->save;
 
-is( $shipment->cancel, 'Voided', 'successfully cancelled shipment') if $live;
-
-if (!$live) {
   $shipment = Shipment::UPS->new(
     username => $username,
     password => $password,
@@ -191,5 +204,47 @@ if (!$live) {
   );
 
   is( $shipment->cancel, 'Voided', 'successfully cancelled shipment');
-}
 
+# verify that we can still ship a ground package with no phone number
+@packages = (
+  Shipment::Package->new(
+    weight => 18,
+    length => 18,
+    width => 18,
+    height => 24,
+  ),
+);
+
+$to = Shipment::Address->new(
+  name => 'Foo Bar',
+  address1 => '2436 NW Sacagawea Ln',
+  city => 'Bend',
+  state => 'OR',
+  country => 'US',
+  zip => '97701',
+  email => 'baerg@yoursole.com',
+);
+
+
+$shipment = Shipment::UPS->new(
+  username => $username,
+  password => $password,
+  key => $key,
+  account => $account,
+  from_address => $from,
+  to_address => $to,
+  packages => \@packages,
+  printer_type => 'thermal',
+  residential_address => 1,
+  negotiated_rates => 1,
+);
+
+is( $shipment->count_packages, 1, 'shipment has 1 package');
+
+$shipment->rate( 'ground' );
+
+ok( defined $shipment->service, 'got an express rate');
+$rate = $shipment->service->cost->value if defined $shipment->service;
+is( $shipment->service->cost->code, 'USD', 'currency') if defined $shipment->service;
+
+}
