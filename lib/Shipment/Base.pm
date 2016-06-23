@@ -157,17 +157,13 @@ has 'pickup_type' => (
 
 =head2 printer_type
 
-Defines the kind of label that will be generated (pdf, thermal, image)
+Defines the kind of label that will be generated (i.e. pdf, thermal, image)
 
-type:  PrinterOptions
+type:  Str
 
 default: pdf
 
 =cut
-
-# FIXME: this enum was not used before Moo conversion so maybe printer_type
-#        should have isa Enum...?
-# enum 'PrinterOptions' => [qw( pdf thermal image )];
 
 has 'printer_type' => (
   is => 'rw',
