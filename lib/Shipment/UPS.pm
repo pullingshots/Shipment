@@ -352,8 +352,6 @@ The following service mapping is used:
   * express => 02 (UPS Second Day Air)
   * priority => 01 (UPS Next Day Air)
 
-This method ignores what is in $self->packages and uses a single package weighing 1 pound for rating. The idea is to list what services are available, but for accurate rate comparisons, the rate method should be used.
-
 =cut
 
 sub _build_services {
