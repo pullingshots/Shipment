@@ -887,10 +887,14 @@ sub ship {
     $self->tracking_id( $response->get_ShipmentResults()->get_ShipmentIdentificationNumber()->get_value );
     use Data::Currency;
     use Shipment::Service;
-    my $rate = $response->get_ShipmentResults->get_ShipmentCharges->get_TotalCharges->get_MonetaryValue;
-    my $currency = $response->get_ShipmentResults->get_ShipmentCharges->get_TotalCharges->get_CurrencyCode;
+    my $rate = 0;
+    my $currency = $self->currency;
+    if ($response->get_ShipmentResults->get_ShipmentCharges && $response->get_ShipmentResults->get_ShipmentCharges->get_TotalCharges) {
+      $rate = $response->get_ShipmentResults->get_ShipmentCharges->get_TotalCharges->get_MonetaryValue;
+      $currency = $response->get_ShipmentResults->get_ShipmentCharges->get_TotalCharges->get_CurrencyCode;
+    }
     if ($self->negotiated_rates) {
-      if ($response->get_ShipmentResults->get_NegotiatedRateCharges) {
+      if ($response->get_ShipmentResults->get_NegotiatedRateCharges && $response->get_ShipmentResults->get_NegotiatedRateCharges->get_TotalCharge) {
         $rate = $response->get_ShipmentResults->get_NegotiatedRateCharges->get_TotalCharge->get_MonetaryValue;
         $currency = $response->get_ShipmentResults->get_NegotiatedRateCharges->get_TotalCharge->get_CurrencyCode;
       }
