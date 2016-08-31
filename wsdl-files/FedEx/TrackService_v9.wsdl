@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <definitions xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:ns="http://fedex.com/ws/track/v9" xmlns:s1="http://schemas.xmlsoap.org/wsdl/soap/" targetNamespace="http://fedex.com/ws/track/v9" name="TrackServiceDefinitions">
   <types>
     <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="qualified" elementFormDefault="qualified" targetNamespace="http://fedex.com/ws/track/v9">
