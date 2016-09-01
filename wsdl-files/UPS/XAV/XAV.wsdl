@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- UPS XAV Service WSDL Release Date Dec 29, 2007 -->
+<!-- Copyright 2007-2008 United Parcel Service of America, Inc. All rights reserved.   -->
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:error="http://www.ups.com/XMLSchema/XOLTWS/Error/v1.1" xmlns:upss="http://www.ups.com/XMLSchema/XOLTWS/UPSS/v1.0" xmlns:xav="http://www.ups.com/XMLSchema/XOLTWS/xav/v1.0" xmlns:tns="http://www.ups.com/WSDL/XOLTWS/XAV/v1.0" targetNamespace="http://www.ups.com/WSDL/XOLTWS/XAV/v1.0">
+	<wsdl:types>
+		<!-- This schema defines the UPS Security header used for authorization purposes -->
+		<xsd:schema targetNamespace="http://www.ups.com/XMLSchema/XOLTWS/UPSS/v1.0" xmlns:upss="http://www.ups.com/XMLSchema/XOLTWS/UPSS/v1.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+			<xsd:element name="UPSSecurity">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="UsernameToken">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element name="Username" type="xsd:string"/>
+									<xsd:element name="Password" type="xsd:string"/>
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+						<xsd:element name="ServiceAccessToken">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element name="AccessLicenseNumber" type="xsd:string"/>
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:schema>
+		<!-- This schema defines the common data types -->
+		<xsd:schema targetNamespace="http://www.ups.com/XMLSchema/XOLTWS/Common/v1.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:common="http://www.ups.com/XMLSchema/XOLTWS/Common/v1.0" elementFormDefault="qualified">
+			<xsd:element name="Request" type="common:RequestType"/>
+			<xsd:element name="Response" type="common:ResponseType"/>
+			<xsd:element name="ClientInformation" type="common:ClientInformationType"/>
+			<xsd:complexType name="ClientInformationType">
+				<xsd:sequence>
+					<xsd:element name="Property" minOccurs="0" maxOccurs="unbounded">
+						<xsd:complexType>
+							<xsd:simpleContent>
+								<xsd:extension base="xsd:string">
+									<xsd:attribute name="Key" type="xsd:string" use="required"/>
+								</xsd:extension>
+							</xsd:simpleContent>
+						</xsd:complexType>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="RequestType">
+				<xsd:sequence>
+					<xsd:element name="RequestOption" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+					<xsd:element name="TransactionReference" type="common:TransactionReferenceType" minOccurs="0"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="TransactionReferenceType">
+				<xsd:sequence>
+					<xsd:element name="CustomerContext" type="xsd:string" minOccurs="0"/>
+					<xsd:element name="TransactionIdentifier" type="xsd:string" minOccurs="0"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="ResponseType">
+				<xsd:sequence>
+					<xsd:element name="ResponseStatus" type="common:CodeDescriptionType"/>
+					<xsd:element name="Alert" type="common:CodeDescriptionType" minOccurs="0" maxOccurs="unbounded"/>
+					<xsd:element name="TransactionReference" type="common:TransactionReferenceType" minOccurs="0"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="CodeDescriptionType">
+				<xsd:sequence>
+					<xsd:element name="Code" type="xsd:string"/>
+					<xsd:element name="Description" type="xsd:string"/>
+				</xsd:sequence>
+			</xsd:complexType>
+		</xsd:schema>
+		<!--  This schema defines the error detail data types returned within SOAPFaults to provide more specific information pertaining to the problem. -->
+		<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:error="http://www.ups.com/XMLSchema/XOLTWS/Error/v1.1" xmlns:common="http://www.ups.com/XMLSchema/XOLTWS/Common/v1.0" targetNamespace="http://www.ups.com/XMLSchema/XOLTWS/Error/v1.1" elementFormDefault="qualified">
+			<xsd:import namespace="http://www.ups.com/XMLSchema/XOLTWS/Common/v1.0"/>
+			<xsd:element name="Errors">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="ErrorDetail" type="error:ErrorDetailType" maxOccurs="unbounded"/>
+						<xsd:element name="TransactionReference" type="common:TransactionReferenceType" minOccurs="0"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:complexType name="ErrorDetailType">
+				<xsd:sequence>
+					<xsd:element name="Severity" type="xsd:string"/>
+					<xsd:element name="PrimaryErrorCode" type="error:CodeType"/>
+					<xsd:element name="MinimumRetrySeconds" type="xsd:string" minOccurs="0"/>
+					<xsd:element name="Location" type="error:LocationType" minOccurs="0"/>
+					<xsd:element name="SubErrorCode" type="error:CodeType" minOccurs="0" maxOccurs="unbounded"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="CodeType">
+				<xsd:sequence>
+					<xsd:element name="Code" type="xsd:string"/>
+					<xsd:element name="Description" type="xsd:string"/>
+					<xsd:element name="Digest" type="xsd:string" minOccurs="0"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="LocationType">
+				<xsd:sequence>
+					<xsd:element name="LocationElementName" type="xsd:string" minOccurs="0"/>
+					<xsd:element name="XPathOfElement" type="xsd:string" minOccurs="0"/>
+					<xsd:element name="OriginalValue" type="xsd:string" minOccurs="0"/>
+				</xsd:sequence>
+			</xsd:complexType>
+		</xsd:schema>
+		<!-- This schema defines the XAV service data types -->
+		<xsd:schema targetNamespace="http://www.ups.com/XMLSchema/XOLTWS/xav/v1.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:common="http://www.ups.com/XMLSchema/XOLTWS/Common/v1.0" xmlns:xav="http://www.ups.com/XMLSchema/XOLTWS/xav/v1.0" elementFormDefault="qualified">
+			<xsd:import namespace="http://www.ups.com/XMLSchema/XOLTWS/Common/v1.0"/>
+			<!--XAV Request Element-->
+			<xsd:element name="XAVRequest">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element ref="common:Request"/>
+						<xsd:element name="RegionalRequestIndicator" type="xsd:string" minOccurs="0"/>
+						<xsd:element name="MaximumCandidateListSize" type="xsd:string" minOccurs="0"/>
+						<xsd:element name="AddressKeyFormat" type="xav:AddressKeyFormatType"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<!--XAV Response Element-->
+			<xsd:element name="XAVResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element ref="common:Response"/>
+						<xsd:choice minOccurs="0">
+							<xsd:element name="ValidAddressIndicator" type="xsd:string" minOccurs="0"/>
+							<xsd:element name="AmbiguousAddressIndicator" type="xsd:string" minOccurs="0"/>
+							<xsd:element name="NoCandidatesIndicator" type="xsd:string" minOccurs="0"/>
+						</xsd:choice>
+						<xsd:element name="AddressClassification" type="xav:AddressClassificationType" minOccurs="0"/>
+						<xsd:element name="Candidate" type="xav:CandidateType" minOccurs="0" maxOccurs="unbounded"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<!-- start : List of complex types used by XAV schema -->
+			<xsd:complexType name="AddressKeyFormatType">
+				<xsd:sequence>
+					<xsd:element name="ConsigneeName" type="xsd:string" minOccurs="0"/>
+					<xsd:element name="AttentionName" type="xsd:string" minOccurs="0"/>
+					<xsd:element name="AddressLine" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+					<xsd:sequence minOccurs="0">
+						<xsd:element name="PoliticalDivision2" type="xsd:string" minOccurs="0"/>
+						<xsd:element name="PoliticalDivision1" type="xsd:string" minOccurs="0"/>
+						<xsd:element name="PostcodePrimaryLow" type="xsd:string" minOccurs="0"/>
+						<xsd:element name="PostcodeExtendedLow" type="xsd:string" minOccurs="0"/>
+					</xsd:sequence>
+					<xsd:element name="Region" type="xsd:string" minOccurs="0"/>
+					<xsd:element name="Urbanization" type="xsd:string" minOccurs="0"/>
+					<xsd:element name="CountryCode" type="xsd:string"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="CandidateType">
+				<xsd:sequence>
+					<xsd:element name="AddressClassification" type="xav:AddressClassificationType" minOccurs="0"/>
+					<xsd:element name="AddressKeyFormat" type="xav:AddressKeyFormatType"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="AddressClassificationType">
+				<xsd:sequence>
+					<xsd:element name="Code" type="xsd:string"/>
+					<xsd:element name="Description" type="xsd:string"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<!-- end : List of complex types used by XAV schema -->
+		</xsd:schema>
+	</wsdl:types>
+	<wsdl:message name="XAVRequestMessage">
+		<wsdl:part name="Body" element="xav:XAVRequest"/>
+		<wsdl:part name="UPSSecurity" element="upss:UPSSecurity"/>
+	</wsdl:message>
+	<wsdl:message name="XAVResponseMessage">
+		<wsdl:part name="Body" element="xav:XAVResponse"/>
+	</wsdl:message>
+	<wsdl:message name="XAVErrorMessage">
+		<wsdl:part name="XAVError" element="error:Errors"/>
+	</wsdl:message>
+	<wsdl:portType name="XAVPortType">
+		<wsdl:operation name="ProcessXAV">
+			<wsdl:input name="XAVRequest" message="tns:XAVRequestMessage"/>
+			<wsdl:output name="XAVResponse" message="tns:XAVResponseMessage"/>
+			<wsdl:fault name="XAVError" message="tns:XAVErrorMessage"/>
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:binding name="XAVBinding" type="tns:XAVPortType">
+		<soap:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+		<wsdl:operation name="ProcessXAV">
+			<soap:operation soapAction="http://onlinetools.ups.com/webservices/XAVBinding/v1.0" style="document"/>
+			<wsdl:input name="XAVRequest">
+				<soap:body parts="Body" use="literal"/>
+				<soap:header message="tns:XAVRequestMessage" part="UPSSecurity" use="literal">
+					<soap:headerfault message="tns:XAVErrorMessage" part="XAVError" use="literal"/>
+				</soap:header>
+			</wsdl:input>
+			<wsdl:output name="XAVResponse">
+				<soap:body parts="Body" use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="XAVError">
+				<soap:fault name="XAVError" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+	</wsdl:binding>
+	<wsdl:service name="XAVService">
+		<wsdl:port name="XAVPort" binding="tns:XAVBinding">
+			<!-- Production URL -->
+			<!-- <soap:address location="https://onlinetools.ups.com/webservices/XAV"/> -->
+			<!-- CIE (Customer Integration Environment) URL -->
+			<soap:address location="https://wwwcie.ups.com/webservices/XAV"/>
+		</wsdl:port>
+	</wsdl:service>
+</wsdl:definitions>
