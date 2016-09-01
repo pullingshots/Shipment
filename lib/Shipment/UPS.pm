@@ -675,7 +675,7 @@ sub rate {
       }
     }
     $self->service( 
-      new Shipment::Service( 
+       Shipment::Service->new( 
         id        => $service_id,
         name      => (
               $service_map{$self->from_address()->country_code}->{$response->get_RatedShipment->get_Service->get_Code->get_value}
@@ -900,7 +900,7 @@ sub ship {
       }
     }
     $self->service( 
-      new Shipment::Service( 
+       Shipment::Service->new( 
         id        => $service_id,
         name      => $self->services->{$service_id}->name,
         cost      => Data::Currency->new($rate, $currency),
