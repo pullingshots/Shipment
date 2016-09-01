@@ -191,39 +191,54 @@ UPS returns service codes without descriptions. This is mapped here so that we c
 
 =cut
 
-my %service_map = (
-  '01' => 'UPS Next Day Air',
-  '02' => 'UPS Second Day Air',
-  '03' => 'UPS Ground',
-  '07' => 'UPS Worldwide Express',
-  '08' => 'UPS Worldwide Expedited',
-  '11' => 'UPS Standard',
-  '12' => 'UPS Three-Day Select',
-  '13' => 'UPS Next Day Air Saver',
-  '14' => 'UPS Next Day Air Early A.M.',
-  '54' => 'UPS Worldwide Express Plus',
-  '59' => 'UPS Second Day Air A.M.',
-  '65' => 'UPS Saver',
-  '82' => 'UPS Today Standard',
-  '83' => 'UPS Today Dedicated Courier',
-  '85' => 'UPS Today Express',
-  '86' => 'UPS Today Express Saver',
-  '93' => 'UPS SurePost 1 lb or Greater',
-  'CA' => {
-    '01' => 'UPS Express',
-    '13' => 'UPS Express Saver',
-    '65' => 'UPS Worldwide Express Saver',
-    '02' => 'UPS Expedited',
-  },
+has 'service_map' => (
+    is      => 'ro',
+    isa     => HashRef [],
+    default => sub {
+        {
+            '01' => 'UPS Next Day Air',
+            '02' => 'UPS Second Day Air',
+            '03' => 'UPS Ground',
+            '07' => 'UPS Worldwide Express',
+            '08' => 'UPS Worldwide Expedited',
+            '11' => 'UPS Standard',
+            '12' => 'UPS Three-Day Select',
+            '13' => 'UPS Next Day Air Saver',
+            '14' => 'UPS Next Day Air Early A.M.',
+            '54' => 'UPS Worldwide Express Plus',
+            '59' => 'UPS Second Day Air A.M.',
+            '65' => 'UPS Saver',
+            '82' => 'UPS Today Standard',
+            '83' => 'UPS Today Dedicated Courier',
+            '85' => 'UPS Today Express',
+            '86' => 'UPS Today Express Saver',
+            '92' => 'UPS SurePost Less than 1 lb',
+            '93' => 'UPS SurePost 1 lb or Greater',
+            '94' => 'UPS SurePost BPM',
+            '95' => 'UPS SurePost Media',
+            'CA' => {
+                '01' => 'UPS Express',
+                '13' => 'UPS Express Saver',
+                '65' => 'UPS Worldwide Express Saver',
+                '02' => 'UPS Expedited',
+            },
+        };
+    }
 );
 
 ## Rating code to Shipping code map for cases when they differ
-my %service_code_map = (
-  'CA' => {
-    '07' => '01',
-    '13' => '65',
-    '02' => '08',
-  },
+has 'service_code_map' => (
+    is      => 'ro',
+    isa     => HashRef [],
+    default => sub {
+        {
+            'CA' => {
+                '07' => '01',
+                '13' => '65',
+                '02' => '08',
+            },
+        };
+    }
 );
 
 =head2 Shipment::Base type maps
@@ -232,38 +247,64 @@ Shipment::Base provides abstract types which need to be mapped to UPS codes (i.e
 
 =cut
 
-my %bill_type_map = (
-  'sender'      => 'BillShipper',
-  'recipient'   => 'BillReceiver',
-  'third_party' => 'BillThirdParty',
+has 'bill_type_map' => (
+    is      => 'ro',
+    isa     => HashRef [],
+    default => sub {
+        {
+            'sender'      => 'BillShipper',
+            'recipient'   => 'BillReceiver',
+            'third_party' => 'BillThirdParty',
+        };
+    }
 );
 
-my %signature_type_map = (
-  'default'      => '1',
-  'required'     => '2',
-  'not_required' => undef,
-  'adult'        => '3',
+has 'signature_type_map' => (
+    is      => 'ro',
+    isa     => HashRef [],
+    default => sub {
+        {
+            'default'      => '1',
+            'required'     => '2',
+            'not_required' => undef,
+            'adult'        => '3',
+        };
+    }
 );
 
-my %package_type_map = (
-  'custom'              => '02',
-  'envelope'            => '01',
-  'tube'                => '03',
-  'box'                 => '21',
-  'pack'                => '04',
-  '25kg_box'            => '24',
-  '10kg_box'            => '25',
-  'pallet'              => '30',
-  'small_express_box'   => '2a',
-  'medium_express_box'  => '2b',
-  'large_express_box'   => '2c',
+
+has 'package_type_map' => (
+    is      => 'ro',
+    isa     => HashRef [],
+    default => sub {
+        {
+            'custom'             => '02',
+            'envelope'           => '01',
+            'tube'               => '03',
+            'box'                => '21',
+            'pack'               => '04',
+            '25kg_box'           => '24',
+            '10kg_box'           => '25',
+            'pallet'             => '30',
+            'small_express_box'  => '2a',
+            'medium_express_box' => '2b',
+            'large_express_box'  => '2c',
+        };
+    }
 );
 
-my %units_type_map = (
-  'lb'          => 'LBS',
-  'kg'          => 'KGS',
-  'in'          => 'IN',
-  'cm'          => 'CM',
+has 'units_type_map' => (
+    is      => 'ro',
+    isa     => HashRef [],
+    default => sub {
+        {
+            'lb' => 'LBS',
+            'kg' => 'KGS',
+            'in' => 'IN',
+            'cm' => 'CM',
+            'oz' => 'OZS',
+        };
+    }
 );
 
 =head2 custom package types
@@ -282,21 +323,33 @@ has '+package_type' => (
   isa => Enum[qw( custom envelope tube box pack 25kg_box 10kg_box pallet small_express_box medium_express_box large_express_box )]
 );
 
-my %printer_type_map = (
-  'pdf'     => '',
-  'thermal' => 'EPL',
-  'image'   => 'GIF',
-  'ZPL'     => 'ZPL',
-  'SPL'     => 'SPL',
-  'STARPL'  => 'STARPL',
+has 'printer_type_map' => (
+    is    => 'ro',
+    isa   => HashRef [],
+    default => sub {
+        {
+            'pdf'     => '',
+            'thermal' => 'EPL',
+            'image'   => 'GIF',
+            'ZPL'     => 'ZPL',
+            'SPL'     => 'SPL',
+            'STARPL'  => 'STARPL',
+        };
+    }
 );
 
-my %label_content_type_map = (
-  'thermal' => 'text/ups-epl',
-  'image'   => 'image/gif',
-  'ZPL'     => 'text/ups-zpl',
-  'SPL'     => 'text/ups-spl',
-  'STARPL'  => 'text/ups-starpl',
+has 'label_content_type_map' => (
+    is    => 'ro',
+    isa   => HashRef [],
+    default => sub {
+        {
+            'thermal' => 'text/ups-epl',
+            'image'   => 'image/gif',
+            'ZPL'     => 'text/ups-zpl',
+            'SPL'     => 'text/ups-spl',
+            'STARPL'  => 'text/ups-starpl',
+        };
+    }
 );
 
 =head2 custom printer types
@@ -369,7 +422,7 @@ sub _build_services {
   my $response;
 
     my $options;
-    $options->{DeliveryConfirmation}->{DCISType} = $signature_type_map{$self->signature_type} if defined $signature_type_map{$self->signature_type};
+    $options->{DeliveryConfirmation}->{DCISType} = $self->signature_type_map->{$self->signature_type} if defined $self->signature_type_map->{$self->signature_type};
     $options->{DeclaredValue}->{CurrencyCode} = $self->currency;
     
     my $rating_options;
@@ -388,11 +441,11 @@ sub _build_services {
       push @pieces,
         {
             PackagingType => {
-              Code => $package_type_map{$self->package_type} || $self->package_type,
+              Code => $self->package_type_map->{$self->package_type} || $self->package_type,
             },
             Dimensions => {
               UnitOfMeasurement => {
-                Code => $units_type_map{$self->dim_unit} || $self->dim_unit,
+                Code => $self->units_type_map->{$self->dim_unit} || $self->dim_unit,
               },
               Length => $_->length,
               Width => $_->width,
@@ -400,7 +453,7 @@ sub _build_services {
             },
             PackageWeight => {
               UnitOfMeasurement => {
-                Code => $units_type_map{$self->weight_unit} || $self->weight_unit,
+                Code => $self->units_type_map->{$self->weight_unit} || $self->weight_unit,
               },
               Weight => $_->weight,
             },
@@ -482,9 +535,9 @@ sub _build_services {
       $services{$service->get_Service()->get_Code()->get_value} = Shipment::Service->new(
           id => $service->get_Service()->get_Code()->get_value,
           name => (
-              $service_map{$self->from_address()->country_code}->{$service->get_Service()->get_Code()->get_value}
+              $self->service_map->{$self->from_address()->country_code}->{$service->get_Service()->get_Code()->get_value}
                 ||
-              $service_map{$service->get_Service()->get_Code()->get_value}
+              $self->service_map->{$service->get_Service()->get_Code()->get_value}
             ),
           cost => Data::Currency->new($rate, $currency),
         );
@@ -551,7 +604,7 @@ sub rate {
   return unless $service_id;
 
     my $options;
-    $options->{DeliveryConfirmation}->{DCISType} = $signature_type_map{$self->signature_type} if defined $signature_type_map{$self->signature_type};
+    $options->{DeliveryConfirmation}->{DCISType} = $self->signature_type_map->{$self->signature_type} if defined $self->signature_type_map->{$self->signature_type};
     $options->{DeclaredValue}->{CurrencyCode} = $self->currency;
     
     my $rating_options;
@@ -570,11 +623,11 @@ sub rate {
       push @pieces,
         {
             PackagingType => {
-              Code => $package_type_map{$self->package_type} || $self->package_type,
+              Code => $self->package_type_map->{$self->package_type} || $self->package_type,
             },
             Dimensions => {
               UnitOfMeasurement => {
-                Code => $units_type_map{$self->dim_unit} || $self->dim_unit,
+                Code => $self->units_type_map->{$self->dim_unit} || $self->dim_unit,
               },
               Length => $_->length,
               Width => $_->width,
@@ -582,7 +635,7 @@ sub rate {
             },
             PackageWeight => {
               UnitOfMeasurement => {
-                Code => $units_type_map{$self->weight_unit} || $self->weight_unit,
+                Code => $self->units_type_map->{$self->weight_unit} || $self->weight_unit,
               },
               Weight => $_->weight,
             },
@@ -678,9 +731,9 @@ sub rate {
        Shipment::Service->new( 
         id        => $service_id,
         name      => (
-              $service_map{$self->from_address()->country_code}->{$response->get_RatedShipment->get_Service->get_Code->get_value}
+              $self->service_map->{$self->from_address()->country_code}->{$response->get_RatedShipment->get_Service->get_Code->get_value}
                 ||
-              $service_map{$response->get_RatedShipment->get_Service->get_Code->get_value}
+              $self->service_map->{$response->get_RatedShipment->get_Service->get_Code->get_value}
             ),
         cost      => Data::Currency->new($rate, $currency),
       )
@@ -727,7 +780,7 @@ sub ship {
   return unless $service_id;
 
     my $package_options;
-    $package_options->{DeliveryConfirmation}->{DCISType} = $signature_type_map{$self->signature_type} if defined $signature_type_map{$self->signature_type};
+    $package_options->{DeliveryConfirmation}->{DCISType} = $self->signature_type_map->{$self->signature_type} if defined $self->signature_type_map->{$self->signature_type};
     $package_options->{DeclaredValue}->{CurrencyCode} = $self->currency;
 
     my $shipment_options;
@@ -768,11 +821,11 @@ sub ship {
       push @pieces,
         {
             Packaging => {
-              Code => $package_type_map{$self->package_type} || $self->package_type,
+              Code => $self->package_type_map->{$self->package_type} || $self->package_type,
             },
             Dimensions => {
               UnitOfMeasurement => {
-                Code => $units_type_map{$self->dim_unit} || $self->dim_unit,
+                Code => $self->units_type_map->{$self->dim_unit} || $self->dim_unit,
               },
               Length => $_->length,
               Width => $_->width,
@@ -780,7 +833,7 @@ sub ship {
             },
             PackageWeight => {
               UnitOfMeasurement => {
-                Code => $units_type_map{$self->weight_unit} || $self->weight_unit,
+                Code => $self->units_type_map->{$self->weight_unit} || $self->weight_unit,
               },
               Weight => $_->weight,
             },
@@ -791,9 +844,9 @@ sub ship {
 
     my $payment_option;
     $payment_option->{Type} = '01';
-    $payment_option->{$bill_type_map{$self->bill_type}}->{AccountNumber} = $self->bill_account;
-    $payment_option->{$bill_type_map{$self->bill_type}}->{Address}->{PostalCode} = $self->bill_address->postal_code if $self->bill_address && $self->bill_type =~ /(recipient|third_party)/; 
-    $payment_option->{$bill_type_map{$self->bill_type}}->{Address}->{CountryCode} = $self->bill_address->country_code if $self->bill_address && $self->bill_type eq 'third_party'; 
+    $payment_option->{$self->bill_type_map->{$self->bill_type}}->{AccountNumber} = $self->bill_account;
+    $payment_option->{$self->bill_type_map->{$self->bill_type}}->{Address}->{PostalCode} = $self->bill_address->postal_code if $self->bill_address && $self->bill_type =~ /(recipient|third_party)/; 
+    $payment_option->{$self->bill_type_map->{$self->bill_type}}->{Address}->{CountryCode} = $self->bill_address->country_code if $self->bill_address && $self->bill_type eq 'third_party'; 
 
     my @from_addresslines = (
       $self->from_address->address1, 
@@ -853,7 +906,7 @@ sub ship {
           ShipTo => $shipto,
           ShipmentRatingOptions => $rating_options,
           Service => {
-            Code => ($service_code_map{$self->from_address->country_code}->{$service_id} || $service_id),
+            Code => ($self->service_code_map->{$self->from_address->country_code}->{$service_id} || $service_id),
           },
           Package => \@pieces,
           PaymentInformation =>  { 
@@ -863,7 +916,7 @@ sub ship {
         },
         LabelSpecification =>  { 
           LabelImageFormat =>  { 
-            Code =>  $printer_type_map{$self->printer_type},
+            Code =>  $self->printer_type_map->{$self->printer_type},
           },
           LabelStockSize =>  { 
             Height =>  $self->label_height,
@@ -915,16 +968,16 @@ sub ship {
 
       ## For EPL labels, force Top Orientation by inserting the ZT command at the beginning of the file. 
       ## This is needed for cases when the printer defaults to the incorrect orientation.
-      my $data = "ZT\n" if $printer_type_map{$self->printer_type} eq 'EPL';
+      my $data = "ZT\n" if $self->printer_type_map->{$self->printer_type} eq 'EPL';
       $data .= decode_base64($_->get_ShippingLabel()->get_GraphicImage->get_value);
 
       $self->get_package($package_index)->label(
         Shipment::Label->new(
           {
             tracking_id => $_->get_TrackingNumber()->get_value,
-            content_type => $label_content_type_map{$self->printer_type},
+            content_type => $self->label_content_type_map->{$self->printer_type},
             data => $data,
-            file_name => $_->get_TrackingNumber()->get_value . '.' . lc $printer_type_map{$self->printer_type},
+            file_name => $_->get_TrackingNumber()->get_value . '.' . lc $self->printer_type_map->{$self->printer_type},
           },
         )
       );
@@ -935,15 +988,15 @@ sub ship {
 
       ## For EPL labels, force Top Orientation by inserting the ZT command at the beginning of the file. 
       ## This is needed for cases when the printer defaults to the incorrect orientation.
-      my $data = "ZT\n" if $printer_type_map{$self->printer_type} eq 'EPL';
+      my $data = "ZT\n" if $self->printer_type_map->{$self->printer_type} eq 'EPL';
       $data .= decode_base64($response->get_ShipmentResults()->get_ControlLogReceipt()->get_GraphicImage->get_value);
 
       $self->control_log_receipt(
         Shipment::Label->new(
           {
-            content_type => $label_content_type_map{$self->printer_type},
+            content_type => $self->label_content_type_map->{$self->printer_type},
             data => $data,
-            file_name => 'control_log_receipt.' . lc $printer_type_map{$self->printer_type},
+            file_name => 'control_log_receipt.' . lc $self->printer_type_map->{$self->printer_type},
           }
         )
       );
@@ -1006,11 +1059,11 @@ sub return {
         {
             Description => 'n/a',
             Packaging => {
-              Code => $package_type_map{$self->package_type} || $self->package_type,
+              Code => $self->package_type_map->{$self->package_type} || $self->package_type,
             },
             Dimensions => {
               UnitOfMeasurement => {
-                Code => $units_type_map{$self->dim_unit} || $self->dim_unit,
+                Code => $self->units_type_map->{$self->dim_unit} || $self->dim_unit,
               },
               Length => $_->length,
               Width => $_->width,
@@ -1018,7 +1071,7 @@ sub return {
             },
             PackageWeight => {
               UnitOfMeasurement => {
-                Code => $units_type_map{$self->weight_unit} || $self->weight_unit,
+                Code => $self->units_type_map->{$self->weight_unit} || $self->weight_unit,
               },
               Weight => $_->weight,
             },
@@ -1028,9 +1081,9 @@ sub return {
 
     my $payment_option;
     $payment_option->{Type} = '01';
-    $payment_option->{$bill_type_map{$self->bill_type}}->{AccountNumber} = $self->bill_account;
-    $payment_option->{$bill_type_map{$self->bill_type}}->{Address}->{PostalCode} = $self->bill_address->postal_code if $self->bill_address && $self->bill_type =~ /(recipient|third_party)/; 
-    $payment_option->{$bill_type_map{$self->bill_type}}->{Address}->{CountryCode} = $self->bill_address->country_code if $self->bill_address && $self->bill_type eq 'third_party'; 
+    $payment_option->{$self->bill_type_map->{$self->bill_type}}->{AccountNumber} = $self->bill_account;
+    $payment_option->{$self->bill_type_map->{$self->bill_type}}->{Address}->{PostalCode} = $self->bill_address->postal_code if $self->bill_address && $self->bill_type =~ /(recipient|third_party)/; 
+    $payment_option->{$self->bill_type_map->{$self->bill_type}}->{Address}->{CountryCode} = $self->bill_address->country_code if $self->bill_address && $self->bill_type eq 'third_party'; 
 
     my @from_addresslines = (
       $self->from_address->address1, 
@@ -1109,7 +1162,7 @@ sub return {
         },
         LabelSpecification =>  { 
           LabelImageFormat =>  { 
-            Code =>  $printer_type_map{$self->printer_type},
+            Code =>  $self->printer_type_map->{$self->printer_type},
           },
           LabelStockSize =>  { 
             Height =>  $self->label_height,
@@ -1148,7 +1201,7 @@ sub return {
 
       ## For EPL labels, force Top Orientation by inserting the ZT command at the beginning of the file. 
       ## This is needed for cases when the printer defaults to the incorrect orientation.
-      my $data = "ZT\n" if $printer_type_map{$self->printer_type} eq 'EPL';
+      my $data = "ZT\n" if $self->printer_type_map->{$self->printer_type} eq 'EPL';
       $data .= decode_base64($_->get_ShippingLabel()->get_GraphicImage->get_value);
 
       $self->get_package($package_index)->tracking_id( $_->get_TrackingNumber()->get_value );
@@ -1156,9 +1209,9 @@ sub return {
         Shipment::Label->new(
           {
             tracking_id => $_->get_TrackingNumber()->get_value,
-            content_type => $label_content_type_map{$self->printer_type},
+            content_type => $self->label_content_type_map->{$self->printer_type},
             data => $data,
-            file_name => $_->get_TrackingNumber()->get_value . '.' . lc $printer_type_map{$self->printer_type},
+            file_name => $_->get_TrackingNumber()->get_value . '.' . lc $self->printer_type_map->{$self->printer_type},
           },
         )
       );
@@ -1169,15 +1222,15 @@ sub return {
 
       ## For EPL labels, force Top Orientation by inserting the ZT command at the beginning of the file. 
       ## This is needed for cases when the printer defaults to the incorrect orientation.
-      my $data = "ZT\n" if $printer_type_map{$self->printer_type} eq 'EPL';
+      my $data = "ZT\n" if $self->printer_type_map->{$self->printer_type} eq 'EPL';
       $data .= decode_base64($response->get_ShipmentResults()->get_ControlLogReceipt()->get_GraphicImage->get_value);
 
       $self->control_log_receipt(
         Shipment::Label->new(
           {
-            content_type => $label_content_type_map{$self->printer_type},
+            content_type => $self->label_content_type_map->{$self->printer_type},
             data => $data,
-            file_name => 'control_log_receipt.' . lc $printer_type_map{$self->printer_type},
+            file_name => 'control_log_receipt.' . lc $self->printer_type_map->{$self->printer_type},
           }
         )
       );
