@@ -383,10 +383,38 @@ has '+currency' => (
 =head2 surepost
 
 Enable UPS SurePost
-
+This includes surepost 1 lb or Greater and Surepost less than 1 lb
+Note: for less than 1 lb (service id 92) weight must be in ounces
+specified as oz 
 =cut
 
 has 'surepost' => (
+  is => 'rw',
+  isa => Bool,
+  default => undef,
+);
+
+=head2 surepost_bpm
+
+Enable UPS SurePost BPM
+Bound printed matter parcels
+
+=cut
+
+has 'surepost_bpm' => (
+  is => 'rw',
+  isa => Bool,
+  default => undef,
+);
+
+=head2 surepost_media
+
+Enable UPS SurePost media 
+Media parcesl with weight 1 lb to 70 lbs
+
+=cut
+
+has 'surepost_media' => (
   is => 'rw',
   isa => Bool,
   default => undef,
@@ -420,7 +448,10 @@ sub _build_services {
     }
   );
   my $response;
+  my %services;
 
+  if ($self->weight_unit ne 'oz')
+  {
     my $options;
     $options->{DeliveryConfirmation}->{DCISType} = $self->signature_type_map->{$self->signature_type} if defined $self->signature_type_map->{$self->signature_type};
     $options->{DeclaredValue}->{CurrencyCode} = $self->currency;
@@ -434,9 +465,6 @@ sub _build_services {
     my @pieces;
     foreach (@{ $self->packages }) {
       $options->{DeclaredValue}->{MonetaryValue} = $_->insured_value->value;
-
-      ## SurePost doesn't accept service options
-      $options = undef if $self->surepost;
 
       push @pieces,
         {
@@ -484,8 +512,7 @@ sub _build_services {
   $shipto->{Address}->{ResidentialAddressIndicator} = 1 if $self->{residential_address};
   $shipto->{Phone}{Number} = $self->to_address->phone
      if $self->to_address->phone;
-
-  my %services;
+  
   try {
     $Shipment::SOAP::WSDL::Debug = 1 if $self->debug > 1;
     $response = $interface->ProcessRate( 
@@ -568,17 +595,52 @@ sub _build_services {
         $self->error( $response->get_faultstring->get_value );
       };
   };
+  }
 
   if ($self->surepost) {
     if ($self->error) {
       $self->add_notice( 'All services other than SurePost failed due to error: ' . $self->error . "\n" );
       $self->error('');
     }
-    $services{93} = Shipment::Service->new(
-        id => '93',
-        name => $service_map{93},
-      );
-    $services{surepost} = $services{93};
+
+    if ( $self->weight_unit eq 'oz' ) {
+        $services{92} = Shipment::Service->new(
+            id   => '92',
+            name => $self->service_map->{92},
+        );
+
+        $services{surepost_oz} = $services{92};
+
+    }
+    else {
+        $services{93} = Shipment::Service->new(
+            id   => '93',
+            name => $self->service_map->{93},
+        );
+        $services{surepost} = $services{93};
+
+        # These are contract specific with UPS
+        # They are disabled by default
+        if ( $self->surepost_bpm ) {
+            $services{94} = Shipment::Service->new(
+                id   => '94',
+                name => $self->service_map->{94},
+            );
+            $services{surepost_bpm} = $services{94};
+        }
+
+        if ( $self->surepost_media ) {
+
+            $services{95} = Shipment::Service->new(
+                id   => '95',
+                name => $self->service_map->{95},
+            );
+            $services{surepost_media} = $services{95};
+        }
+
+    }
+
+
   }
 
   \%services;
@@ -618,7 +680,7 @@ sub rate {
       $options->{DeclaredValue}->{MonetaryValue} = $_->insured_value->value;
 
       ## SurePost doesn't accept service options
-      $options = undef if $self->surepost && $service_id eq '93';
+      $options = undef if $self->surepost && $service_id =~ /9[2-5]/;
 
       push @pieces,
         {
@@ -800,7 +862,7 @@ sub ship {
       $package_options->{DeclaredValue}->{MonetaryValue} = $_->insured_value->value;
 
       ## SurePost doesn't accept service options
-      $package_options = undef if $self->surepost && $service_id eq '93';
+      $package_options = undef if $self->surepost && $service_id =~ /9[2-5]/;
 
       my @references;
       if (
@@ -811,10 +873,19 @@ sub ship {
       ) {
         foreach ($self->get_reference(0), $self->get_reference(1)) {
           next if !$_;
-          push @references, {
-            Code => $reference_index,
-            Value => $_,
-          };
+
+	   my ($code, $val);
+           if ( ref($_) eq "HASH")
+           {
+                $code = (keys %$_)[0];
+                $val  = (values %$_)[0];
+           }
+           else
+           {
+                $code = $reference_index;
+                $val  = $_;
+           }
+          push @references, { Code => $code, Value => $val, };
           $reference_index++;
         }
       }
