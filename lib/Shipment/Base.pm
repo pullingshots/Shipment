@@ -240,7 +240,7 @@ default: lb, in (pounds and inches)
 
 has 'weight_unit' => (
   is => 'rw',
-  isa => Enum[ qw( lb kg ) ],
+  isa => Enum[ qw( lb kg oz ) ],
   default => 'lb',
 );
 
