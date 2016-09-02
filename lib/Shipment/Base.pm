@@ -415,7 +415,7 @@ methods handled:
 has 'references' => (
   handles_via => 'Array',
   is => 'rw',
-  isa => ArrayRef[Maybe[Str]],
+  isa => ArrayRef[],
   default => sub { [] },
   handles => {
     all_references => 'elements',
