@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 47;
+use Test::More;
 
 my ($username, $password, $key, $account, $account_third_party) = @ARGV;
 
@@ -13,7 +13,7 @@ $account  ||= $ENV{'UPS_ACCOUNT'};
 $account_third_party ||= $ENV{'UPS_ACCOUNT_THIRD_PARTY'};
 
 SKIP: {
-  skip "Tests can only be run with a valid UPS Developer Username/Password/Key and Account. The following environment variables are used: UPS_USERNAME UPS_PASSWORD UPS_KEY UPS_ACCOUNT UPS_ACCOUNT_THIRD_PARTY. You can sign up for a UPS Web Services developer account at https://www.ups.com/upsdeveloperkit", 46 unless $username && $password && $key && $account;
+  skip "Tests can only be run with a valid UPS Developer Username/Password/Key and Account. The following environment variables are used: UPS_USERNAME UPS_PASSWORD UPS_KEY UPS_ACCOUNT UPS_ACCOUNT_THIRD_PARTY. You can sign up for a UPS Web Services developer account at https://www.ups.com/upsdeveloperkit" unless $username && $password && $key && $account;
 }
 
 if ($username && $password && $key && $account) {
@@ -267,7 +267,7 @@ $shipment->ship( 'ground' );
 is( $shipment->error, 'Missing bill third party address information.', 'UPS error regarding bill third party address information');
 
 SKIP: {
-  skip "Third Party billing tests skipped, please use environment variable UPS_ACCOUNT_THIRD_PARTY to run", 1 unless $username && $password && $key && $account && $account_third_party;
+  skip "Third Party billing tests skipped, please use environment variable UPS_ACCOUNT_THIRD_PARTY to run" unless $username && $password && $key && $account && $account_third_party;
 }
 
   if ($account_third_party) {
@@ -292,3 +292,5 @@ SKIP: {
   }
 
 }
+
+done_testing;
