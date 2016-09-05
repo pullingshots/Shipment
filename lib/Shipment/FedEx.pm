@@ -61,6 +61,8 @@ use Moo;
 use MooX::Types::MooseLike::Base qw(:all);
 use namespace::clean;
 
+use DateTime::Format::ISO8601;
+
 extends 'Shipment::Base';
 
 =head1 Class Attributes
@@ -945,6 +947,113 @@ sub cancel {
   };
 
   return $success;
+}
+
+=head2 track
+
+This method calls track from the Tracking Services API
+
+Currently only supports tracking using a valid tracking number: Type => 'TRACKING_NUMBER_OR_DOORTAG'
+
+Result is added to $self->activities, accessible using $self->status
+
+Also sets $self->ship_date
+
+=cut
+
+
+sub track {
+  my $self = shift;
+  
+  use Shipment::Activity;
+
+  if (!$self->tracking_id) {
+    $self->error('no tracking id provided');
+    return;
+  }
+
+  use Shipment::FedEx::WSDL::TrackInterfaces::TrackService::TrackServicePort;
+
+  my $interface = Shipment::FedEx::WSDL::TrackInterfaces::TrackService::TrackServicePort->new(
+    {
+      proxy_domain => $self->proxy_domain,
+    }
+  );
+  my $response;
+
+  my $type = (length $self->tracking_id > 12) ? 'GROUND' : 'EXPRESS';
+  my $success;
+
+  try {
+    $Shipment::SOAP::WSDL::Debug = 1 if $self->debug > 1;
+    $response = $interface->track(
+          { 
+            WebAuthenticationDetail =>  {
+              UserCredential =>  { 
+                Key =>  $self->key,
+                Password => $self->password,
+              },
+            },
+            ClientDetail =>  { 
+              AccountNumber =>  $self->account,
+              MeterNumber =>  $self->meter,
+            },
+            Version =>  {
+              ServiceId =>  'trck',
+              Major =>  9,
+              Intermediate =>  0,
+              Minor =>  0,
+            },
+            SelectionDetails => {
+              PackageIdentifier => {
+                Type => 'TRACKING_NUMBER_OR_DOORTAG',
+                Value => $self->tracking_id,
+              }
+            }
+          },
+        );
+    $Shipment::SOAP::WSDL::Debug = 0;
+    warn "Response\n" . $response if $self->debug > 1;
+
+    $self->notice('');
+    foreach my $notification (@{ $response->get_Notifications() }) {
+      warn $notification->get_Message->get_value if $self->debug;
+      $self->add_notice( $notification->get_Message->get_value . "\n" );
+    }
+
+
+    if ($response->get_CompletedTrackDetails()->get_TrackDetails()->get_Notification()->get_Severity()->get_value() eq 'ERROR') {
+      $self->error($response->get_CompletedTrackDetails()->get_TrackDetails()->get_Notification()->get_Message()->get_value());
+    }
+    else {
+
+      $self->activities([
+        Shipment::Activity->new(
+          description => $response->get_CompletedTrackDetails()->get_TrackDetails()->get_StatusDetail()->get_Description()->get_value(),
+          date => DateTime::Format::ISO8601->parse_datetime($response->get_CompletedTrackDetails()->get_TrackDetails()->get_StatusDetail()->get_CreationTime()->get_value()),
+          location => Shipment::Address->new(
+            city => $response->get_CompletedTrackDetails()->get_TrackDetails()->get_StatusDetail()->get_Location()->get_City()->get_value(),
+            state => $response->get_CompletedTrackDetails()->get_TrackDetails()->get_StatusDetail()->get_Location()->get_StateOrProvinceCode()->get_value(),
+            country => $response->get_CompletedTrackDetails()->get_TrackDetails()->get_StatusDetail()->get_Location()->get_CountryCode()->get_value(),
+          ),
+        )
+      ]);
+     $self->ship_date( DateTime::Format::ISO8601->parse_datetime($response->get_CompletedTrackDetails()->get_TrackDetails()->get_ShipTimestamp->get_value()) );
+
+    }
+
+  } catch {
+      warn $_ if $self->debug;
+      try {
+        $self->error( $response->get_Notifications()->[0]->get_Message->get_value );
+        warn $response->get_Notifications()->[0]->get_Message->get_value if $self->debug;
+      } catch {
+        $self->error( $response->get_faultstring->get_value );
+        warn $response->get_faultstring->get_value if $self->debug;
+      };
+  };
+
+  return;
 }
 
 

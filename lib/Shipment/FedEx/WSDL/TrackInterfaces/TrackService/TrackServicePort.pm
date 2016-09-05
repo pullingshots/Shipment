@@ -10,7 +10,10 @@ require Shipment::FedEx::WSDL::TrackTypemaps::TrackService
     if not Shipment::FedEx::WSDL::TrackTypemaps::TrackService->can('get_class');
 
 sub START {
-    $_[0]->set_proxy('https://wsbeta.fedex.com:443/web-services/track') if not $_[2]->{proxy};
+    my $proxy_domain = $_[2]->{proxy_domain} || 'wsbeta.fedex.com:443';
+
+    $_[0]->set_proxy('https://' . $proxy_domain . '/web-services/track') if not $_[2]->{proxy};
+
     $_[0]->set_class_resolver('Shipment::FedEx::WSDL::TrackTypemaps::TrackService')
         if not $_[2]->{class_resolver};
 
