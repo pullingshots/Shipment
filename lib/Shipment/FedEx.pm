@@ -41,9 +41,13 @@ https://www.fedex.com/wpor/web/jsp/drclinks.jsp?links=techresources/index.html
 See related modules for documentation on options and how to access rates and labels:
   
 L<Shipment::Base> - common attributes and methods for all interfaces
+
 L<Shipment::Address> - define an from or to address
+
 L<Shipment::Package> - define package details, weight, dimensions, etc
+
 L<Shipment::Service> - access information about a service, rate, etd, etc
+
 L<Shipment::Label> - access the label file
 
 It makes extensive use of SOAP::WSDL in order to create/decode xml requests and responses. The Shipment::FedEx::WSDL interface was created primarily using the wsdl2perl.pl script from SOAP::WSDL.
