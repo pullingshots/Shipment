@@ -9,10 +9,10 @@ $password ||= $ENV{'FEDEX_PASSWORD'};
 $account  ||= $ENV{'FEDEX_ACCOUNT'};
 $meter    ||= $ENV{'FEDEX_METER'};
 
-use Test::More tests => 31;
+use Test::More;
 
 SKIP: {
-  skip "Tests can only be run with a valid FedEx Developer Key/Password and Account/Meter. The following environment variables are used: FEDEX_KEY FEDEX_PASSWORD FEDEX_ACCOUNT FEDEX_METER You can sign up for a FedEx Web Services developer account at https://www.fedex.com/wpor/web/jsp/drclinks.jsp?links=techresources/index.html", 31 unless $key && $password && $account && $meter;
+  skip "Tests can only be run with a valid FedEx Developer Key/Password and Account/Meter. The following environment variables are used: FEDEX_KEY FEDEX_PASSWORD FEDEX_ACCOUNT FEDEX_METER You can sign up for a FedEx Web Services developer account at https://www.fedex.com/wpor/web/jsp/drclinks.jsp?links=techresources/index.html" unless $key && $password && $account && $meter;
 }
 
 if ($key && $password && $account && $meter) {
@@ -132,3 +132,5 @@ is( $shipment->cancel, 'SUCCESS', 'successfully cancelled shipment');
 
 
 }
+
+done_testing;
