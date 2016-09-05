@@ -6,3 +6,4 @@
 /accounts
 .pause
 soap-wsdl-src/
+*.test
