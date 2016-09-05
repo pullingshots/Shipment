@@ -469,7 +469,10 @@ Standard services - ground, express, priority - can be mapped to actual service 
 =cut
 
 sub _build_services {
+  my $self = shift;
+
   warn "routine '_build_services' has not been implemented";
+  $self->error("routine '_build_services' has not been implemented");
   { 
     ground => 
       Shipment::Service->new(
@@ -508,7 +511,10 @@ The routine that fetches a detailed rate for a given service type
 sub rate {
   my ( $self, $service_id ) = @_;
 
-  warn "routine 'rate' is not implemented for $self";
+  warn "routine 'rate' is not implemented for $self" if $self->debug;
+  $self->error("routine 'rate' is not implemented for $self");
+
+  return;
 }
 
 =head2 ship
@@ -523,7 +529,10 @@ The routine that creates a shipment/label
 sub ship {
   my ( $self, $service_id ) = @_;
 
-  warn "routine 'ship' is not implemented for $self";
+  warn "routine 'ship' is not implemented for $self" if $self->debug;
+  $self->error("routine 'ship' is not implemented for $self");
+
+  return;
 }
 
 =head2 return
@@ -537,7 +546,10 @@ The routine that creates a return shipment
 sub return {
   my ( $self, $service_id ) = @_;
 
-  warn "routine 'return' is not implemented for $self";
+  warn "routine 'return' is not implemented for $self" if $self->debug;
+  $self->error("routine 'return' is not implemented for $self");
+
+  return;
 }
 
 =head2 cancel
@@ -552,7 +564,10 @@ The routine that cancels a shipment
 sub cancel {
   my ( $self, $service_id ) = @_;
 
-  warn "routine 'cancel' is not implemented for $self";
+  warn "routine 'cancel' is not implemented for $self" if $self->debug;
+  $self->error("routine 'cancel' is not implemented for $self");
+
+  return;
 }
 
 =head2 end_of_day
@@ -566,7 +581,10 @@ The routine that runs end of day close
 sub end_of_day {
   my ( $self, $service_id ) = @_;
 
-  warn "routine 'end_of_day' is not implemented for $self";
+  warn "routine 'end_of_day' is not implemented for $self" if $self->debug;
+  $self->error("routine 'end_of_day' is not implemented for $self");
+
+  return;
 }
 
 =head2 track
@@ -581,7 +599,10 @@ The routine that fetches tracking information
 sub track {
   my $self = shift;
 
-  warn "routine 'track' is not implemented for $self";
+  warn "routine 'track' is not implemented for $self" if $self->debug;
+  $self->error("routine 'track' is not implemented for $self");
+
+  return;
 }
 
 =head2 coerce_datetime
