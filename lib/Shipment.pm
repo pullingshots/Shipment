@@ -36,11 +36,11 @@ use Shipment::Temando;
 
 =head1 DESCRIPTION
 
-  This library provides an interface to popular shipping/courier services.
+This library provides an interface to popular shipping/courier services.
 
-  See the relevant module for details on usage.
+See the relevant module for details on usage.
 
-  For code examples, see https://github.com/pullingshots/Shipment/tree/master/eg
+For code examples, see https://github.com/pullingshots/Shipment/tree/master/eg
 
 =cut
 
@@ -60,8 +60,7 @@ sub generic {
 
 =item fedex
 
-  The fedex method returns a L<Shipment::FedEx> object. See L<Shipment::FedEx> for
-  more details.
+The fedex method returns a L<Shipment::FedEx> object. See L<Shipment::FedEx> for more details.
 
 =cut
 
@@ -71,8 +70,7 @@ sub fedex {
 
 =item purolator
 
-  The purolator method returns a L<Shipment::Purolator> object. See
-  L<Shipment::Purolator> for more details.
+The purolator method returns a L<Shipment::Purolator> object. See L<Shipment::Purolator> for more details.
 
 =cut
 
@@ -82,8 +80,7 @@ sub purolator {
 
 =item ups
 
-  The ups method returns a L<Shipment::UPS> object. See L<Shipment::UPS> for
-  more details.
+The ups method returns a L<Shipment::UPS> object. See L<Shipment::UPS> for more details.
 
 =cut
 
@@ -93,8 +90,7 @@ sub ups {
 
 =item temando
 
-  The temando method returns a L<Shipment::Temando> object. See L<Shipment::Temando> for
-  more details.
+The temando method returns a L<Shipment::Temando> object. See L<Shipment::Temando> for more details.
 
 =cut
 
@@ -104,8 +100,7 @@ sub temando {
 
 =item address
 
-  The address method returns a L<Shipment::Address> object.
-  See L<Shipment::Address> for more details.
+The address method returns a L<Shipment::Address> object. See L<Shipment::Address> for more details.
 
 =cut
 
@@ -115,12 +110,11 @@ sub address {
 
 =item package
 
-  The package method returns a L<Shipment::Package> object.
-  See L<Shipment::Package> for more details.
-
-=cut
+The package method returns a L<Shipment::Package> object. See L<Shipment::Package> for more details.
 
 =back
+
+=cut
 
 sub package {
     shift; return Shipment::Package->new(@_)
