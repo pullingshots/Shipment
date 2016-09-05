@@ -314,7 +314,7 @@ has 'service' => (
 =head2 tracking_id
 
 The tracking_id returned from a call to ship
-OR the tracking_id to be used in a call to track
+OR the tracking_id to be used in a call to cancel or track
 
 type: String
 
@@ -323,6 +323,43 @@ type: String
 has 'tracking_id' => (
   is => 'rw',
   isa => Str,
+);
+
+=head2 activities
+
+The tracking activities returned from a call to track
+
+=cut
+
+has 'activities' => (
+  handles_via => 'Array',
+  is => 'rw',
+  isa => ArrayRef[InstanceOf['Shipment::Activity']],
+  default => sub { [] },
+  handles => {
+    all_activities => 'elements',
+    get_activity  => 'get',
+    add_activity  => 'push',
+    count_activities => 'count',
+  },
+);
+
+=head2 status, ship_date
+
+most recent tracking status
+
+ship_date is when the shipment was passed off to the carrier, set by a call to track
+
+=cut
+
+sub status {
+  shift->get_activity(0);
+}
+
+has 'ship_date' => (
+  is     => 'rw',
+  isa    => DateAndTime,
+  coerce => \&coerce_datetime,
 );
 
 =head2 documents
