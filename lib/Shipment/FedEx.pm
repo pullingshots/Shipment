@@ -981,9 +981,6 @@ sub track {
   );
   my $response;
 
-  my $type = (length $self->tracking_id > 12) ? 'GROUND' : 'EXPRESS';
-  my $success;
-
   try {
     $Shipment::SOAP::WSDL::Debug = 1 if $self->debug > 1;
     $response = $interface->track(
