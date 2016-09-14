@@ -376,6 +376,7 @@ sub _build_services {
               Residential         =>  $self->residential_address,
             },
           },
+          RateRequestTypes => 'LIST',
           PackageCount =>  $self->count_packages || 1,
           PackageDetail => 'INDIVIDUAL_PACKAGES',
           RequestedPackageLineItems =>  \@pieces,
@@ -403,6 +404,11 @@ sub _build_services {
             $service->get_RatedShipmentDetails->[0]->get_ShipmentRateDetail->get_TotalNetCharge->get_Amount,
             $service->get_RatedShipmentDetails->[0]->get_ShipmentRateDetail->get_TotalNetCharge->get_Currency
           ),
+          discount => Data::Currency->new(
+                                $service
+                                  ->get_RatedShipmentDetails->[0]
+                                  ->get_EffectiveNetDiscount->get_Amount,
+                            ),
         );
     }
     $services{ground} = $services{'FEDEX_GROUND'} || $services{'GROUND_HOME_DELIVERY'} || $services{'INTERNATIONAL_GROUND'} || Shipment::Service->new();
@@ -550,6 +556,7 @@ sub rate {
               Residential         =>  $self->residential_address,
             },
           },
+          RateRequestTypes => 'LIST',
           PackageCount =>  $self->count_packages,
           PackageDetail => 'INDIVIDUAL_PACKAGES',
           RequestedPackageLineItems =>  \@pieces,  
@@ -575,6 +582,11 @@ sub rate {
             $response->get_RateReplyDetails()->get_RatedShipmentDetails->[0]->get_ShipmentRateDetail->get_TotalNetCharge->get_Amount, 
             $response->get_RateReplyDetails()->get_RatedShipmentDetails->[0]->get_ShipmentRateDetail->get_TotalNetCharge->get_Currency, 
           ),
+          discount => Data::Currency->new(
+                                $response->get_RateReplyDetails()
+                                  ->get_RatedShipmentDetails->[0]
+                                  ->get_EffectiveNetDiscount->get_Amount,
+                            ),
       )
     );
   } catch {

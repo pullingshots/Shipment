@@ -248,5 +248,10 @@ under the same terms as Perl itself.
 
 =cut
 
+has 'discount' => (
+    is      => 'rw',
+    isa     => InstanceOf ['Data::Currency'],
+    default => sub { Data::Currency->new(0) },
+);
 
 1;
