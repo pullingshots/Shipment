@@ -22,11 +22,13 @@ SYNOPSIS
 
 DESCRIPTION
 
-      This library provides an interface to popular shipping/courier services.
-    
-      See the relevant module for details on usage.
-    
-      For code examples, see https://github.com/pullingshots/Shipment/tree/master/eg
+    This library provides an interface to popular shipping/courier
+    services.
+
+    See the relevant module for details on usage.
+
+    For code examples, see
+    https://github.com/pullingshots/Shipment/tree/master/eg
 
     generic
 
@@ -35,35 +37,33 @@ DESCRIPTION
 
     fedex
 
-        The fedex method returns a L<Shipment::FedEx> object. See L<Shipment::FedEx> for
-        more details.
+      The fedex method returns a Shipment::FedEx object. See
+      Shipment::FedEx for more details.
 
     purolator
 
-        The purolator method returns a L<Shipment::Purolator> object. See
-        L<Shipment::Purolator> for more details.
+      The purolator method returns a Shipment::Purolator object. See
+      Shipment::Purolator for more details.
 
     ups
 
-        The ups method returns a L<Shipment::UPS> object. See L<Shipment::UPS> for
-        more details.
+      The ups method returns a Shipment::UPS object. See Shipment::UPS for
+      more details.
 
     temando
 
-        The temando method returns a L<Shipment::Temando> object. See L<Shipment::Temando> for
-        more details.
+      The temando method returns a Shipment::Temando object. See
+      Shipment::Temando for more details.
 
     address
 
-        The address method returns a L<Shipment::Address> object.
-        See L<Shipment::Address> for more details.
+      The address method returns a Shipment::Address object. See
+      Shipment::Address for more details.
 
     package
 
-        The package method returns a L<Shipment::Package> object.
-        See L<Shipment::Package> for more details.
-
-    sub package { shift; return Shipment::Package->new(@_) }
+      The package method returns a Shipment::Package object. See
+      Shipment::Package for more details.
 
 AUTHOR
 
