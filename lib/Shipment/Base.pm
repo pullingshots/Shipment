@@ -264,6 +264,50 @@ has 'currency' => (
   default => 'USD',
 );
 
+=head2 insured_value
+
+The total value of the shipment to be insured
+
+type: Data::Currency
+
+=cut
+
+has 'insured_value' => (
+  is => 'rw',
+  isa => InstanceOf['Data::Currency'],
+  lazy => 1,
+  default => sub {
+    my $self = shift;
+    my $insured_value = 0;
+    foreach (@{ $self->packages }) {
+      $insured_value += $_->insured_value->value;
+    }
+    Data::Currency->new($insured_value)
+  },
+);
+
+=head2 goods_value
+
+The total value of the shipment
+
+type: Data::Currency
+
+=cut
+
+has 'goods_value' => (
+  is => 'rw',
+  isa => InstanceOf['Data::Currency'],
+  lazy => 1,
+  default => sub {
+    my $self = shift;
+    my $goods_value = 0;
+    foreach (@{ $self->packages }) {
+      $goods_value += $_->goods_value->value;
+    }
+    Data::Currency->new($goods_value)
+  },
+);
+
 =head2 pickup_date
 
 When the shipment will be ready for pickup

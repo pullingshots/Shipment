@@ -468,7 +468,7 @@ sub _build_services {
 
     my @pieces;
     foreach (@{ $self->packages }) {
-      $options->{DeclaredValue}->{MonetaryValue} = $_->insured_value->value;
+      $options->{DeclaredValue}->{MonetaryValue} = $self->insured_value->value;
 
       push @pieces,
         {
@@ -681,7 +681,7 @@ sub rate {
 
     my @pieces;
     foreach (@{ $self->packages }) {
-      $options->{DeclaredValue}->{MonetaryValue} = $_->insured_value->value;
+      $options->{DeclaredValue}->{MonetaryValue} = $self->insured_value->value;
 
       ## SurePost doesn't accept service options
       $options = undef if $self->surepost && $service_id =~ /9[2-5]/;
@@ -863,7 +863,7 @@ sub ship {
     my @pieces;
     my $reference_index = 1;
     foreach (@{ $self->packages }) {
-      $package_options->{DeclaredValue}->{MonetaryValue} = $_->insured_value->value;
+      $package_options->{DeclaredValue}->{MonetaryValue} = $self->insured_value->value;
 
       ## SurePost doesn't accept service options
       $package_options = undef if $self->surepost && $service_id =~ /9[2-5]/;
@@ -1139,7 +1139,7 @@ sub return {
     my @pieces;
     my $reference_index = 1;
     foreach (@{ $self->packages }) {
-      $package_options->{DeclaredValue}->{MonetaryValue} = $_->insured_value->value;
+      $package_options->{DeclaredValue}->{MonetaryValue} = $self->insured_value->value;
       my @references;
       if (
         $self->references && 
