@@ -1059,22 +1059,24 @@ sub ship {
       $package_index++;
     }
 
-    if ( $response->get_ShipmentResults()->get_ControlLogReceipt ) {
+    if (ref $response->get_ShipmentResults()->get_ControlLogReceipt eq 'ARRAY') {
+      my $receipt_index = 0;
+      foreach (@{ $response->get_ShipmentResults()->get_ControlLogReceipt }) {
+        ## For EPL labels, force Top Orientation by inserting the ZT command at the beginning of the file.
+        ## This is needed for cases when the printer defaults to the incorrect orientation.
+        my $data = "ZT\n" if $self->printer_type_map->{$self->printer_type} eq 'EPL';
+        $data .= decode_base64($_->get_GraphicImage->get_value);
 
-      ## For EPL labels, force Top Orientation by inserting the ZT command at the beginning of the file. 
-      ## This is needed for cases when the printer defaults to the incorrect orientation.
-      my $data = "ZT\n" if $self->printer_type_map->{$self->printer_type} eq 'EPL';
-      $data .= decode_base64($response->get_ShipmentResults()->get_ControlLogReceipt()->get_GraphicImage->get_value);
-
-      $self->control_log_receipt(
-        Shipment::Label->new(
-          {
-            content_type => $self->label_content_type_map->{$self->printer_type},
-            data => $data,
-            file_name => 'control_log_receipt.' . lc $self->printer_type_map->{$self->printer_type},
-          }
-        )
-      );
+        push @{ $self->control_log_receipt },
+          Shipment::Label->new(
+            {
+              content_type => $self->label_content_type_map->{$self->printer_type},
+              data => $data,
+              file_name => 'control_log_receipt_' . $receipt_index . '.' . lc $self->printer_type_map->{$self->printer_type},
+            }
+          );
+        $receipt_index++;
+      }
     }
 
     $self->notice( '' );
@@ -1351,23 +1353,27 @@ sub return {
 		      $package_index++;
 		    }
 
-		    if ( $response->get_ShipmentResults()->get_ControlLogReceipt ) {
+        if (ref $response->get_ShipmentResults()->get_ControlLogReceipt eq 'ARRAY') {
+          my $receipt_index = 0;
+          foreach (@{ $response->get_ShipmentResults()->get_ControlLogReceipt }) {
 
-		      ## For EPL labels, force Top Orientation by inserting the ZT command at the beginning of the file. 
-		      ## This is needed for cases when the printer defaults to the incorrect orientation.
-		      my $data = "ZT\n" if $self->printer_type_map->{$self->printer_type} eq 'EPL';
-		      $data .= decode_base64($response->get_ShipmentResults()->get_ControlLogReceipt()->get_GraphicImage->get_value);
+            ## For EPL labels, force Top Orientation by inserting the ZT command at the beginning of the file.
+            ## This is needed for cases when the printer defaults to the incorrect orientation.
+            my $data = "ZT\n" if $self->printer_type_map->{$self->printer_type} eq 'EPL';
+            $data .= decode_base64($_->get_GraphicImage->get_value);
 
-		      $self->control_log_receipt(
-			Shipment::Label->new(
-			  {
-			    content_type => $self->label_content_type_map->{$self->printer_type},
-			    data => $data,
-			    file_name => 'control_log_receipt.' . lc $self->printer_type_map->{$self->printer_type},
-			  }
-			)
-		      );
-		    }
+            push @{ $self->control_log_receipt },
+              Shipment::Label->new(
+                {
+                  content_type => $self->label_content_type_map->{$self->printer_type},
+                  data => $data,
+                  file_name => 'control_log_receipt_' . $receipt_index . '.' . lc $self->printer_type_map->{$self->printer_type},
+                }
+              );
+            $receipt_index++;
+          }
+        }
+
 	     }
 	     elsif ($return_code == 8)
 	     {
