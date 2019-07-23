@@ -176,9 +176,9 @@ sub _build_services {
 
     use Shipment::Package;
     use Shipment::Service;
-    use Shipment::Purolator::WSDL::Interfaces::ServiceAvailabilityService::ServiceAvailabilityServiceEndpoint;
+    use Shipment::Purolator::WSDLV2::Interfaces::ServiceAvailabilityService::ServiceAvailabilityServiceEndpoint;
 
-    my $interface = Shipment::Purolator::WSDL::Interfaces::ServiceAvailabilityService::ServiceAvailabilityServiceEndpoint->new(
+    my $interface = Shipment::Purolator::WSDLV2::Interfaces::ServiceAvailabilityService::ServiceAvailabilityServiceEndpoint->new(
       {
         proxy_domain => $self->proxy_domain,
         key => $self->key,
@@ -206,7 +206,7 @@ sub _build_services {
         },
       },
       {
-                  'Version'           =>  '1.0',
+                  'Version'           =>  '2.0',
                   'Language'          =>  'en',
                   'GroupID'           =>  'xxx',
                   'RequestReference'  =>  'Shipment::Purolator::_build_services'
@@ -328,8 +328,8 @@ sub rate {
       }
     }
 
-    use Shipment::Purolator::WSDL::Interfaces::EstimatingService::EstimatingServiceEndpoint;
-    my $interface = Shipment::Purolator::WSDL::Interfaces::EstimatingService::EstimatingServiceEndpoint->new(
+    use Shipment::Purolator::WSDLV2::Interfaces::EstimatingService::EstimatingServiceEndpoint;
+    my $interface = Shipment::Purolator::WSDLV2::Interfaces::EstimatingService::EstimatingServiceEndpoint->new(
       {
         proxy_domain => $self->proxy_domain,
         key => $self->key,
@@ -411,7 +411,7 @@ sub rate {
         ShowAlternativeServicesIndicator => "false",
       },
       {
-                  'Version'           =>  '1.0',
+                  'Version'           =>  '2.0',
                   'Language'          =>  'en',
                   'GroupID'           =>  'xxx',
                   'RequestReference'  =>  'Shipment::Purolator::rate'
@@ -533,8 +533,8 @@ sub ship {
       }
     }
 
-    use Shipment::Purolator::WSDL::Interfaces::ShippingService::ShippingServiceEndpoint;
-    my $interface = Shipment::Purolator::WSDL::Interfaces::ShippingService::ShippingServiceEndpoint->new(
+    use Shipment::Purolator::WSDLV2::Interfaces::ShippingService::ShippingServiceEndpoint;
+    my $interface = Shipment::Purolator::WSDLV2::Interfaces::ShippingService::ShippingServiceEndpoint->new(
       {
         proxy_domain => $self->proxy_domain,
         key => $self->key,
@@ -620,7 +620,7 @@ sub ship {
         PrinterType => $printer_type_map{$self->printer_type} || $self->printer_type,
       },
       {
-                  'Version'           =>  '1.0',
+                  'Version'           =>  '2.0',
                   'Language'          =>  'en',
                   'GroupID'           =>  'xxx',
                   'RequestReference'  =>  'Shipment::Purolator::ship'
@@ -700,7 +700,7 @@ sub fetch_documents {
         },
       },
       {
-                  'Version'           =>  '1.0',
+                  'Version'           =>  '1.3',
                   'Language'          =>  'en',
                   'GroupID'           =>  'xxx',
                   'RequestReference'  =>  'Shipment::Purolator::fetch_documents'
@@ -784,8 +784,8 @@ sub cancel {
     return;
   }
 
-    use Shipment::Purolator::WSDL::Interfaces::ShippingService::ShippingServiceEndpoint;
-    my $interface = Shipment::Purolator::WSDL::Interfaces::ShippingService::ShippingServiceEndpoint->new(
+    use Shipment::Purolator::WSDLV2::Interfaces::ShippingService::ShippingServiceEndpoint;
+    my $interface = Shipment::Purolator::WSDLV2::Interfaces::ShippingService::ShippingServiceEndpoint->new(
       {
         proxy_domain => $self->proxy_domain,
         key => $self->key,
@@ -801,7 +801,7 @@ sub cancel {
         },
       },
       {
-                  'Version'           =>  '1.0',
+                  'Version'           =>  '2.0',
                   'Language'          =>  'en',
                   'GroupID'           =>  'xxx',
                   'RequestReference'  =>  'Shipment::Purolator::cancel'
@@ -861,7 +861,7 @@ sub end_of_day {
         }
       },
       {
-                  'Version'           =>  '1.1',
+                  'Version'           =>  '1.3',
                   'Language'          =>  'en',
                   'GroupID'           =>  'xxx',
                   'RequestReference'  =>  'Shipment::Purolator::end_of_day'
