@@ -1,4 +1,7 @@
-3.04 2020-05-21T03:31:57
+3.05 2020-05-21T04:57:16
+ - Add support for FedEx ShipmentSpecialServiceTypes (Andrew Baerg)
+
+3.04 2020-05-21T03:31:57Z
  - Add support for UPS tracking (Andrew Baerg)
 
 3.03 2020-05-21T02:08:11Z
