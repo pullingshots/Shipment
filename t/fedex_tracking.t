@@ -35,7 +35,7 @@ $shipment = Shipment::FedEx->new(
   password => $password,
   account => $account,
   meter => $meter,
-  tracking_id => '12281621502581',
+  tracking_id => '122816215025811',
 );
 
 $shipment->track();
@@ -56,13 +56,16 @@ ok( defined $shipment->status, 'Got a status' );
 
 if (defined $shipment->status) {
   is( $shipment->status->description, 'Delivered', 'status description' );
-  is( $shipment->status->date, '2014-01-09T00:00:00', 'status date' );
+  is( $shipment->status->date, '2014-01-09T13:31:00', 'status date' );
   is( $shipment->status->location->city, 'Norton', 'status location city' );
   is( $shipment->status->location->state, 'VA', 'status location state' );
   is( $shipment->status->location->country, 'US', 'status location country' );
 }
 
-is( $shipment->ship_date, '2016-08-01T00:00:00', 'creation date' );
+is( $shipment->ship_date, '2018-08-15T00:00:00', 'creation date' );
+
+is( $shipment->count_activities, 11, '11 tracking activities');
+is( $shipment->activities->[10]->description, 'Shipment information sent to FedEx', 'oldest tracking activity');
 
 }
 
