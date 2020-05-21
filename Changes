@@ -1,4 +1,7 @@
-3.02 2019-07-23T05:07:39
+3.03 2020-05-21T02:08:11
+ - Get all tracking events (Andrew Baerg)
+
+3.02 2019-07-23T05:07:39Z
  - FIX: error generating shipments that return a control log receipt
    (Andrew Baerg)
  - FIX: UPS requires the total insured value to be set for each piece in
@@ -8,10 +11,10 @@
  - dist.ini updates (Andrew Baerg)
  - Upgrade Purolator to V2 (Andrew Baerg)
 
-3.01 2018-02-03T05:22:11
+3.01 2018-02-03T05:22:11Z
  - update formatting of README (Andrew Baerg)
 
-3.00 2018-02-03T04:55:18
+3.00 2018-02-03T04:55:18Z
  - update copyright year (Andrew Baerg)
  - capture list rate discount for FedEx rates (Andrew Baerg)
  - remove unused code (Andrew Baerg)
@@ -24,7 +27,7 @@
  - improve error message for unimplemented subroutines (Andrew Baerg)
  - fix pod documentation (Andrew Baerg)
 
-2.03 2016-09-03T04:48:25
+2.03 2016-09-03T04:48:25Z
  - fix failing ups test without account info (Andrew Baerg)
  - add additional surepost options (Andrew Baerg)
  - add UPS xav function (Andrew Baerg)
@@ -41,10 +44,10 @@
  - Add FedEx Track Service API documentation and wsdl file (Andrew Baerg)
  - BUG FIX: third party shipping failing with fatal error (Andrew Baerg)
 
-2.02 2016-06-24T12:37:17
+2.02 2016-06-24T12:37:17Z
  - add Class:Load to prerequisite modules (Andrew Baerg)
 
-2.01 2016-06-23T03:21:37
+2.01 2016-06-23T03:21:37Z
  - skip new ups test added (Andrew Baerg)
  - updated README (Andrew Baerg)
  - prevent exception when third party billing selected with address (Andrew
@@ -62,14 +65,14 @@
    Baerg)
  - Support additional printer types (Michael Aquilina)
 
-2.00 2015-01-13T22:22:03
+2.00 2015-01-13T22:22:03Z
  - port from Moose to Moo (Andrew Baerg)
  - fix DateTime type coercion to match what pre-Moo code expects (Peter
    Mottram)
  - use Scalar::Util added to Shipment::Service fix issue mentioned in #32
    (Peter Mottram)
 
-0.18 2014-10-11T04:32:15
+0.18 2014-10-11T04:32:15Z
  - add SurePost API Docs (Andrew Baerg)
  - fix incorrect ups test script setup (Andrew Baerg)
  - enable support for UPS SurePost (Andrew Baerg)
@@ -78,36 +81,36 @@
  - Fix UPS shipping methods that require phone numbers (Andrew Baerg)
  - fix UPS Express shipments not working in Canada (Andrew Baerg)
 
-0.17 2014-05-13T02:48:22
+0.17 2014-05-13T02:48:22Z
  - fix "Tests failing under perl 5.16 and above" #21 (Andrew Baerg)
  - do not distribute accounts file (Andrew Baerg)
 
-0.16 2014-03-09T06:00:08
+0.16 2014-03-09T06:00:08Z
  - fix for latest Moose release, 2.1106-TRIAL (Andrew Baerg)
 
-0.15 2014-01-30T05:21:05
+0.15 2014-01-30T05:21:05Z
  - fix temando test script failing (Andrew Baerg)
  - bug fix: fatal error when no extra charges returned (Andrew Baerg)
  - removed tests for ground/express as the test environment is no longer
    returning those services (Andrew Baerg)
 
-0.14 2013-10-27T04:00:03
+0.14 2013-10-27T04:00:03Z
  - fix CPAN indexing issues with fat-packed SOAP::WSDL (Andrew Baerg)
 
-0.13 2013-10-24T05:40:21
+0.13 2013-10-24T05:40:21Z
  - add address lines for rating (Andrew Baerg)
  - add UPS carbon neutral indicator option (Andrew Baerg)
 
-0.12 2013-04-11T05:49:52
+0.12 2013-04-11T05:49:52Z
  - allow undefined values for references (Andrew Baerg)
 
-0.11 2013-03-19T15:48:15
+0.11 2013-03-19T15:48:15Z
  - updated temando tests (Andrew Baerg)
  - skip the correct amount of tests when no account info provided (Andrew
    Baerg)
  - ensure fedex _build_services works without package detail (Andrew Baerg)
 
-0.1 2013-03-19T05:04:42
+0.1 2013-03-19T05:04:42Z
  - add package detail to FedEx _build_services (Andrew Baerg)
  - fix rating and shipping with Purolator using non-custom packaging
    (Andrew Baerg)
@@ -115,33 +118,33 @@
    (Andrew Baerg)
  - Temando API changes (Andrew Baerg)
 
-0.03 2012-06-12T04:30:49
+0.03 2012-06-12T04:30:49Z
  - default to a weight of 1 (Andrew Baerg)
  - Add total weight to the estimated rates being pulled to build the
    available service list. If we're pulling the prices out, might as well
    make the price correct rather then assuming 1 lbs. (rconover)
 
-0.02 2012-05-30T04:17:15
+0.02 2012-05-30T04:17:15Z
  - use Git::NextVersion (Andrew Baerg)
 
-0.01121490 2012-05-28T04:28:52
+0.01121490 2012-05-28T04:28:52Z
  - Add support for the cost being returned in the available services from
    FedEx rather then having to do two requests first to get the available
    services and then a second for the actual cost. (rconover)
 
-0.01120790 2012-03-19T14:23:46
+0.01120790 2012-03-19T14:23:46Z
  - fix an error in the POD synopsis (Andrew Baerg)
 
-0.01120470 2012-02-16T08:13:23
+0.01120470 2012-02-16T08:13:23Z
  - added support for extra charges and adjustments to Temando (Andrew
    Baerg)
  - documentation update (Andrew Baerg)
  - prune the local SOAP::WSDL dist source tree (Andrew Baerg)
 
-0.01120340 2012-02-04T03:08:17
+0.01120340 2012-02-04T03:08:17Z
  - add missing PreReq Date::Parse (Andrew Baerg)
 
-0.01120300 2012-01-30T06:23:52
+0.01120300 2012-01-30T06:23:52Z
  - do not run temando tests unless a username/password is provided (Andrew
    Baerg)
  - do not set a default pickup time. Let the carrier set the default
@@ -167,37 +170,37 @@
  - initial commit of Temando SOAP::WSDL modules (Andrew Baerg)
  - ignore pause acct info and soap-wsdl-src (Andrew Baerg)
 
-0.01113430 2011-12-09T17:34:46
+0.01113430 2011-12-09T17:34:46Z
  - fix RT bug #71949: Measurement system hardoced (LBS) on method
    _build_services (Andrew Baerg)
  - add negotiated rates request to the ups tests (Andrew Baerg)
  - remove some redundant warnings/notices (Andrew Baerg)
 
-0.01112650 2011-09-22T16:24:39
+0.01112650 2011-09-22T16:24:39Z
  - better handling of negotiated rates (Andrew Baerg)
 
-0.01112490 2011-09-06T16:35:23
+0.01112490 2011-09-06T16:35:23Z
  - catch non-standard errors for UPS (Andrew Baerg)
 
-0.01111730 2011-06-22T03:00:02
+0.01111730 2011-06-22T03:00:02Z
  - ensure UPS.pm is using the fat packed SOAP::WSDL (Andrew Baerg)
 
-0.01111510 2011-05-31T20:33:36
+0.01111510 2011-05-31T20:33:36Z
  - residential address support, better ups alert handling, enable ups
    negotiated rates (Andrew Baerg)
  - bug fix: Purolator labels not retrieved for large multi-piece shipments
    (Andrew Baerg)
 
-0.01111450 2011-05-25T14:31:19
+0.01111450 2011-05-25T14:31:19Z
  - use Moose 2.0000; (Andrew Baerg)
  - bug fix: _build_services failing when default services not available
    (Andrew Baerg)
 
-0.01111361 2011-05-16T15:56:43
+0.01111361 2011-05-16T15:56:43Z
  - ensure the fatpacked SOAP::WSDL is ignored by the CPAN indexer (Andrew
    Baerg)
 
-0.01111360 2011-05-16T14:27:11
+0.01111360 2011-05-16T14:27:11Z
  - preparing for realease to CPAN (Andrew Baerg)
  - preparing for release to CPAN (Andrew Baerg)
  - skip the correct amount of tests (Andrew Baerg)
