@@ -60,6 +60,8 @@ use Moo;
 use MooX::Types::MooseLike::Base qw(:all);
 use namespace::clean;
 
+use DateTime::Format::ISO8601;
+
 extends 'Shipment::Base';
 
 =head1 Class Attributes
@@ -1675,6 +1677,94 @@ sub xav {
   };
 
     return { 'result' => $result, 'candidate' => \@candidates, 'classification' => $classification };
+}
+
+=head2 track
+
+This method calls ProcessTrack from the Shipping API
+
+=cut
+
+sub track {
+  my ($self) = @_;
+
+  use Shipment::Activity;
+
+  if (!$self->tracking_id) {
+    $self->error('no tracking id provided');
+    return;
+  }
+
+  use Shipment::UPS::WSDL::TrackInterfaces::TrackService::TrackPort;
+  my $interface =
+    Shipment::UPS::WSDL::TrackInterfaces::TrackService::TrackPort->new(
+      { proxy_domain => $self->proxy_domain, } );
+
+  my $response;
+
+  try {
+
+    $Shipment::SOAP::WSDL::Debug = 1 if $self->debug > 1;
+    $response = $interface->ProcessTrack(
+        {
+            Request => {    # Shipment::UPS::WSDL::TrackTypes::RequestType
+                RequestOption => 0,
+            },
+            InquiryNumber  => $self->tracking_id,
+            TrackingOption => "02",
+        },
+        {
+            UsernameToken => {
+                Username => $self->username,
+                Password => $self->password,
+            },
+            ServiceAccessToken => { AccessLicenseNumber => $self->key, },
+        },
+    );
+
+    $Shipment::SOAP::WSDL::Debug = 0;
+    warn "Response\n" . $response if $self->debug > 1;
+
+    if ( !$response ) {
+        $self->error( $response->get_detail->get_Errors->get_ErrorDetail
+              ->get_PrimaryErrorCode->get_Description->get_value );
+        return;
+    }
+    else {
+      for my $activity ( @{ $response->get_Shipment()->get_Package()->get_Activity() } ) {
+        my ($city, $state, $country);
+        if ($activity->get_ActivityLocation && $activity->get_ActivityLocation()->get_Address()) {
+          $city = $activity->get_ActivityLocation()->get_Address()->get_City()->get_value();
+          $state = $activity->get_ActivityLocation()->get_Address()->get_StateProvinceCode()->get_value();
+          $country = $activity->get_ActivityLocation()->get_Address()->get_CountryCode()->get_value();
+        }
+        $self->add_activity(
+          Shipment::Activity->new(
+            description => $activity->get_Status()->get_Description()->get_value(),
+            date => DateTime::Format::ISO8601->parse_datetime($activity->get_Date()->get_value() . 'T' . $activity->get_Time()->get_value()),
+            location => Shipment::Address->new(
+              city => ($city || ''),
+              state => ($state || ''),
+              country => ($country || ''),
+            ),
+          )
+        );
+      }
+      $self->ship_date( DateTime::Format::ISO8601->parse_datetime($response->get_Shipment()->get_PickupDate->get_value()) );
+    }
+
+  } catch {
+      warn $_ if $self->debug;
+      try {
+        warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description if $self->debug;
+        $self->error( $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description->get_value );
+      } catch {
+        warn $_ if $self->debug;
+        warn $response->get_faultstring if $self->debug;
+        $self->error( $response->get_faultstring->get_value );
+      };
+  };
+
 }
 
 =head1 AUTHOR
