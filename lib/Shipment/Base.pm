@@ -320,6 +320,7 @@ has 'pickup_date' => (
   is     => 'rw',
   isa    => DateAndTime,
   coerce => \&coerce_datetime,
+  default => sub { DateTime->now },
 );
 
 =head2 services

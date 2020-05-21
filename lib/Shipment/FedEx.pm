@@ -105,6 +105,18 @@ has 'proxy_domain' => (
   default => 'wsbeta.fedex.com:443',
 );
 
+=head2 shipment_special_service_types
+
+special services offered by FedEx, for example SATURDAY_DELIVERY
+
+=cut
+
+has 'shipment_special_service_types' => (
+  is => 'rw',
+  isa => ArrayRef[Str],
+  default => sub { [] },
+);
+
 =head2 residential_address
 
 Flag the ship to address as residential.
@@ -631,6 +643,11 @@ sub ship {
   $package_options->{SignatureOptionDetail}->{OptionType} = $signature_type_map{$self->signature_type} || $self->signature_type;
 
   my $shipment_options;
+
+  my @shipment_special_service_types;
+
+  push @shipment_special_service_types, @{$self->shipment_special_service_types};
+
   my @email_notifications;
   if ($self->to_address->email) {
     push @email_notifications, {
@@ -642,9 +659,11 @@ sub ship {
         LanguageCode => 'EN',
       },
     };
-    $shipment_options->{SpecialServiceTypes} = 'EMAIL_NOTIFICATION';
+    push @shipment_special_service_types, 'EMAIL_NOTIFICATION';
     $shipment_options->{EMailNotificationDetail}->{Recipients} = \@email_notifications;
   }
+
+  $shipment_options->{SpecialServiceTypes}  = \@shipment_special_service_types;
 
   my @references;
   push @references, {
@@ -709,7 +728,7 @@ sub ship {
               Minor =>  0,
             },
             RequestedShipment => {
-              ShipTimestamp => DateTime->now->datetime,
+              ShipTimestamp => $self->pickup_date->datetime,
               ServiceType => $service_id,
               DropoffType => $pickup_type_map{$self->pickup_type} || $self->pickup_type,
               PackagingType => $package_type_map{$self->package_type} || $self->package_type,
