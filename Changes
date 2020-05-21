@@ -1,4 +1,7 @@
-3.03 2020-05-21T02:08:11
+3.04 2020-05-21T03:31:57
+ - Add support for UPS tracking (Andrew Baerg)
+
+3.03 2020-05-21T02:08:11Z
  - Get all tracking events (Andrew Baerg)
 
 3.02 2019-07-23T05:07:39Z
