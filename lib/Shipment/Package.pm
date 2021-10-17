@@ -207,6 +207,32 @@ has 'cost' => (
   default => sub { Data::Currency->new(0) },
 );
 
+=head2 items
+
+Items in the package. Typically used for commercial invoice.
+
+type: ArrayRef[HashRef]
+
+Example:
+    [
+      {
+        quantity => 2,
+        description => 'Footbeds',
+        customs_value => 40,
+        weight => 0.4,
+        origin_country => 'KR',
+      },
+    ]
+
+=cut
+
+has 'items' => (
+  handles_via => 'Array',
+  is => 'rw',
+  isa => ArrayRef[HashRef],
+  default => sub { [] }
+);
+
 =head1 AUTHOR
 
 Andrew Baerg @ <andrew at pullingshots dot ca>
@@ -219,7 +245,7 @@ Issues can be submitted at https://github.com/pullingshots/Shipment/issues
 
 =head1 COPYRIGHT
 
-Copyright (C) 2016 Andrew J Baerg, All Rights Reserved
+Copyright (C) 2021 Andrew J Baerg, All Rights Reserved
 
 =head1 NO WARRANTY
 
