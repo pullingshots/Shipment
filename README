@@ -35,6 +35,11 @@ DESCRIPTION
         The generic method returns a L<Shipment::Generic> object. See L<Shipment::Generic> for
         more details.
 
+    canadapost
+
+      The fedex method returns a Shipment::CanadaPost object. See
+      Shipment::CanadaPost for more details.
+
     fedex
 
       The fedex method returns a Shipment::FedEx object. See

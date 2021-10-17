@@ -1,4 +1,12 @@
-3.05 2020-05-21T04:57:16
+3.06 2021-10-17T02:31:51
+ - 3.06 release (Andrew Baerg)
+ - Add Shipment->canadapost (Andrew Baerg)
+ - ignore repl.rc file (Andrew Baerg)
+ - Initial commit of Canada Post support (Andrew Baerg)
+ - New items attribute for Packages - needed for customs data (Andrew
+   Baerg)
+
+3.05 2020-05-21T04:57:16Z
  - Add support for FedEx ShipmentSpecialServiceTypes (Andrew Baerg)
 
 3.04 2020-05-21T03:31:57Z

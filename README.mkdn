@@ -33,29 +33,33 @@ For code examples, see https://github.com/pullingshots/Shipment/tree/master/eg
         The generic method returns a L<Shipment::Generic> object. See L<Shipment::Generic> for
         more details.
 
+- canadapost
+
+    The fedex method returns a [Shipment::CanadaPost](https://metacpan.org/pod/Shipment%3A%3ACanadaPost) object. See [Shipment::CanadaPost](https://metacpan.org/pod/Shipment%3A%3ACanadaPost) for more details.
+
 - fedex
 
-    The fedex method returns a [Shipment::FedEx](https://metacpan.org/pod/Shipment::FedEx) object. See [Shipment::FedEx](https://metacpan.org/pod/Shipment::FedEx) for more details.
+    The fedex method returns a [Shipment::FedEx](https://metacpan.org/pod/Shipment%3A%3AFedEx) object. See [Shipment::FedEx](https://metacpan.org/pod/Shipment%3A%3AFedEx) for more details.
 
 - purolator
 
-    The purolator method returns a [Shipment::Purolator](https://metacpan.org/pod/Shipment::Purolator) object. See [Shipment::Purolator](https://metacpan.org/pod/Shipment::Purolator) for more details.
+    The purolator method returns a [Shipment::Purolator](https://metacpan.org/pod/Shipment%3A%3APurolator) object. See [Shipment::Purolator](https://metacpan.org/pod/Shipment%3A%3APurolator) for more details.
 
 - ups
 
-    The ups method returns a [Shipment::UPS](https://metacpan.org/pod/Shipment::UPS) object. See [Shipment::UPS](https://metacpan.org/pod/Shipment::UPS) for more details.
+    The ups method returns a [Shipment::UPS](https://metacpan.org/pod/Shipment%3A%3AUPS) object. See [Shipment::UPS](https://metacpan.org/pod/Shipment%3A%3AUPS) for more details.
 
 - temando
 
-    The temando method returns a [Shipment::Temando](https://metacpan.org/pod/Shipment::Temando) object. See [Shipment::Temando](https://metacpan.org/pod/Shipment::Temando) for more details.
+    The temando method returns a [Shipment::Temando](https://metacpan.org/pod/Shipment%3A%3ATemando) object. See [Shipment::Temando](https://metacpan.org/pod/Shipment%3A%3ATemando) for more details.
 
 - address
 
-    The address method returns a [Shipment::Address](https://metacpan.org/pod/Shipment::Address) object. See [Shipment::Address](https://metacpan.org/pod/Shipment::Address) for more details.
+    The address method returns a [Shipment::Address](https://metacpan.org/pod/Shipment%3A%3AAddress) object. See [Shipment::Address](https://metacpan.org/pod/Shipment%3A%3AAddress) for more details.
 
 - package
 
-    The package method returns a [Shipment::Package](https://metacpan.org/pod/Shipment::Package) object. See [Shipment::Package](https://metacpan.org/pod/Shipment::Package) for more details.
+    The package method returns a [Shipment::Package](https://metacpan.org/pod/Shipment%3A%3APackage) object. See [Shipment::Package](https://metacpan.org/pod/Shipment%3A%3APackage) for more details.
 
 # AUTHOR
 
