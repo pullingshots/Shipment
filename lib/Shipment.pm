@@ -57,6 +57,16 @@ sub generic {
     shift; return Shipment::Generic->new(@_)
 }
 
+=item canadapost
+
+The fedex method returns a L<Shipment::CanadaPost> object. See L<Shipment::CanadaPost> for more details.
+
+=cut
+
+sub canadapost {
+    shift; return Shipment::CanadaPost->new(@_)
+}
+
 
 =item fedex
 
