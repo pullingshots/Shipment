@@ -1,4 +1,8 @@
-3.06 2021-10-17T02:44:18
+3.07 2022-05-27T21:10:50
+ - Send shipment level SpecialServiceTypes for services and rating (Andrew
+   Baerg)
+
+3.06 2021-10-17T02:44:18Z
  - 3.06 release (Andrew Baerg)
  - Add Shipment->canadapost (Andrew Baerg)
  - ignore repl.rc file (Andrew Baerg)
