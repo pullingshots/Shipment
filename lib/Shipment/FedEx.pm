@@ -345,6 +345,13 @@ sub _build_services {
       };
   }
 
+  my $shipment_options;
+  my @shipment_special_service_types;
+  push @shipment_special_service_types,
+    @{$self->shipment_special_service_types};
+  $shipment_options->{SpecialServiceTypes} =
+    \@shipment_special_service_types;
+
   try {
     $Shipment::SOAP::WSDL::Debug = 1 if $self->debug > 1;
     $response = $interface->getRates( 
@@ -367,6 +374,7 @@ sub _build_services {
         },
         ReturnTransitAndCommit =>  1,
         RequestedShipment =>  {
+          ShipTimestamp => $self->pickup_date->datetime,
           DropoffType => $pickup_type_map{$self->pickup_type} || $self->pickup_type,
           PackagingType => 'YOUR_PACKAGING',
           Shipper =>  {
@@ -392,6 +400,7 @@ sub _build_services {
           PackageCount =>  $self->count_packages || 1,
           PackageDetail => 'INDIVIDUAL_PACKAGES',
           RequestedPackageLineItems =>  \@pieces,
+          SpecialServicesRequested => $shipment_options,
         },
       },
     );
@@ -506,6 +515,13 @@ sub rate {
     $sequence++;
   }
 
+  my $shipment_options;
+  my @shipment_special_service_types;
+  push @shipment_special_service_types,
+    @{$self->shipment_special_service_types};
+  $shipment_options->{SpecialServiceTypes} =
+    \@shipment_special_service_types;
+
   my @to_streetlines;
   push @to_streetlines, $self->to_address()->address1;
   push @to_streetlines, $self->to_address()->address2 if $self->to_address()->address2;
@@ -538,6 +554,7 @@ sub rate {
         },
         ReturnTransitAndCommit =>  1,
         RequestedShipment =>  {
+          ShipTimestamp => $self->pickup_date->datetime,
           ServiceType => $service_id,
           DropoffType => 'REGULAR_PICKUP',
           PackagingType => 'YOUR_PACKAGING',
@@ -571,7 +588,8 @@ sub rate {
           RateRequestTypes => 'LIST',
           PackageCount =>  $self->count_packages,
           PackageDetail => 'INDIVIDUAL_PACKAGES',
-          RequestedPackageLineItems =>  \@pieces,  
+          RequestedPackageLineItems =>  \@pieces,
+          SpecialServicesRequested => $shipment_options,
         },
       },
     );
