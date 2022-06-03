@@ -1,4 +1,7 @@
-3.07 2022-05-27T21:10:50
+3.08 2022-06-03T16:10:27
+ - Add support for UPS Saturday Delivery (Andrew Baerg)
+
+3.07 2022-05-27T21:10:50Z
  - Send shipment level SpecialServiceTypes for services and rating (Andrew
    Baerg)
 
