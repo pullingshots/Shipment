@@ -189,6 +189,20 @@ has 'carbon_neutral' => (
   default => undef,
 );
 
+=head2 saturday_delivery
+
+Set the Saturday Delivery Indicator - the shipment must be delivered on a Saturday
+
+type: Bool
+
+=cut
+
+has 'saturday_delivery' => (
+  is => 'rw',
+  isa => Bool,
+  default => undef,
+);
+
 =head1 Type Maps
 
 =head2 service_map
@@ -467,6 +481,7 @@ sub _build_services {
 
     my $shipment_options;
     $shipment_options->{UPScarbonneutralIndicator} = '' if $self->carbon_neutral;
+    $shipment_options->{SaturdayDeliveryIndicator} = '' if $self->saturday_delivery;
 
     my @pieces;
     foreach (@{ $self->packages }) {
@@ -680,6 +695,7 @@ sub rate {
 
     my $shipment_options;
     $shipment_options->{UPScarbonneutralIndicator} = '' if $self->carbon_neutral;
+    $shipment_options->{SaturdayDeliveryIndicator} = '' if $self->saturday_delivery;
 
     my @pieces;
     foreach (@{ $self->packages }) {
@@ -858,6 +874,7 @@ sub ship {
       $shipment_options->{Notification}->{EMail}->{SubjectCode} = '03'; 
     }
     $shipment_options->{UPScarbonneutralIndicator} = '' if $self->carbon_neutral;
+    $shipment_options->{SaturdayDeliveryIndicator} = '' if $self->saturday_delivery;
 
     my $rating_options;
     $rating_options->{NegotiatedRatesIndicator} = 1 if $self->negotiated_rates;
