@@ -284,10 +284,10 @@ has 'signature_type_map' => (
     isa     => HashRef [],
     default => sub {
         {
-            'default'      => '1',
-            'required'     => '2',
+            'default'      => undef,
+            'required'     => '1',
             'not_required' => undef,
-            'adult'        => '3',
+            'adult'        => '2',
         };
     }
 );
