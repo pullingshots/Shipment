@@ -571,6 +571,8 @@ sub _build_services {
     $Shipment::SOAP::WSDL::Debug = 0;
     warn "Response\n" . $response if $self->debug > 1;
 
+    $response->can('get_RatedShipment') or die 'no services available';
+
     foreach my $service (@{ $response->get_RatedShipment() }) {
       my $rate = $service->get_TotalCharges->get_MonetaryValue;
       my $currency = $service->get_TotalCharges->get_CurrencyCode;
@@ -608,8 +610,11 @@ sub _build_services {
   } catch {
       warn $_ if $self->debug;
       try {
-        warn "Error: " . $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description if $self->debug;
-        $self->error( $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description->get_value );
+        my $error = join "\n",  map {
+          $_->get_PrimaryErrorCode()->get_Code() . ' - ' . $_->get_PrimaryErrorCode()->get_Description;
+        } @{ $response->get_detail()->get_Errors()->get_ErrorDetail() };
+        warn $error if $self->debug;
+        $self->error( $error );
       } catch {
         warn $_ if $self->debug;
         warn "Error: " . $response->get_faultstring if $self->debug;
@@ -801,6 +806,8 @@ sub rate {
     $Shipment::SOAP::WSDL::Debug = 0;
     warn "Response\n" . $response if $self->debug > 1;
 
+    $response->can('get_RatedShipment') or die 'service not available';
+
     use Data::Currency;
     use Shipment::Service;
     my $rate = $response->get_RatedShipment->get_TotalCharges->get_MonetaryValue;
@@ -833,8 +840,11 @@ sub rate {
   } catch {
       warn $_ if $self->debug;
       try {
-        warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description if $self->debug;
-        $self->error( $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description->get_value );
+        my $error = join "\n",  map {
+          $_->get_PrimaryErrorCode()->get_Code() . ' - ' . $_->get_PrimaryErrorCode()->get_Description;
+        } @{ $response->get_detail()->get_Errors()->get_ErrorDetail() };
+        warn $error if $self->debug;
+        $self->error( $error );
       } catch {
         warn $_ if $self->debug;
         warn $response->get_faultstring if $self->debug;
@@ -1031,6 +1041,8 @@ sub ship {
     $Shipment::SOAP::WSDL::Debug = 0;
     warn "Response\n" . $response if $self->debug > 1;
 
+    $response->can('get_ShipmentResults') or die 'failed to generate shipment';
+
     $self->tracking_id( $response->get_ShipmentResults()->get_ShipmentIdentificationNumber()->get_value );
     use Data::Currency;
     use Shipment::Service;
@@ -1109,8 +1121,11 @@ sub ship {
   } catch {
       warn $_ if $self->debug;
       try {
-        warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description if $self->debug;
-        $self->error( $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description->get_value );
+        my $error = join "\n",  map {
+          $_->get_PrimaryErrorCode()->get_Code() . ' - ' . $_->get_PrimaryErrorCode()->get_Description;
+        } @{ $response->get_detail()->get_Errors()->get_ErrorDetail() };
+        warn $error if $self->debug;
+        $self->error( $error );
       } catch {
         warn $_ if $self->debug;
         warn $response->get_faultstring if $self->debug;
@@ -1334,6 +1349,8 @@ sub return {
 	    $response = $interface->ProcessShipment( \%body, \%header ); 
    	    #warn $response;
 
+      $response->can('get_ShipmentResults') or die 'failed to get shipment';
+
 	    $self->tracking_id( $response->get_ShipmentResults()->get_ShipmentIdentificationNumber()->get_value );
 	    use Data::Currency;
 	    use Shipment::Service;
@@ -1441,8 +1458,11 @@ sub return {
   } catch {
       warn $_ if $self->debug;
       try {
-        warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description if $self->debug;
-        $self->error( $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description->get_value );
+        my $error = join "\n",  map {
+          $_->get_PrimaryErrorCode()->get_Code() . ' - ' . $_->get_PrimaryErrorCode()->get_Description;
+        } @{ $response->get_detail()->get_Errors()->get_ErrorDetail() };
+        warn $error if $self->debug;
+        $self->error( $error );
       } catch {
         warn $_ if $self->debug;
         warn $response->get_faultstring if $self->debug;
@@ -1517,6 +1537,8 @@ sub cancel {
     $Shipment::SOAP::WSDL::Debug = 0;
     warn "Response\n" . $response if $self->debug > 1;
 
+    $response->can('get_SummaryResult') or die 'failed to cancel shipment';
+
     $success = $response->get_SummaryResult->get_Status->get_Description->get_value;
 
     $self->notice( '' );
@@ -1530,8 +1552,11 @@ sub cancel {
   } catch {
       warn $_ if $self->debug;
       try {
-        warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description if $self->debug;
-        $self->error( $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description->get_value );
+        my $error = join "\n",  map {
+          $_->get_PrimaryErrorCode()->get_Code() . ' - ' . $_->get_PrimaryErrorCode()->get_Description;
+        } @{ $response->get_detail()->get_Errors()->get_ErrorDetail() };
+        warn $error if $self->debug;
+        $self->error( $error );
       } catch {
         warn $_ if $self->debug;
         warn $response->get_faultstring if $self->debug;
@@ -1606,7 +1631,7 @@ sub xav {
 	},
 
   	);
-	#warn $response;
+	warn $response if $self->debug > 1;
 	
     if ( $request_option =~ m/[23]/ ) {
         try {
@@ -1682,13 +1707,16 @@ sub xav {
     }
 
   } catch {
-      #warn $_;
+      warn $_ if $self->debug;
       try {
-        #warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description;
-        $self->error( $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description->get_value );
+        my $error = join "\n",  map {
+          $_->get_PrimaryErrorCode()->get_Code() . ' - ' . $_->get_PrimaryErrorCode()->get_Description;
+        } @{ $response->get_detail()->get_Errors()->get_ErrorDetail() };
+        warn $error if $self->debug;
+        $self->error( $error );
       } catch {
-        #warn $_;
-        #warn $response->get_faultstring;
+        warn $_ if $self->debug;
+        warn $response->get_faultstring if $self->debug;
         $self->error( $response->get_faultstring->get_value );
       };
   };
@@ -1742,39 +1770,37 @@ sub track {
     $Shipment::SOAP::WSDL::Debug = 0;
     warn "Response\n" . $response if $self->debug > 1;
 
-    if ( !$response ) {
-        $self->error( $response->get_detail->get_Errors->get_ErrorDetail
-              ->get_PrimaryErrorCode->get_Description->get_value );
-        return;
-    }
-    else {
-      for my $activity ( @{ $response->get_Shipment()->get_Package()->get_Activity() } ) {
-        my ($city, $state, $country);
-        if ($activity->get_ActivityLocation && $activity->get_ActivityLocation()->get_Address()) {
-          $city = $activity->get_ActivityLocation()->get_Address()->get_City()->get_value();
-          $state = $activity->get_ActivityLocation()->get_Address()->get_StateProvinceCode()->get_value();
-          $country = $activity->get_ActivityLocation()->get_Address()->get_CountryCode()->get_value();
-        }
-        $self->add_activity(
-          Shipment::Activity->new(
-            description => $activity->get_Status()->get_Description()->get_value(),
-            date => DateTime::Format::ISO8601->parse_datetime($activity->get_Date()->get_value() . 'T' . $activity->get_Time()->get_value()),
-            location => Shipment::Address->new(
-              city => ($city || ''),
-              state => ($state || ''),
-              country => ($country || ''),
-            ),
-          )
-        );
+    $response->can('get_Shipment') or die 'failed to get tracking';
+
+    for my $activity ( @{ $response->get_Shipment()->get_Package()->get_Activity() } ) {
+      my ($city, $state, $country);
+      if ($activity->get_ActivityLocation && $activity->get_ActivityLocation()->get_Address()) {
+        $city = $activity->get_ActivityLocation()->get_Address()->get_City()->get_value();
+        $state = $activity->get_ActivityLocation()->get_Address()->get_StateProvinceCode()->get_value();
+        $country = $activity->get_ActivityLocation()->get_Address()->get_CountryCode()->get_value();
       }
-      $self->ship_date( DateTime::Format::ISO8601->parse_datetime($response->get_Shipment()->get_PickupDate->get_value()) );
+      $self->add_activity(
+        Shipment::Activity->new(
+          description => $activity->get_Status()->get_Description()->get_value(),
+          date => DateTime::Format::ISO8601->parse_datetime($activity->get_Date()->get_value() . 'T' . $activity->get_Time()->get_value()),
+          location => Shipment::Address->new(
+            city => ($city || ''),
+            state => ($state || ''),
+            country => ($country || ''),
+          ),
+        )
+      );
     }
+    $self->ship_date( DateTime::Format::ISO8601->parse_datetime($response->get_Shipment()->get_PickupDate->get_value()) );
 
   } catch {
       warn $_ if $self->debug;
       try {
-        warn $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description if $self->debug;
-        $self->error( $response->get_detail()->get_Errors()->get_ErrorDetail()->get_PrimaryErrorCode()->get_Description->get_value );
+        my $error = join "\n",  map {
+          $_->get_PrimaryErrorCode()->get_Code() . ' - ' . $_->get_PrimaryErrorCode()->get_Description;
+        } @{ $response->get_detail()->get_Errors()->get_ErrorDetail() };
+        warn $error if $self->debug;
+        $self->error( $error );
       } catch {
         warn $_ if $self->debug;
         warn $response->get_faultstring if $self->debug;

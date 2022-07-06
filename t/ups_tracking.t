@@ -43,7 +43,7 @@ $shipment = Shipment::UPS->new(
 
 $shipment->track();
 
-is( $shipment->error, 'Invalid tracking number', 'error when invalid tracking id set' );
+is( $shipment->error, '151018 - Invalid tracking number', 'error when invalid tracking id set' );
 
 $shipment = Shipment::UPS->new(
   username => $username,
