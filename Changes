@@ -1,4 +1,9 @@
-3.08 2022-06-03T16:10:27
+3.09 2022-07-06T04:48:33
+ - Issue #44 - change default signature type to 'not_required' (Andrew
+   Baerg)
+ - Issue #43 - improvements to error handling (Andrew Baerg)
+
+3.08 2022-06-03T16:10:27Z
  - Add support for UPS Saturday Delivery (Andrew Baerg)
 
 3.07 2022-05-27T21:10:50Z
