@@ -285,9 +285,9 @@ has 'signature_type_map' => (
     default => sub {
         {
             'default'      => undef,
-            'required'     => '1',
+            'required'     => '2',
             'not_required' => undef,
-            'adult'        => '2',
+            'adult'        => '3',
         };
     }
 );
