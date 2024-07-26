@@ -2,6 +2,8 @@ package Shipment::UPS;
 use strict;
 use warnings;
 
+use Shipment::UPS::API;
+
 =head1 NAME
 
 Shipment::UPS - Interface to UPS Shipping Web Services
@@ -30,79 +32,129 @@ Shipment::UPS - Interface to UPS Shipping Web Services
 
 =head1 ABOUT
 
-This class provides an interface to the UPS Online Tools.
+This class provides an interface to the UPS RESTful APIs for rating and shipping. You must sign up for a developer access key in order to make use of this module.
 
-For code examples, see https://github.com/pullingshots/Shipment/tree/master/eg
-
-You must sign up for a developer access key in order to make use of this module.
-
-https://www.ups.com/upsdeveloperkit
-
-See related modules for documentation on options and how to access rates and labels:
-  
-L<Shipment::Base> - common attributes and methods for all interfaces
-
-L<Shipment::Address> - define an from or to address
-
-L<Shipment::Package> - define package details, weight, dimensions, etc
-
-L<Shipment::Service> - access information about a service, rate, etd, etc
-
-L<Shipment::Label> - access the label file
-
-It makes extensive use of SOAP::WSDL in order to create/decode xml requests and responses. The Shipment::UPS::WSDL interface was created primarily using the wsdl2perl.pl script from SOAP::WSDL.
+https://developer.ups.com/api/reference
 
 =cut
 
 use Try::Tiny;
-use Shipment::SOAP::WSDL;
 use Moo;
 use MooX::Types::MooseLike::Base qw(:all);
+use MooX::Aliases;
 use namespace::clean;
-
-use DateTime::Format::ISO8601;
 
 extends 'Shipment::Base';
 
 =head1 Class Attributes
 
-=head2 username, password, key
+=head2 client_id, client_secret
 
 Credentials required to access UPS Online Tools.
 
 =cut
 
-has 'username' => (
-  is => 'rw',
+has 'client_id' => (
+  is => 'ro',
   isa => Str,
+  alias => 'username',
 );
 
-has 'password' => (
-  is => 'rw',
+has 'client_secret' => (
+  is => 'ro',
   isa => Str,
+  alias => 'password',
 );
-
-has 'key' => (
-  is => 'rw',
-  isa => Str,
-);
-
-=head2 proxy_domain
-
-This determines whether you will use the UPS Customer Integration Environment (for development) or the production (live) environment
-  * wwwcie.ups.com (development)
-  * onlinetools.ups.com (production)
-
-=cut
 
 has 'proxy_domain' => (
   is => 'rw',
-  isa => Enum[ qw(
-    wwwcie.ups.com
-    onlinetools.ups.com
-  ) ],
-  default => 'wwwcie.ups.com',
+  isa => Str,
+  trigger => sub {
+    my ($self, $value) = @_;
+    $self->environment('production') if $value eq 'https://onlinetools.ups.com';
+  },
 );
+
+has 'environment' => (
+  is => 'rw',
+  isa => Enum[ qw( cie production ) ],
+  default => 'cie',
+  trigger => sub {
+    my $self = shift;
+    $self->clear_api();
+  }
+);
+
+has 'api' => (
+  is => 'ro',
+  isa => InstanceOf['Shipment::UPS::API'],
+  lazy => 1,
+  clearer => 1,
+  builder => 1,
+);
+
+sub _build_api {
+  my $self = shift;
+  return Shipment::UPS::API->new(
+    debug => $self->debug,
+    client_id => $self->client_id,
+    client_secret => $self->client_secret,
+    account_number => $self->account,
+    api_url => ($self->environment eq 'production' ? 'https://onlinetools.ups.com' : 'https://wwwcie.ups.com'),
+    preserve_token => $self->preserve_token ? $self->preserve_token : undef
+  );
+};
+
+=head2 preserve_token
+
+  A subroutine that handle saving and retrieving the access token.
+  This sub is useful when you want to save the access token to prevent
+  rate limiting on the UPS Auth API.
+
+  Default behavior is to save the access token and expired time to a file
+  in your system's temp directory.
+
+=cut
+has 'preserve_token' => (
+  is => 'rw',
+  isa => CodeRef,
+  default => sub {
+    my $self = shift;
+
+    # Write the access token to a file and read it again to
+    # prevent rate limiting on UPS API
+    sub {
+      my ($args) = @_;
+
+      use File::Slurp qw(write_file read_file);
+      use File::Spec;
+      use Try::Tiny;
+      my $tmp_dir = File::Spec->tmpdir();
+      if ($args->{access_token} && $args->{expires_in}) {
+        # To prevent edge case of almost expired token,
+        # we set it to expire 10 mins early.
+        my $expired_time = time + ($args->{expires_in} * 1) - 600;
+        try {
+          write_file(
+            $tmp_dir . "/ups_access_token_" . $self->client_id,
+            join('|', $args->{access_token}, $expired_time)
+          );
+        } catch {
+          warn "Failed to write access token to file: $_" if $self->debug;
+        }
+      }
+
+      try {
+        my $preserve_token = read_file($tmp_dir . '/ups_access_token_' . $self->client_id);
+        my ($access_token, $expired_time) = split(/\|/, $preserve_token);
+        return $access_token if $expired_time > time;
+      } catch {
+        warn "Failed to read access_token from file: $_" if $self->debug;
+      }
+    };
+  }
+);
+
 
 =head2 negotiated_rates
 
@@ -166,13 +218,14 @@ has 'label_height' => (
 
 In certain cases (i.e. for shipments with declared value over $999), UPS will return a control log receipt which must be printed off along with the label.
 
-type: Shipment::Label
+type: Array[Shipment::Label]
 
 =cut
 
 has 'control_log_receipt' => (
   is => 'rw',
-  isa => InstanceOf['Shipment::Label'],
+  isa => ArrayRef[InstanceOf['Shipment::Label']],
+  default => sub { [] },
 );
 
 =head2 carbon_neutral
@@ -189,20 +242,6 @@ has 'carbon_neutral' => (
   default => undef,
 );
 
-=head2 saturday_delivery
-
-Set the Saturday Delivery Indicator - the shipment must be delivered on a Saturday
-
-type: Bool
-
-=cut
-
-has 'saturday_delivery' => (
-  is => 'rw',
-  isa => Bool,
-  default => undef,
-);
-
 =head1 Type Maps
 
 =head2 service_map
@@ -211,54 +250,54 @@ UPS returns service codes without descriptions. This is mapped here so that we c
 
 =cut
 
-has 'service_map' => (
-    is      => 'ro',
-    isa     => HashRef [],
-    default => sub {
-        {
-            '01' => 'UPS Next Day Air',
-            '02' => 'UPS Second Day Air',
-            '03' => 'UPS Ground',
-            '07' => 'UPS Worldwide Express',
-            '08' => 'UPS Worldwide Expedited',
-            '11' => 'UPS Standard',
-            '12' => 'UPS Three-Day Select',
-            '13' => 'UPS Next Day Air Saver',
-            '14' => 'UPS Next Day Air Early A.M.',
-            '54' => 'UPS Worldwide Express Plus',
-            '59' => 'UPS Second Day Air A.M.',
-            '65' => 'UPS Saver',
-            '82' => 'UPS Today Standard',
-            '83' => 'UPS Today Dedicated Courier',
-            '85' => 'UPS Today Express',
-            '86' => 'UPS Today Express Saver',
-            '92' => 'UPS SurePost Less than 1 lb',
-            '93' => 'UPS SurePost 1 lb or Greater',
-            '94' => 'UPS SurePost BPM',
-            '95' => 'UPS SurePost Media',
-            'CA' => {
-                '01' => 'UPS Express',
-                '13' => 'UPS Express Saver',
-                '65' => 'UPS Worldwide Express Saver',
-                '02' => 'UPS Expedited',
-            },
-        };
-    }
+my %service_map = (
+  '01' => 'UPS Next Day Air',
+  '02' => 'UPS Second Day Air',
+  '03' => 'UPS Ground',
+  '07' => 'UPS Worldwide Express',
+  '08' => 'UPS Worldwide Expedited',
+  '11' => 'UPS Standard',
+  '12' => 'UPS Three-Day Select',
+  '13' => 'UPS Next Day Air Saver',
+  '14' => 'UPS Next Day Air Early A.M.',
+  '54' => 'UPS Worldwide Express Plus',
+  '59' => 'UPS Second Day Air A.M.',
+  '65' => 'UPS Saver',
+  '82' => 'UPS Today Standard',
+  '83' => 'UPS Today Dedicated Courier',
+  '85' => 'UPS Today Express',
+  '86' => 'UPS Today Express Saver',
+  '93' => 'UPS SurePost 1 lb or Greater',
+  'CA' => {
+    '01' => 'UPS Express',
+    '13' => 'UPS Express Saver',
+    '65' => 'UPS Worldwide Express Saver',
+    '02' => 'UPS Expedited',
+  },
 );
 
 ## Rating code to Shipping code map for cases when they differ
-has 'service_code_map' => (
-    is      => 'ro',
-    isa     => HashRef [],
-    default => sub {
-        {
-            'CA' => {
-                '07' => '01',
-                '13' => '65',
-                '02' => '08',
-            },
-        };
-    }
+my %service_code_map = (
+  'CA' => {
+    '07' => '01',
+    '13' => '65',
+    '02' => '08',
+  },
+);
+
+=head2 country_code_map
+
+UPS needs the country code overridden for some US territories
+
+=cut
+
+my %country_code_map = (
+  'GU' => 'GU',
+  'PR' => 'PR',
+  'MP' => 'MP',
+  'AS' => 'AS',
+  'VI' => 'VI',
+  'FM' => 'FM',
 );
 
 =head2 Shipment::Base type maps
@@ -267,64 +306,38 @@ Shipment::Base provides abstract types which need to be mapped to UPS codes (i.e
 
 =cut
 
-has 'bill_type_map' => (
-    is      => 'ro',
-    isa     => HashRef [],
-    default => sub {
-        {
-            'sender'      => 'BillShipper',
-            'recipient'   => 'BillReceiver',
-            'third_party' => 'BillThirdParty',
-        };
-    }
+my %bill_type_map = (
+  'sender'      => 'BillShipper',
+  'recipient'   => 'BillReceiver',
+  'third_party' => 'BillThirdParty',
 );
 
-has 'signature_type_map' => (
-    is      => 'ro',
-    isa     => HashRef [],
-    default => sub {
-        {
-            'default'      => undef,
-            'required'     => '2',
-            'not_required' => undef,
-            'adult'        => '3',
-        };
-    }
+my %signature_type_map = (
+  'default'      => undef,
+  'required'     => '1',
+  'not_required' => undef,
+  'adult'        => '2',
 );
 
-
-has 'package_type_map' => (
-    is      => 'ro',
-    isa     => HashRef [],
-    default => sub {
-        {
-            'custom'             => '02',
-            'envelope'           => '01',
-            'tube'               => '03',
-            'box'                => '21',
-            'pack'               => '04',
-            '25kg_box'           => '24',
-            '10kg_box'           => '25',
-            'pallet'             => '30',
-            'small_express_box'  => '2a',
-            'medium_express_box' => '2b',
-            'large_express_box'  => '2c',
-        };
-    }
+my %package_type_map = (
+  'custom'              => '02',
+  'envelope'            => '01',
+  'tube'                => '03',
+  'box'                 => '21',
+  'pack'                => '04',
+  '25kg_box'            => '24',
+  '10kg_box'            => '25',
+  'pallet'              => '30',
+  'small_express_box'   => '2a',
+  'medium_express_box'  => '2b',
+  'large_express_box'   => '2c',
 );
 
-has 'units_type_map' => (
-    is      => 'ro',
-    isa     => HashRef [],
-    default => sub {
-        {
-            'lb' => 'LBS',
-            'kg' => 'KGS',
-            'in' => 'IN',
-            'cm' => 'CM',
-            'oz' => 'OZS',
-        };
-    }
+my %units_type_map = (
+  'lb'          => 'LBS',
+  'kg'          => 'KGS',
+  'in'          => 'IN',
+  'cm'          => 'CM',
 );
 
 =head2 custom package types
@@ -343,33 +356,21 @@ has '+package_type' => (
   isa => Enum[qw( custom envelope tube box pack 25kg_box 10kg_box pallet small_express_box medium_express_box large_express_box )]
 );
 
-has 'printer_type_map' => (
-    is    => 'ro',
-    isa   => HashRef [],
-    default => sub {
-        {
-            'pdf'     => '',
-            'thermal' => 'EPL',
-            'image'   => 'GIF',
-            'ZPL'     => 'ZPL',
-            'SPL'     => 'SPL',
-            'STARPL'  => 'STARPL',
-        };
-    }
+my %printer_type_map = (
+  'pdf'     => '',
+  'thermal' => 'EPL',
+  'image'   => 'GIF',
+  'ZPL'     => 'ZPL',
+  'SPL'     => 'SPL',
+  'STARPL'  => 'STARPL',
 );
 
-has 'label_content_type_map' => (
-    is    => 'ro',
-    isa   => HashRef [],
-    default => sub {
-        {
-            'thermal' => 'text/ups-epl',
-            'image'   => 'image/gif',
-            'ZPL'     => 'text/ups-zpl',
-            'SPL'     => 'text/ups-spl',
-            'STARPL'  => 'text/ups-starpl',
-        };
-    }
+my %label_content_type_map = (
+  'thermal' => 'text/ups-epl',
+  'image'   => 'image/gif',
+  'ZPL'     => 'text/ups-zpl',
+  'SPL'     => 'text/ups-spl',
+  'STARPL'  => 'text/ups-starpl',
 );
 
 =head2 custom printer types
@@ -403,38 +404,10 @@ has '+currency' => (
 =head2 surepost
 
 Enable UPS SurePost
-This includes surepost 1 lb or Greater and Surepost less than 1 lb
-Note: for less than 1 lb (service id 92) weight must be in ounces
-specified as oz 
+
 =cut
 
 has 'surepost' => (
-  is => 'rw',
-  isa => Bool,
-  default => undef,
-);
-
-=head2 surepost_bpm
-
-Enable UPS SurePost BPM
-Bound printed matter parcels
-
-=cut
-
-has 'surepost_bpm' => (
-  is => 'rw',
-  isa => Bool,
-  default => undef,
-);
-
-=head2 surepost_media
-
-Enable UPS SurePost media 
-Media parcesl with weight 1 lb to 70 lbs
-
-=cut
-
-has 'surepost_media' => (
   is => 'rw',
   isa => Bool,
   default => undef,
@@ -444,7 +417,7 @@ has 'surepost_media' => (
 
 =head2 _build_services
 
-This calls ProcessRate from the Rating API with RequestOption => 'Shop'
+This calls the Rating API with RequestOption => 'Shop'
 
 Each RatedShipment that is returned is added to services
 
@@ -453,6 +426,8 @@ The following service mapping is used:
   * express => 02 (UPS Second Day Air)
   * priority => 01 (UPS Next Day Air)
 
+This method ignores what is in $self->packages and uses a single package weighing 1 pound for rating. The idea is to list what services are available, but for accurate rate comparisons, the rate method should be used.
+
 =cut
 
 sub _build_services {
@@ -460,83 +435,76 @@ sub _build_services {
 
   use Shipment::Package;
   use Shipment::Service;
-  use Shipment::UPS::WSDL::RateInterfaces::RateService::RatePort;
-  
-  my $interface = Shipment::UPS::WSDL::RateInterfaces::RateService::RatePort->new(
-    {
-      proxy_domain => $self->proxy_domain,
-    }
-  );
-  my $response;
-  my %services;
 
-  if ($self->weight_unit ne 'oz')
-  {
+  my $response;
+
     my $options;
-    $options->{DeliveryConfirmation}->{DCISType} = $self->signature_type_map->{$self->signature_type} if defined $self->signature_type_map->{$self->signature_type};
+    $options->{DeliveryConfirmation}->{DCISType} = $signature_type_map{$self->signature_type} if defined $signature_type_map{$self->signature_type};
     $options->{DeclaredValue}->{CurrencyCode} = $self->currency;
-    
+
     my $rating_options;
-    $rating_options->{NegotiatedRatesIndicator} = 1 if $self->negotiated_rates;
+    $rating_options->{NegotiatedRatesIndicator} = "1" if $self->negotiated_rates;
 
     my $shipment_options;
     $shipment_options->{UPScarbonneutralIndicator} = '' if $self->carbon_neutral;
-    $shipment_options->{SaturdayDeliveryIndicator} = '' if $self->saturday_delivery;
 
     my @pieces;
     foreach (@{ $self->packages }) {
-      $options->{DeclaredValue}->{MonetaryValue} = $self->insured_value->value;
+      $options->{DeclaredValue}->{MonetaryValue} = '' . $self->insured_value->value;
+
+      ## SurePost doesn't accept service options
+      $options = undef if $self->surepost;
 
       push @pieces,
         {
             PackagingType => {
-              Code => $self->package_type_map->{$self->package_type} || $self->package_type,
+              Code => $package_type_map{$self->package_type} || $self->package_type,
             },
             Dimensions => {
               UnitOfMeasurement => {
-                Code => $self->units_type_map->{$self->dim_unit} || $self->dim_unit,
+                Code => $units_type_map{$self->dim_unit} || $self->dim_unit,
               },
-              Length => $_->length,
-              Width => $_->width,
-              Height => $_->height,
+              Length => '' . $_->length,
+              Width => '' . $_->width,
+              Height => '' . $_->height,
             },
             PackageWeight => {
               UnitOfMeasurement => {
-                Code => $self->units_type_map->{$self->weight_unit} || $self->weight_unit,
+                Code => $units_type_map{$self->weight_unit} || $self->weight_unit,
               },
-              Weight => $_->weight,
+              Weight => '' . $_->weight,
             },
             PackageServiceOptions => $options,
         };
     }
 
     my @from_addresslines = (
-      $self->from_address->address1, 
-      $self->from_address->address2, 
+      $self->from_address->address1,
+      $self->from_address->address2,
       $self->from_address->address3
     );
     my @to_addresslines = (
-      $self->to_address->address1, 
-      $self->to_address->address2, 
+      $self->to_address->address1,
+      $self->to_address->address2,
       $self->to_address->address3
     );
 
-  my $shipto = { 
+  my $shipto = {
             Address => {
               AddressLine       => \@to_addresslines,
               City              => $self->to_address()->city,
               StateProvinceCode => $self->to_address()->province_code,
               PostalCode        => $self->to_address()->postal_code,
-              CountryCode       => $self->to_address()->country_code,
+              CountryCode       => $country_code_map{$self->to_address()->province_code} || $self->to_address()->country_code,
             },
   };
-  $shipto->{Address}->{ResidentialAddressIndicator} = 1 if $self->{residential_address};
+  $shipto->{Address}->{ResidentialAddressIndicator} = "1" if $self->{residential_address};
   $shipto->{Phone}{Number} = $self->to_address->phone
      if $self->to_address->phone;
-  
+
+  my %services;
   try {
-    $Shipment::SOAP::WSDL::Debug = 1 if $self->debug > 1;
-    $response = $interface->ProcessRate( 
+    $response = $self->api->shop(
       {
         Request => {
           RequestOption => 'Shop',
@@ -557,37 +525,24 @@ sub _build_services {
           Package => \@pieces,
           ShipmentServiceOptions => $shipment_options,
         },
-      },
-      {
-             UsernameToken =>  {
-               Username =>  $self->username,
-               Password =>  $self->password,
-             },
-             ServiceAccessToken =>  {
-               AccessLicenseNumber =>  $self->key,
-             },
-      },
+      }
     );
-    $Shipment::SOAP::WSDL::Debug = 0;
-    warn "Response\n" . $response if $self->debug > 1;
 
-    $response->can('get_RatedShipment') or die 'no services available';
-
-    foreach my $service (@{ $response->get_RatedShipment() }) {
-      my $rate = $service->get_TotalCharges->get_MonetaryValue;
-      my $currency = $service->get_TotalCharges->get_CurrencyCode;
+    foreach my $service (@{ $response->{RateResponse}->{RatedShipment} }) {
+      my $rate = $service->{TotalCharges}->{MonetaryValue};
+      my $currency = $service->{TotalCharges}->{CurrencyCode};
       if ($self->negotiated_rates) {
-        if ($service->get_NegotiatedRateCharges) {
-          $rate = $service->get_NegotiatedRateCharges->get_TotalCharge->get_MonetaryValue;
-          $currency = $service->get_NegotiatedRateCharges->get_TotalCharge->get_CurrencyCode;
+        if ($service->{NegotiatedRateCharges}) {
+          $rate = $service->{NegotiatedRateCharges}->{TotalCharge}->{MonetaryValue};
+          $currency = $service->{NegotiatedRateCharges}->{TotalCharge}->{CurrencyCode};
         }
       }
-      $services{$service->get_Service()->get_Code()->get_value} = Shipment::Service->new(
-          id => $service->get_Service()->get_Code()->get_value,
+      $services{$service->{Service}->{Code}} = Shipment::Service->new(
+          id => $service->{Service}->{Code},
           name => (
-              $self->service_map->{$self->from_address()->country_code}->{$service->get_Service()->get_Code()->get_value}
+              $service_map{$self->from_address()->country_code}->{$service->{Service}->{Code}}
                 ||
-              $self->service_map->{$service->get_Service()->get_Code()->get_value}
+              $service_map{$service->{Service}->{Code}}
             ),
           cost => Data::Currency->new($rate, $currency),
         );
@@ -600,73 +555,29 @@ sub _build_services {
     }
 
     $self->notice( '' );
-    if ( $response->get_Response->get_Alert ) {
-      foreach my $alert (@{$response->get_Response->get_Alert}) {
-        warn "Notice: " . $alert->get_Description->get_value if $self->debug;
-        $self->add_notice( $alert->get_Description->get_value . "\n" );
+    if ( $response->{Response}->{Alert} ) {
+      foreach my $alert (@{$response->{Response}->{Alert}}) {
+        warn "Notice: " . $alert->{Description} if $self->debug;
+        $self->add_notice( $alert->{Description} . "\n" );
       }
     }
 
   } catch {
-      warn $_ if $self->debug;
-      try {
-        my $error = join "\n",  map {
-          $_->get_PrimaryErrorCode()->get_Code() . ' - ' . $_->get_PrimaryErrorCode()->get_Description;
-        } @{ $response->get_detail()->get_Errors()->get_ErrorDetail() };
-        warn $error if $self->debug;
-        $self->error( $error );
-      } catch {
-        warn $_ if $self->debug;
-        warn "Error: " . $response->get_faultstring if $self->debug;
-        $self->error( $response->get_faultstring->get_value );
-      };
+    my $error = $_;
+    warn $error if $self->debug;
+    $self->error( $error );
   };
-  }
 
   if ($self->surepost) {
     if ($self->error) {
       $self->add_notice( 'All services other than SurePost failed due to error: ' . $self->error . "\n" );
       $self->error('');
     }
-
-    if ( $self->weight_unit eq 'oz' ) {
-        $services{92} = Shipment::Service->new(
-            id   => '92',
-            name => $self->service_map->{92},
-        );
-
-        $services{surepost_oz} = $services{92};
-
-    }
-    else {
-        $services{93} = Shipment::Service->new(
-            id   => '93',
-            name => $self->service_map->{93},
-        );
-        $services{surepost} = $services{93};
-
-        # These are contract specific with UPS
-        # They are disabled by default
-        if ( $self->surepost_bpm ) {
-            $services{94} = Shipment::Service->new(
-                id   => '94',
-                name => $self->service_map->{94},
-            );
-            $services{surepost_bpm} = $services{94};
-        }
-
-        if ( $self->surepost_media ) {
-
-            $services{95} = Shipment::Service->new(
-                id   => '95',
-                name => $self->service_map->{95},
-            );
-            $services{surepost_media} = $services{95};
-        }
-
-    }
-
-
+    $services{93} = Shipment::Service->new(
+        id => '93',
+        name => $service_map{93},
+      );
+    $services{surepost} = $services{93};
   }
 
   \%services;
@@ -681,7 +592,7 @@ This calls ProcessRate from the Rating API with RequestOption => 'Rate'
 sub rate {
   my ( $self, $service_id ) = @_;
 
-  try { 
+  try {
     $service_id = $self->services->{$service_id}->id;
   } catch {
     warn $_ if $self->debug;
@@ -692,83 +603,73 @@ sub rate {
   return unless $service_id;
 
     my $options;
-    $options->{DeliveryConfirmation}->{DCISType} = $self->signature_type_map->{$self->signature_type} if defined $self->signature_type_map->{$self->signature_type};
+    $options->{DeliveryConfirmation}->{DCISType} = $signature_type_map{$self->signature_type} if defined $signature_type_map{$self->signature_type};
     $options->{DeclaredValue}->{CurrencyCode} = $self->currency;
-    
+
     my $rating_options;
-    $rating_options->{NegotiatedRatesIndicator} = 1 if $self->negotiated_rates;
+    $rating_options->{NegotiatedRatesIndicator} = "1" if $self->negotiated_rates;
 
     my $shipment_options;
     $shipment_options->{UPScarbonneutralIndicator} = '' if $self->carbon_neutral;
-    $shipment_options->{SaturdayDeliveryIndicator} = '' if $self->saturday_delivery;
 
     my @pieces;
     foreach (@{ $self->packages }) {
-      $options->{DeclaredValue}->{MonetaryValue} = $self->insured_value->value;
+      $options->{DeclaredValue}->{MonetaryValue} = '' .$self->insured_value->value;
 
       ## SurePost doesn't accept service options
-      $options = undef if $self->surepost && $service_id =~ /9[2-5]/;
+      $options = undef if $self->surepost && $service_id eq '93';
 
       push @pieces,
         {
             PackagingType => {
-              Code => $self->package_type_map->{$self->package_type} || $self->package_type,
+              Code => $package_type_map{$self->package_type} || $self->package_type,
             },
             Dimensions => {
               UnitOfMeasurement => {
-                Code => $self->units_type_map->{$self->dim_unit} || $self->dim_unit,
+                Code => $units_type_map{$self->dim_unit} || $self->dim_unit,
               },
-              Length => $_->length,
-              Width => $_->width,
-              Height => $_->height,
+              Length => '' . $_->length,
+              Width => ''. $_->width,
+              Height => '' . $_->height,
             },
             PackageWeight => {
               UnitOfMeasurement => {
-                Code => $self->units_type_map->{$self->weight_unit} || $self->weight_unit,
+                Code => $units_type_map{$self->weight_unit} || $self->weight_unit,
               },
-              Weight => $_->weight,
+              Weight => '' . $_->weight,
             },
             PackageServiceOptions => $options,
         };
     }
 
     my @from_addresslines = (
-      $self->from_address->address1, 
-      $self->from_address->address2, 
+      $self->from_address->address1,
+      $self->from_address->address2,
       $self->from_address->address3
     );
     my @to_addresslines = (
-      $self->to_address->address1, 
-      $self->to_address->address2, 
+      $self->to_address->address1,
+      $self->to_address->address2,
       $self->to_address->address3
     );
 
 
-  my $shipto = { 
+  my $shipto = {
             Address => {
               AddressLine       => \@to_addresslines,
               City              => $self->to_address()->city,
               StateProvinceCode => $self->to_address()->province_code,
               PostalCode        => $self->to_address()->postal_code,
-              CountryCode       => $self->to_address()->country_code,
+              CountryCode       => $country_code_map{$self->to_address()->province_code} || $self->to_address()->country_code,
             },
   };
-  $shipto->{Address}->{ResidentialAddressIndicator} = 1 if $self->{residential_address};
+  $shipto->{Address}->{ResidentialAddressIndicator} = "1" if $self->{residential_address};
   $shipto->{Phone}{Number} = $self->to_address->phone
      if $self->to_address->phone;
 
-  use Shipment::UPS::WSDL::RateInterfaces::RateService::RatePort;
-  
-  my $interface = Shipment::UPS::WSDL::RateInterfaces::RateService::RatePort->new(
-    {
-      proxy_domain => $self->proxy_domain,
-    }
-  );
-
   my $response;
   try {
-    $Shipment::SOAP::WSDL::Debug = 1 if $self->debug > 1;
-    $response = $interface->ProcessRate( 
+    $response = $self->api->rate(
       {
         Request => {
           RequestOption => 'Rate',
@@ -792,64 +693,42 @@ sub rate {
           Package => \@pieces,
           ShipmentServiceOptions => $shipment_options,
         },
-      },
-      {
-             UsernameToken =>  {
-               Username =>  $self->username,
-               Password =>  $self->password,
-             },
-             ServiceAccessToken =>  {
-               AccessLicenseNumber =>  $self->key,
-             },
-      },
+      }
     );
-    $Shipment::SOAP::WSDL::Debug = 0;
-    warn "Response\n" . $response if $self->debug > 1;
-
-    $response->can('get_RatedShipment') or die 'service not available';
 
     use Data::Currency;
     use Shipment::Service;
-    my $rate = $response->get_RatedShipment->get_TotalCharges->get_MonetaryValue;
-    my $currency = $response->get_RatedShipment->get_TotalCharges->get_CurrencyCode;
+    my $rate = $response->{RateResponse}->{RatedShipment}->{TotalCharges}->{MonetaryValue};
+    my $currency = $response->{RateResponse}->{RatedShipment}->{TotalCharges}->{CurrencyCode};
     if ($self->negotiated_rates) {
-      if ($response->get_RatedShipment->get_NegotiatedRateCharges) {
-        $rate = $response->get_RatedShipment->get_NegotiatedRateCharges->get_TotalCharge->get_MonetaryValue;
-        $currency = $response->get_RatedShipment->get_NegotiatedRateCharges->get_TotalCharge->get_CurrencyCode;
+      if ($response->{RateResponse}->{RatedShipment}->{NegotiatedRateCharges}) {
+        $rate = $response->{RateResponse}->{RatedShipment}->{NegotiatedRateCharges}->{TotalCharge}->{MonetaryValue};
+        $currency = $response->{RateResponse}->{RatedShipment}->{NegotiatedRateCharges}->{TotalCharge}->{CurrencyCode};
       }
     }
-    $self->service( 
-       Shipment::Service->new( 
+    $self->service(
+      new Shipment::Service(
         id        => $service_id,
         name      => (
-              $self->service_map->{$self->from_address()->country_code}->{$response->get_RatedShipment->get_Service->get_Code->get_value}
+              $service_map{$self->from_address()->country_code}->{$response->{RateResponse}->{RatedShipment}->{Service}->{Code}}
                 ||
-              $self->service_map->{$response->get_RatedShipment->get_Service->get_Code->get_value}
+              $service_map{$response->{RateResponse}->{RatedShipment}->{Service}->{Code}}
             ),
         cost      => Data::Currency->new($rate, $currency),
       )
     );
 
     $self->notice( '' );
-    if ( $response->get_Response->get_Alert ) {
-      foreach my $alert (@{$response->get_Response->get_Alert}) {
-        warn $alert->get_Description->get_value if $self->debug;
-        $self->add_notice( $alert->get_Description->get_value . "\n" );
+    if ( $response->{Response}->{Alert} ) {
+      foreach my $alert (@{$response->{Response}->{Alert}}) {
+        warn $alert->{Description} if $self->debug;
+        $self->add_notice( $alert->{Description} . "\n" );
       }
     }
   } catch {
-      warn $_ if $self->debug;
-      try {
-        my $error = join "\n",  map {
-          $_->get_PrimaryErrorCode()->get_Code() . ' - ' . $_->get_PrimaryErrorCode()->get_Description;
-        } @{ $response->get_detail()->get_Errors()->get_ErrorDetail() };
-        warn $error if $self->debug;
-        $self->error( $error );
-      } catch {
-        warn $_ if $self->debug;
-        warn $response->get_faultstring if $self->debug;
-        $self->error( $response->get_faultstring->get_value );
-      };
+    my $error = $_;
+    warn $error if $self->debug;
+    $self->error( $error );
   };
 
 }
@@ -863,7 +742,7 @@ This method calls ProcessShipment from the Shipping API
 sub ship {
   my ( $self, $service_id ) = @_;
 
-  try { 
+  try {
     $service_id = $self->services->{$service_id}->id;
   } catch {
     warn $_ if $self->debug;
@@ -874,7 +753,7 @@ sub ship {
   return unless $service_id;
 
     my $package_options;
-    $package_options->{DeliveryConfirmation}->{DCISType} = $self->signature_type_map->{$self->signature_type} if defined $self->signature_type_map->{$self->signature_type};
+    $package_options->{DeliveryConfirmation}->{DCISType} = $signature_type_map{$self->signature_type} if defined $signature_type_map{$self->signature_type};
     $package_options->{DeclaredValue}->{CurrencyCode} = $self->currency;
 
     my $shipment_options;
@@ -884,62 +763,52 @@ sub ship {
       $shipment_options->{Notification}->{EMail}->{SubjectCode} = '03'; 
     }
     $shipment_options->{UPScarbonneutralIndicator} = '' if $self->carbon_neutral;
-    $shipment_options->{SaturdayDeliveryIndicator} = '' if $self->saturday_delivery;
 
     my $rating_options;
-    $rating_options->{NegotiatedRatesIndicator} = 1 if $self->negotiated_rates;
+    $rating_options->{NegotiatedRatesIndicator} = "1" if $self->negotiated_rates;
 
     my @pieces;
     my $reference_index = 1;
     foreach (@{ $self->packages }) {
-      $package_options->{DeclaredValue}->{MonetaryValue} = $self->insured_value->value;
+      $package_options->{DeclaredValue}->{MonetaryValue} = ''. $self->insured_value->value;
 
       ## SurePost doesn't accept service options
-      $package_options = undef if $self->surepost && $service_id =~ /9[2-5]/;
+      $package_options = undef if $self->surepost && $service_id eq '93';
 
       my @references;
       if (
-        $self->references && 
-        $self->from_address->country_code =~ /(US|PR)/ && 
-        $self->to_address->country_code =~ /(US|PR)/ && 
+        $self->references &&
+        $self->from_address->country_code =~ /(US|PR)/ &&
+        $self->to_address->country_code =~ /(US|PR)/ &&
         $self->from_address->country_code eq $self->to_address->country_code
       ) {
         foreach ($self->get_reference(0), $self->get_reference(1)) {
           next if !$_;
-
-	   my ($code, $val);
-           if ( ref($_) eq "HASH")
-           {
-                $code = (keys %$_)[0];
-                $val  = (values %$_)[0];
-           }
-           else
-           {
-                $code = $reference_index;
-                $val  = $_;
-           }
-          push @references, { Code => $code, Value => $val, };
+          push @references, {
+            Code => '' . $reference_index,
+            Value => $_,
+          };
           $reference_index++;
         }
       }
       push @pieces,
         {
             Packaging => {
-              Code => $self->package_type_map->{$self->package_type} || $self->package_type,
+              Code => $package_type_map{$self->package_type} || $self->package_type,
             },
             Dimensions => {
               UnitOfMeasurement => {
-                Code => $self->units_type_map->{$self->dim_unit} || $self->dim_unit,
+                Code => $units_type_map{$self->dim_unit} || $self->dim_unit,
               },
-              Length => $_->length,
-              Width => $_->width,
-              Height => $_->height,
+              Length => ''. $_->length,
+              Width => ''. $_->width,
+              Height => ''. $_->height,
             },
             PackageWeight => {
               UnitOfMeasurement => {
-                Code => $self->units_type_map->{$self->weight_unit} || $self->weight_unit,
+                Code => $units_type_map{$self->weight_unit} || $self->weight_unit,
               },
-              Weight => $_->weight,
+              Weight => ''. $_->weight,
             },
             ReferenceNumber => \@references,
             PackageServiceOptions => $package_options,
@@ -948,18 +817,18 @@ sub ship {
 
     my $payment_option;
     $payment_option->{Type} = '01';
-    $payment_option->{$self->bill_type_map->{$self->bill_type}}->{AccountNumber} = $self->bill_account;
-    $payment_option->{$self->bill_type_map->{$self->bill_type}}->{Address}->{PostalCode} = $self->bill_address->postal_code if $self->bill_address && $self->bill_type =~ /(recipient|third_party)/; 
-    $payment_option->{$self->bill_type_map->{$self->bill_type}}->{Address}->{CountryCode} = $self->bill_address->country_code if $self->bill_address && $self->bill_type eq 'third_party'; 
+    $payment_option->{$bill_type_map{$self->bill_type}}->{AccountNumber} = $self->bill_account;
+    $payment_option->{$bill_type_map{$self->bill_type}}->{Address}->{PostalCode} = $self->bill_address->postal_code if $self->bill_type =~ /(recipient|third_party)/ && $self->bill_address;
+    $payment_option->{$bill_type_map{$self->bill_type}}->{Address}->{CountryCode} = $self->bill_address->country_code if $self->bill_type eq 'third_party' && $self->bill_address;
 
     my @from_addresslines = (
-      $self->from_address->address1, 
-      $self->from_address->address2, 
+      $self->from_address->address1,
+      $self->from_address->address2,
       $self->from_address->address3
     );
     my @to_addresslines = (
-      $self->to_address->address1, 
-      $self->to_address->address2, 
+      $self->to_address->address1,
+      $self->to_address->address2,
       $self->to_address->address3
     );
 
@@ -971,25 +840,16 @@ sub ship {
               City              => $self->to_address->city,
               StateProvinceCode => $self->to_address->province_code,
               PostalCode        => $self->to_address->postal_code,
-              CountryCode       => $self->to_address->country_code,
+              CountryCode       => $country_code_map{$self->to_address->province_code} || $self->to_address->country_code,
             },
           };
-  $shipto->{Address}->{ResidentialAddressIndicator} = 1 if $self->{residential_address};
+  $shipto->{Address}->{ResidentialAddressIndicator} = "1" if $self->{residential_address};
   $shipto->{Phone}{Number} = $self->to_address->phone
      if $self->to_address->phone;
 
-  use Shipment::UPS::WSDL::ShipInterfaces::ShipService::ShipPort;
-  
-  my $interface = Shipment::UPS::WSDL::ShipInterfaces::ShipService::ShipPort->new(
-    {
-      proxy_domain => $self->proxy_domain,
-    }
-  );
-
   my $response;
   try {
-    $Shipment::SOAP::WSDL::Debug = 1 if $self->debug > 1;
-    $response = $interface->ProcessShipment( 
+    $response = $self->api->ship(
       {
         Request => {
           RequestOption => ($self->address_validation) ? 'validate' : 'nonvalidate',
@@ -1006,60 +866,48 @@ sub ship {
               PostalCode        => $self->from_address->postal_code,
               CountryCode       => $self->from_address->country_code,
             },
+            Phone => { Number => $self->from_address()->phone || '0000000000' },
           },
           ShipTo => $shipto,
           ShipmentRatingOptions => $rating_options,
           Service => {
-            Code => ($self->service_code_map->{$self->from_address->country_code}->{$service_id} || $service_id),
+            Code => ($service_code_map{$self->from_address->country_code}->{$service_id} || $service_id),
           },
           Package => \@pieces,
-          PaymentInformation =>  { 
+          PaymentInformation =>  {
             ShipmentCharge => $payment_option,
           },
           ShipmentServiceOptions => $shipment_options,
         },
-        LabelSpecification =>  { 
-          LabelImageFormat =>  { 
-            Code =>  $self->printer_type_map->{$self->printer_type},
+        LabelSpecification =>  {
+          LabelImageFormat =>  {
+            Code =>  $printer_type_map{$self->printer_type},
           },
-          LabelStockSize =>  { 
-            Height =>  $self->label_height,
-            Width =>  4,
+          LabelStockSize =>  {
+            Height => '' . $self->label_height,
+            Width =>  '4',
           },
         },
-      },
-      {
-             UsernameToken =>  {
-               Username =>  $self->username,
-               Password =>  $self->password,
-             },
-             ServiceAccessToken =>  {
-               AccessLicenseNumber =>  $self->key,
-             },
-      },
+      }
     );
-    $Shipment::SOAP::WSDL::Debug = 0;
-    warn "Response\n" . $response if $self->debug > 1;
 
-    $response->can('get_ShipmentResults') or die 'failed to generate shipment';
-
-    $self->tracking_id( $response->get_ShipmentResults()->get_ShipmentIdentificationNumber()->get_value );
     use Data::Currency;
     use Shipment::Service;
+    $self->tracking_id( $response->{ShipmentResponse}->{ShipmentResults}->{ShipmentIdentificationNumber} );
     my $rate = 0;
     my $currency = $self->currency;
-    if ($response->get_ShipmentResults->get_ShipmentCharges && $response->get_ShipmentResults->get_ShipmentCharges->get_TotalCharges) {
-      $rate = $response->get_ShipmentResults->get_ShipmentCharges->get_TotalCharges->get_MonetaryValue;
-      $currency = $response->get_ShipmentResults->get_ShipmentCharges->get_TotalCharges->get_CurrencyCode;
+    if ($response->{ShipmentResponse}->{ShipmentResults}->{ShipmentCharges} && $response->{ShipmentResponse}->{ShipmentResults}->{ShipmentCharges}->{TotalCharges}) {
+      $rate = $response->{ShipmentResponse}->{ShipmentResults}->{ShipmentCharges}->{TotalCharges}->{MonetaryValue};
+      $currency = $response->{ShipmentResponse}->{ShipmentResults}->{ShipmentCharges}->{TotalCharges}->{CurrencyCode};
     }
     if ($self->negotiated_rates) {
-      if ($response->get_ShipmentResults->get_NegotiatedRateCharges && $response->get_ShipmentResults->get_NegotiatedRateCharges->get_TotalCharge) {
-        $rate = $response->get_ShipmentResults->get_NegotiatedRateCharges->get_TotalCharge->get_MonetaryValue;
-        $currency = $response->get_ShipmentResults->get_NegotiatedRateCharges->get_TotalCharge->get_CurrencyCode;
+      if ($response->{ShipmentResponse}->{ShipmentResults}->{NegotiatedRateCharges} && $response->{ShipmentResponse}->{ShipmentResults}->{NegotiatedRateCharges}->{TotalCharge}) {
+        $rate = $response->{ShipmentResponse}->{ShipmentResults}->{NegotiatedRateCharges}->{TotalCharge}->{MonetaryValue};
+        $currency = $response->{ShipmentResponse}->{ShipmentResults}->{NegotiatedRateCharges}->{TotalCharge}->{CurrencyCode};
       }
     }
-    $self->service( 
-       Shipment::Service->new( 
+    $self->service(
+      new Shipment::Service(
         id        => $service_id,
         name      => $self->services->{$service_id}->name,
         cost      => Data::Currency->new($rate, $currency),
@@ -1069,41 +917,51 @@ sub ship {
     use Shipment::Label;
     use MIME::Base64;
     my $package_index = 0;
-    foreach (@{ $response->get_ShipmentResults()->get_PackageResults() }) {
-      $self->get_package($package_index)->tracking_id( $_->get_TrackingNumber()->get_value );
 
-      ## For EPL labels, force Top Orientation by inserting the ZT command at the beginning of the file. 
+    # PackageResults can be either an object or an array of objects
+    # If it's an object, convert it to an array
+    my @package_results;
+    if (ref $response->{ShipmentResponse}->{ShipmentResults}->{PackageResults} eq 'HASH') {
+      @package_results = ( $response->{ShipmentResponse}->{ShipmentResults}->{PackageResults} );
+    } else {
+      @package_results = @{ $response->{ShipmentResponse}->{ShipmentResults}->{PackageResults} };
+    }
+
+    foreach (@package_results) {
+      $self->get_package($package_index)->tracking_id( $_->{TrackingNumber} );
+
+      ## For EPL labels, force Top Orientation by inserting the ZT command at the beginning of the file.
       ## This is needed for cases when the printer defaults to the incorrect orientation.
-      my $data = "ZT\n" if $self->printer_type_map->{$self->printer_type} eq 'EPL';
-      $data .= decode_base64($_->get_ShippingLabel()->get_GraphicImage->get_value);
+      my $data = "ZT\n" if $printer_type_map{$self->printer_type} eq 'EPL';
+      $data .= decode_base64($_->{ShippingLabel}->{GraphicImage});
 
       $self->get_package($package_index)->label(
         Shipment::Label->new(
           {
-            tracking_id => $_->get_TrackingNumber()->get_value,
-            content_type => $self->label_content_type_map->{$self->printer_type},
+            tracking_id => $_->{TrackingNumber},
+            content_type => $label_content_type_map{$self->printer_type},
             data => $data,
-            file_name => $_->get_TrackingNumber()->get_value . '.' . lc $self->printer_type_map->{$self->printer_type},
+            file_name => $_->{TrackingNumber} . '.' . lc $printer_type_map{$self->printer_type},
           },
         )
       );
       $package_index++;
     }
 
-    if (ref $response->get_ShipmentResults()->get_ControlLogReceipt eq 'ARRAY') {
+    if (ref $response->{ShipmentResponse}->{ShipmentResults}->{ControlLogReceipt} eq 'ARRAY') {
       my $receipt_index = 0;
-      foreach (@{ $response->get_ShipmentResults()->get_ControlLogReceipt }) {
+      foreach (@{ $response->{ShipmentResponse}->{ShipmentResults}->{ControlLogReceipt} }) {
         ## For EPL labels, force Top Orientation by inserting the ZT command at the beginning of the file.
         ## This is needed for cases when the printer defaults to the incorrect orientation.
-        my $data = "ZT\n" if $self->printer_type_map->{$self->printer_type} eq 'EPL';
-        $data .= decode_base64($_->get_GraphicImage->get_value);
+        my $data = "ZT\n" if $printer_type_map{$self->printer_type} eq 'EPL';
+        $data .= decode_base64($_->{GraphicImage});
 
         push @{ $self->control_log_receipt },
           Shipment::Label->new(
             {
-              content_type => $self->label_content_type_map->{$self->printer_type},
+              content_type => $label_content_type_map{$self->printer_type},
               data => $data,
-              file_name => 'control_log_receipt_' . $receipt_index . '.' . lc $self->printer_type_map->{$self->printer_type},
+              file_name => 'control_log_receipt_' . $receipt_index . '.' . lc $printer_type_map{$self->printer_type},
             }
           );
         $receipt_index++;
@@ -1111,26 +969,17 @@ sub ship {
     }
 
     $self->notice( '' );
-    if ( $response->get_Response->get_Alert ) {
-      foreach my $alert (@{$response->get_Response->get_Alert}) {
-        warn $alert->get_Description->get_value if $self->debug;
-        $self->add_notice( $alert->get_Description->get_value . "\n" );
+    if ( $response->{Response}->{Alert} ) {
+      foreach my $alert (@{$response->{Response}->{Alert}}) {
+        warn $alert->{Description} if $self->debug;
+        $self->add_notice( $alert->{Description} . "\n" );
       }
     }
 
   } catch {
-      warn $_ if $self->debug;
-      try {
-        my $error = join "\n",  map {
-          $_->get_PrimaryErrorCode()->get_Code() . ' - ' . $_->get_PrimaryErrorCode()->get_Description;
-        } @{ $response->get_detail()->get_Errors()->get_ErrorDetail() };
-        warn $error if $self->debug;
-        $self->error( $error );
-      } catch {
-        warn $_ if $self->debug;
-        warn $response->get_faultstring if $self->debug;
-        $self->error( $response->get_faultstring->get_value );
-      };
+    my $error = $_;
+    warn $error if $self->debug;
+    $self->error( $error );
   };
 
 }
@@ -1138,25 +987,19 @@ sub ship {
 =head2 return
 
 This method calls ProcessShipment from the Shipping API with
-  ReturnService => Code => $return_code 
-$return_code can be either 9, 8 or 2.
+  ReturnService => Code => 9
+which provides the return label to be printed off.
 
-9 provides a return label to be printed off.
-8 causes UPS to email a return label to $self->from_address->email 
-2 causes UPS to mail a return label to $self->from_address
-
-defaults to 9 (print return label)
-
-This method has only been implemented for the purpose of obtaining certification with UPS. It has not been fully tested and does not offer some core options.
+This method has only been implemented for the purpose of obtaining certification with UPS. It has not been fully tested and does not offer some core options (such as the ability to email the return label).
 
 It assumes that you are first creating an outgoing shipment and creating the return shipment at the same time. Because of this, it uses the "to_address" as the origin and the "from_address" as the destination.
 
 =cut
 
 sub return {
-  my ( $self, $service_id, $rc ) = @_;
+  my ( $self, $service_id ) = @_;
 
-  try { 
+  try {
     $service_id = $self->services->{$service_id}->id;
   } catch {
     warn $_ if $self->debug;
@@ -1169,99 +1012,60 @@ sub return {
     my $package_options;
     $package_options->{DeclaredValue}->{CurrencyCode} = $self->currency;
 
-    # default return code is 9 which means we print a return label
-    my $return_code = $rc ? $rc : 9;
-
     my @pieces;
-    my $reference_index = 1;
     foreach (@{ $self->packages }) {
-      $package_options->{DeclaredValue}->{MonetaryValue} = $self->insured_value->value;
-      my @references;
-      if (
-        $self->references && 
-        $self->from_address->country_code =~ /(US|PR)/ && 
-        $self->to_address->country_code =~ /(US|PR)/ && 
-        $self->from_address->country_code eq $self->to_address->country_code
-      ) {
-
-        foreach ($self->get_reference(0), $self->get_reference(1)) {
-          next if !$_;
-
-	   my ($code, $val);
-	   if ( ref($_) eq "HASH")
-	   {
-		$code = (keys %$_)[0];
-		$val  = (values %$_)[0];
-           }	
-	   else
-	   {
-		$code = $reference_index;
-		$val  = $_;
-           }
-          push @references, {
-            Code => $code,
-            Value => $val,
-          };
-          $reference_index++;
-        }
-      }
+      $package_options->{DeclaredValue}->{MonetaryValue} = '' . $self->insured_value->value;
       push @pieces,
         {
             Description => 'n/a',
             Packaging => {
-              Code => $self->package_type_map->{$self->package_type} || $self->package_type,
+              Code => $package_type_map{$self->package_type} || $self->package_type,
             },
             Dimensions => {
               UnitOfMeasurement => {
-                Code => $self->units_type_map->{$self->dim_unit} || $self->dim_unit,
+                Code => $units_type_map{$self->dim_unit} || $self->dim_unit,
               },
-              Length => $_->length,
-              Width => $_->width,
-              Height => $_->height,
+              Length => '' . $_->length,
+              Width => '' . $_->width,
+              Height => '' . $_->height,
             },
             PackageWeight => {
               UnitOfMeasurement => {
-                Code => $self->units_type_map->{$self->weight_unit} || $self->weight_unit,
+                Code => $units_type_map{$self->weight_unit} || $self->weight_unit,
               },
-              Weight => $_->weight,
+              Weight => '' . $_->weight,
             },
-	    ReferenceNumber => \@references,
             PackageServiceOptions => $package_options,
         };
     }
 
     my $payment_option;
     $payment_option->{Type} = '01';
-    $payment_option->{$self->bill_type_map->{$self->bill_type}}->{AccountNumber} = $self->bill_account;
-    $payment_option->{$self->bill_type_map->{$self->bill_type}}->{Address}->{PostalCode} = $self->bill_address->postal_code if $self->bill_address && $self->bill_type =~ /(recipient|third_party)/; 
-    $payment_option->{$self->bill_type_map->{$self->bill_type}}->{Address}->{CountryCode} = $self->bill_address->country_code if $self->bill_address && $self->bill_type eq 'third_party'; 
+    $payment_option->{$bill_type_map{$self->bill_type}}->{AccountNumber} = $self->bill_account;
+    $payment_option->{$bill_type_map{$self->bill_type}}->{Address}->{PostalCode} = $self->bill_address->postal_code if $self->bill_type =~ /(recipient|third_party)/; 
+    $payment_option->{$bill_type_map{$self->bill_type}}->{Address}->{CountryCode} = $self->bill_address->country_code if $self->bill_type eq 'third_party'; 
 
     my @from_addresslines = (
-      $self->from_address->address1, 
-      $self->from_address->address2, 
+      $self->from_address->address1,
+      $self->from_address->address2,
       $self->from_address->address3
     );
     my @to_addresslines = (
-      $self->to_address->address1, 
-      $self->to_address->address2, 
+      $self->to_address->address1,
+      $self->to_address->address2,
       $self->to_address->address3
     );
 
-  use Shipment::UPS::WSDL::ShipInterfaces::ShipService::ShipPort;
-  
-  my $interface = Shipment::UPS::WSDL::ShipInterfaces::ShipService::ShipPort->new(
-    {
-      proxy_domain => $self->proxy_domain,
-    }
-  );
-
-    my %body = (
+  my $response;
+  try {
+    $response = $self->api->ship(
+      {
         Request => {
           RequestOption => ($self->address_validation) ? 'validate' : 'nonvalidate',
         },
         Shipment => {
           ReturnService => {
-            Code => $return_code,
+            Code => '9',
           },
           Shipper => {
             Name => $self->from_address->company,
@@ -1283,8 +1087,9 @@ sub return {
               City              => $self->to_address->city,
               StateProvinceCode => $self->to_address->province_code,
               PostalCode        => $self->to_address->postal_code,
-              CountryCode       => $self->to_address->country_code,
+              CountryCode       => $country_code_map{$self->to_address->province_code} || $self->to_address->country_code,
             },
+            EmailAddress => $self->from_address->email,
           },
           ShipTo => {
             Name => $self->from_address->company,
@@ -1296,178 +1101,105 @@ sub return {
               PostalCode        => $self->from_address->postal_code,
               CountryCode       => $self->from_address->country_code,
             },
-            EMailAddress => $self->to_address->email,
+            EmailAddress => $self->to_address->email,
           },
           Service => {
             Code => $service_id,
           },
           Package => \@pieces,
-          PaymentInformation =>  { 
+          PaymentInformation =>  {
             ShipmentCharge => $payment_option,
           },
         },
-        LabelSpecification =>  { 
-          LabelImageFormat =>  { 
-            Code =>  $self->printer_type_map->{$self->printer_type},
+        LabelSpecification =>  {
+          LabelImageFormat =>  {
+            Code =>  $printer_type_map{$self->printer_type},
           },
-          LabelStockSize =>  { 
-            Height =>  $self->label_height,
-            Width =>  4,
+          LabelStockSize =>  {
+            Height =>  '' . $self->label_height,
+            Width =>  '4',
           },
         },
+      }
+    );
+
+    $self->tracking_id( $response->{ShipmentResponse}->{ShipmentResults}->{ShipmentIdentificationNumber} );
+    use Data::Currency;
+    use Shipment::Service;
+    $self->service(
+      new Shipment::Service(
+        id        => $service_id,
+        name      => $self->services->{$service_id}->name,
+        cost      => Data::Currency->new($response->{ShipmentResponse}->{ShipmentResults}->{ShipmentCharges}->{TotalCharges}->{MonetaryValue}, $response->{ShipmentResponse}->{ShipmentResults}->{ShipmentCharges}->{TotalCharges}->{CurrencyCode}),
+      )
+    );
+
+    use Shipment::Label;
+    use MIME::Base64;
+    my $package_index = 0;
+    # PackageResults can be either an object or an array of objects
+    # If it's an object, convert it to an array
+    my @package_results;
+    if (ref $response->{ShipmentResponse}->{ShipmentResults}->{PackageResults} eq 'HASH') {
+      @package_results = ( $response->{ShipmentResponse}->{ShipmentResults}->{PackageResults} );
+    } else {
+      @package_results = @{ $response->{ShipmentResponse}->{ShipmentResults}->{PackageResults} };
+    }
+
+    foreach (@package_results) {
+
+      ## For EPL labels, force Top Orientation by inserting the ZT command at the beginning of the file.
+      ## This is needed for cases when the printer defaults to the incorrect orientation.
+      my $data = "ZT\n" if $printer_type_map{$self->printer_type} eq 'EPL';
+      $data .= decode_base64($_->{ShippingLabel}->{GraphicImage});
+
+      $self->get_package($package_index)->tracking_id( $_->{TrackingNumber} );
+      $self->get_package($package_index)->label(
+        Shipment::Label->new(
+          {
+            tracking_id => $_->{TrackingNumber},
+            content_type => $label_content_type_map{$self->printer_type},
+            data => $data,
+            file_name => $_->{TrackingNumber} . '.' . lc $printer_type_map{$self->printer_type},
+          },
+        )
       );
+      $package_index++;
+    }
 
-      my $body = \%body;
+    if (ref $response->{ShipmentResults}->{ControlLogReceipt} eq 'ARRAY') {
+      my $receipt_index = 0;
+      foreach (@{ $response->get_ShipmentResults()->get_ControlLogReceipt }) {
 
-	if ($return_code == 8)
-	{
-		$body->{Shipment}->{ShipmentServiceOptions} =  {
-		     LabelDelivery => {
-			EMail => {
-			  EMailAddress => $self->from_address->email,
-			  UndeliverableEMailAddress => $self->to_address->email,
-			  FromEMailAddress => $self->to_address->email, 
-			},
-		        LabelLinksIndicator => '',
-		     },
-		};
-	}
+        ## For EPL labels, force Top Orientation by inserting the ZT command at the beginning of the file.
+        ## This is needed for cases when the printer defaults to the incorrect orientation.
+        my $data = "ZT\n" if $printer_type_map{$self->printer_type} eq 'EPL';
+        $data .= decode_base64($_->get_GraphicImage->get_value);
 
+        push @{ $self->control_log_receipt },
+          Shipment::Label->new(
+            {
+              content_type => $label_content_type_map{$self->printer_type},
+              data => $data,
+              file_name => 'control_log_receipt_' . $receipt_index . '.' . lc $printer_type_map{$self->printer_type},
+            }
+          );
+        $receipt_index++;
+      }
+    }
 
-      my %header = (
-             UsernameToken =>  {
-               Username =>  $self->username,
-               Password =>  $self->password,
-             },
-             ServiceAccessToken =>  {
-               AccessLicenseNumber =>  $self->key,
-             },
-      ); 
-
-   my $response;
-   try {
-	    $response = $interface->ProcessShipment( \%body, \%header ); 
-   	    #warn $response;
-
-      $response->can('get_ShipmentResults') or die 'failed to get shipment';
-
-	    $self->tracking_id( $response->get_ShipmentResults()->get_ShipmentIdentificationNumber()->get_value );
-	    use Data::Currency;
-	    use Shipment::Service;
-	    $self->service( 
-	       Shipment::Service->new( 
-		id        => $service_id,
-		name      => $self->services->{$service_id}->name,
-		cost      => Data::Currency->new($response->get_ShipmentResults()->get_ShipmentCharges->get_TotalCharges()->get_MonetaryValue, $response->get_ShipmentResults()->get_ShipmentCharges()->get_TotalCharges()->get_CurrencyCode),
-	      )
-	    );
-
-	    # return_code 9 means we are getting a label back to print
-	    if ($return_code == 9)
-	    {
-		    use Shipment::Label;
-		    use MIME::Base64;
-		    my $package_index = 0;
-		    foreach (@{ $response->get_ShipmentResults()->get_PackageResults() }) {
-
-		      ## For EPL labels, force Top Orientation by inserting the ZT command at the beginning of the file. 
-		      ## This is needed for cases when the printer defaults to the incorrect orientation.
-		      my $data = "ZT\n" if $self->printer_type_map->{$self->printer_type} eq 'EPL';
-		      $data .= decode_base64($_->get_ShippingLabel()->get_GraphicImage->get_value);
-
-		      $self->get_package($package_index)->tracking_id( $_->get_TrackingNumber()->get_value );
-		      $self->get_package($package_index)->label(
-			Shipment::Label->new(
-			  {
-			    tracking_id => $_->get_TrackingNumber()->get_value,
-			    content_type => $self->label_content_type_map->{$self->printer_type},
-			    data => $data,
-			    file_name => $_->get_TrackingNumber()->get_value . '.' . lc $self->printer_type_map->{$self->printer_type},
-			  },
-			)
-		      );
-		      $package_index++;
-		    }
-
-        if (ref $response->get_ShipmentResults()->get_ControlLogReceipt eq 'ARRAY') {
-          my $receipt_index = 0;
-          foreach (@{ $response->get_ShipmentResults()->get_ControlLogReceipt }) {
-
-            ## For EPL labels, force Top Orientation by inserting the ZT command at the beginning of the file.
-            ## This is needed for cases when the printer defaults to the incorrect orientation.
-            my $data = "ZT\n" if $self->printer_type_map->{$self->printer_type} eq 'EPL';
-            $data .= decode_base64($_->get_GraphicImage->get_value);
-
-            push @{ $self->control_log_receipt },
-              Shipment::Label->new(
-                {
-                  content_type => $self->label_content_type_map->{$self->printer_type},
-                  data => $data,
-                  file_name => 'control_log_receipt_' . $receipt_index . '.' . lc $self->printer_type_map->{$self->printer_type},
-                }
-              );
-            $receipt_index++;
-          }
-        }
-
-	     }
-	     elsif ($return_code == 8)
-	     {
-		    use Shipment::Label;
-		    use MIME::Base64;
-		    my $package_index = 0;
-	      	    my $label_url = $response->get_ShipmentResults()->get_LabelURL()->get_value;
-
-		    # don't think this foreach makes sense here. I think you can only return one package get package_index is always 0
-		    foreach (@{ $response->get_ShipmentResults()->get_PackageResults() }) {
-
-		      $self->get_package($package_index)->tracking_id( $_->get_TrackingNumber()->get_value );
-		      $self->get_package($package_index)->label(
-			Shipment::Label->new(
-			  {
-			    tracking_id => $_->get_TrackingNumber()->get_value,
-			    content_type => 'url',
-			    data => $label_url,
-			  },
-			)
-		      );
-		      $package_index++;
-		    }
-
-             }
-	     elsif ($return_code == 2)
-	     {
-		    use MIME::Base64;
-		    my $package_index = 0;
-
-		    # don't think this foreach makes sense here. I think you can only return one package get package_index is always 0
-		    foreach (@{ $response->get_ShipmentResults()->get_PackageResults() }) {
-		      $self->get_package($package_index)->tracking_id( $_->get_TrackingNumber()->get_value );
-		      $package_index++;
-		    }
-
-             }
-	    $self->notice( '' );
-	    if ( $response->get_Response->get_Alert ) {
-	      foreach my $alert (@{$response->get_Response->get_Alert}) {
-		warn $alert->get_Description->get_value;
-		$self->add_notice( $alert->get_Description->get_value . "\n" );
-	      }
-	    }
+    $self->notice( '' );
+    if ( $response->{Response}->{Alert} ) {
+      foreach my $alert (@{$response->{Response}->{Alert}}) {
+        warn $alert->{Description} if $self->debug;
+        $self->add_notice( $alert->{Description} . "\n" );
+      }
+    }
 
   } catch {
-      warn $_ if $self->debug;
-      try {
-        my $error = join "\n",  map {
-          $_->get_PrimaryErrorCode()->get_Code() . ' - ' . $_->get_PrimaryErrorCode()->get_Description;
-        } @{ $response->get_detail()->get_Errors()->get_ErrorDetail() };
-        warn $error if $self->debug;
-        $self->error( $error );
-      } catch {
-        warn $_ if $self->debug;
-        warn $response->get_faultstring if $self->debug;
-        $self->error( $response->get_faultstring->get_value );
-      };
+    my $error = $_;
+    warn $error if $self->debug;
+    $self->error( $error );
   };
 
 }
@@ -1478,7 +1210,7 @@ sub return {
 This method calls ProcessVoid from the Shipping API
 
 It uses $self->tracking_id for the shipment identification number in order
-to void a single package shipment. 
+to void a single package shipment.
 
 It will use all package tracking id's
 to void one or more packages within a multi-package shipment.
@@ -1496,7 +1228,7 @@ sub cancel {
   }
 
   my $void->{ShipmentIdentificationNumber} = $self->tracking_id;
-  
+
   my @tracking_ids;
   foreach ($self->all_packages) {
     push @tracking_ids, $_->tracking_id;
@@ -1505,70 +1237,32 @@ sub cancel {
     $void->{TrackingNumber} = \@tracking_ids;
   }
 
-  use Shipment::UPS::WSDL::ShipInterfaces::VoidService::VoidPort;
-  my $interface = Shipment::UPS::WSDL::ShipInterfaces::VoidService::VoidPort->new(
-    {
-      proxy_domain => $self->proxy_domain,
-    }
-  );
-
   my $response;
   my $success;
 
   try {
-    $Shipment::SOAP::WSDL::Debug = 1 if $self->debug > 1;
-    $response = $interface->ProcessVoid(
-      {
-        Request =>  { 
-          RequestOption => '',
-        },
-        VoidShipment => $void,
-      },
-      {
-             UsernameToken =>  {
-               Username =>  $self->username,
-               Password =>  $self->password,
-             },
-             ServiceAccessToken =>  {
-               AccessLicenseNumber =>  $self->key,
-             },
-      },
-    );
-    $Shipment::SOAP::WSDL::Debug = 0;
-    warn "Response\n" . $response if $self->debug > 1;
-
-    $response->can('get_SummaryResult') or die 'failed to cancel shipment';
-
-    $success = $response->get_SummaryResult->get_Status->get_Description->get_value;
+    $response = $self->api->cancel($void);
+    $success = $response->{VoidShipmentResponse}->{SummaryResult}->{Status}->{Description};
 
     $self->notice( '' );
-    if ( $response->get_Response->get_Alert ) {
-      foreach my $alert (@{$response->get_Response->get_Alert}) {
-        warn $alert->get_Description->get_value if $self->debug;
-        $self->add_notice( $alert->get_Description->get_value . "\n" );
+    if ( $response->{VoidShipmentResponse}->{Response}->{Alert} ) {
+      foreach my $alert (@{$response->{VoidShipmentResponse}->{Response}->{Alert}}) {
+        warn $alert->{Description} if $self->debug;
+        $self->add_notice( $alert->{Description} . "\n" );
       }
     }
 
   } catch {
-      warn $_ if $self->debug;
-      try {
-        my $error = join "\n",  map {
-          $_->get_PrimaryErrorCode()->get_Code() . ' - ' . $_->get_PrimaryErrorCode()->get_Description;
-        } @{ $response->get_detail()->get_Errors()->get_ErrorDetail() };
-        warn $error if $self->debug;
-        $self->error( $error );
-      } catch {
-        warn $_ if $self->debug;
-        warn $response->get_faultstring if $self->debug;
-        $self->error( $response->get_faultstring->get_value );
-      };
+    my $error = $_;
+    warn $error if $self->debug;
+    $self->error( $error );
   };
 
   return $success;
 
 }
 
-=head2 xav 
+=head2 xav
 
 UPS Address validation
 
@@ -1581,147 +1275,106 @@ request_option defaults to 1
 =cut
 
 sub xav {
-    my ( $self, $request_option ) = @_;
+  my ( $self, $request_option ) = @_;
 
-    use Shipment::UPS::WSDL::XAVInterfaces::XAVService::XAVPort;
-    my $interface =
-      Shipment::UPS::WSDL::XAVInterfaces::XAVService::XAVPort->new(
-        {
-            proxy_domain => $self->proxy_domain,
+  $request_option //= 1;
+
+  my $response;
+  my $success;
+  my $result;
+  my $classification;
+  my @candidates;
+
+  my @to_addresslines = (
+    $self->to_address->address1,
+    $self->to_address->address2,
+    $self->to_address->address3
+  );
+
+  try {
+
+    $response = $self->api->xav(
+      {
+        Request => {
+          RequestOption => '' . $request_option
+        },
+        AddressKeyFormat => {
+          AddressLine        => \@to_addresslines,
+          PoliticalDivision2 => $self->to_address->city,
+          PoliticalDivision1 => $self->to_address->province_code,
+          PostcodePrimaryLow => $self->to_address->postal_code,
+          CountryCode        => $self->to_address->country_code,
         }
-      );
-
-    $request_option //= 1;
-
-    my $response;
-    my $success;
-    my $result;
-    my $classification;
-    my @candidates;
-
-    my @to_addresslines = (
-      $self->to_address->address1,
-      $self->to_address->address2,
-      $self->to_address->address3
+      }
     );
+    warn $response if $self->debug > 1;
 
-    try {
 
-  	$response = $interface->ProcessXAV(
-  	{
-            Request => {
-                RequestOption => $request_option,
-              },
-              AddressKeyFormat => {
-                AddressLine        => \@to_addresslines,
-                PoliticalDivision2 => $self->to_address->city,
-                PoliticalDivision1 => $self->to_address->province_code,
-                PostcodePrimaryLow => $self->to_address->postal_code,
-                CountryCode        => $self->to_address->country_code,
-              }
- 	},
- 	{
-             UsernameToken =>  {
-               Username =>  $self->username,
-               Password =>  $self->password,
-             },
-             ServiceAccessToken =>  {
-               AccessLicenseNumber =>  $self->key,
-             },
-	},
-
-  	);
-	warn $response if $self->debug > 1;
-	
     if ( $request_option =~ m/[23]/ ) {
-        try {
-            my $ac = $response->get_AddressClassification;
-            $classification->{code}        = $ac->get_Code->get_value();
-            $classification->{description} = $ac->get_Description->get_value();
-        }
-        catch {};
+      try {
+        my $ac = $response->{XAVResponse}->{AddressClassification};
+        $classification->{code}        = $ac->{Code};
+        $classification->{description} = $ac->{Description};
+      }
+      catch {};
     }
 
     try {
-        if ( defined( $response->get_ValidAddressIndicator->get_value() ) ) {
-            $result = "valid";
-        }
+      $result = "valid" if defined($response->{XAVResponse}->{ValidAddressIndicator});
     }
     catch {};
 
     try {
-        if ( defined( $response->get_AmbiguousAddressIndicator->get_value() ) )
-        {
-            $result = "invalid";
-        }
-
+      $result = "invalid" if defined($response->{XAVResponse}->{AmbiguousAddressIndicator})
     }
     catch {};
 
     try {
-        if ( defined( $response->get_NoCandidatesIndicator->get_value() ) )
-        {
-            $result = "nocandidates";
-        }
-
+      $result = "nocandidates" if defined($response->{XAVResponse}->{NoCandidatesIndicator});
     }
     catch {};
 
     if ( $result && $result ne "nocandidates" ) {
 
-        # If we are asking for address classification, canidites will also
-        # include classification results
-        try {
+      # If we are asking for address classification, canidites will also
+      # include classification results
+      try {
 
-            for my $candidate ( @{ $response->get_Candidate() } ) {
-                my %a_hash = (
-                    address1 =>
-                      $candidate->get_AddressKeyFormat()->get_AddressLine()
-                      ->get_value(),
-                    city => $candidate->get_AddressKeyFormat()
-                      ->get_PoliticalDivision2()->get_value(),
-                    province => $candidate->get_AddressKeyFormat()
-                      ->get_PoliticalDivision1()->get_value(),
-                    postal_code => $candidate->get_AddressKeyFormat()
-                      ->get_PostcodePrimaryLow()->get_value() . "-"
-                      . $candidate->get_AddressKeyFormat()
-                      ->get_PostcodeExtendedLow()->get_value(),
-                    country =>
-                      $candidate->get_AddressKeyFormat()->get_CountryCode()
-                      ->get_value(),
-                );
+        for my $candidate ( @{ $response->{XAVResponse}->{Candidate} } ) {
+          my %a_hash = (
+            address1 =>
+            $candidate->{AddressKeyFormat}->{AddressLine},
+            city => $candidate->{AddressKeyFormat}->{PoliticalDivision2},
+            province => $candidate->{AddressKeyFormat}->{PoliticalDivision1},
+            postal_code => $candidate->{AddressKeyFormat}
+            ->{PostcodePrimaryLow} . "-"
+            . $candidate->{AddressKeyFormat}
+            ->{PostcodeExtendedLow},
+            country =>
+            $candidate->{AddressKeyFormat}->{CountryCode},
+          );
 
-                if ( $request_option == 3 ) {
-                    $a_hash{classification}{code} =
-                      $candidate->get_AddressClassification->get_Code
-                      ->get_value();
-                    $a_hash{classification}{description} =
-                      $candidate->get_AddressClassification->get_Description
-                      ->get_value();
-                }
-                push @candidates, \%a_hash;
-            }
-
+          if ( $request_option == 3 ) {
+            $a_hash{classification}{code} =
+            $candidate->{AddressClassification}->{Code};
+            $a_hash{classification}{description} =
+            $candidate->{AddressClassification}->{Description};
+          }
+          push @candidates, \%a_hash;
         }
-        catch { warn $_ };
+
+      }
+      catch { warn $_ };
     }
 
   } catch {
-      warn $_ if $self->debug;
-      try {
-        my $error = join "\n",  map {
-          $_->get_PrimaryErrorCode()->get_Code() . ' - ' . $_->get_PrimaryErrorCode()->get_Description;
-        } @{ $response->get_detail()->get_Errors()->get_ErrorDetail() };
-        warn $error if $self->debug;
-        $self->error( $error );
-      } catch {
-        warn $_ if $self->debug;
-        warn $response->get_faultstring if $self->debug;
-        $self->error( $response->get_faultstring->get_value );
-      };
+    warn $_ if $self->debug;
+    my $error = join "\n",  map { $_->{code} . ' - ' . $_->{message} } @{ $response->{response}->{errors} };
+    warn $error if $self->debug;
+    $self->error( $error );
   };
 
-    return { 'result' => $result, 'candidate' => \@candidates, 'classification' => $classification };
+  return { 'result' => $result, 'candidate' => \@candidates, 'classification' => $classification };
 }
 
 =head2 track
@@ -1733,81 +1386,70 @@ This method calls ProcessTrack from the Shipping API
 sub track {
   my ($self) = @_;
 
-  use Shipment::Activity;
-
   if (!$self->tracking_id) {
     $self->error('no tracking id provided');
     return;
   }
 
-  use Shipment::UPS::WSDL::TrackInterfaces::TrackService::TrackPort;
-  my $interface =
-    Shipment::UPS::WSDL::TrackInterfaces::TrackService::TrackPort->new(
-      { proxy_domain => $self->proxy_domain, } );
-
   my $response;
 
   try {
 
-    $Shipment::SOAP::WSDL::Debug = 1 if $self->debug > 1;
-    $response = $interface->ProcessTrack(
-        {
-            Request => {    # Shipment::UPS::WSDL::TrackTypes::RequestType
-                RequestOption => 0,
-            },
-            InquiryNumber  => $self->tracking_id,
-            TrackingOption => "02",
-        },
-        {
-            UsernameToken => {
-                Username => $self->username,
-                Password => $self->password,
-            },
-            ServiceAccessToken => { AccessLicenseNumber => $self->key, },
-        },
+    $response = $self->api->track(
+      {
+        Request => {
+          InquiryNumber  => $self->tracking_id,
+        }
+      }
     );
 
-    $Shipment::SOAP::WSDL::Debug = 0;
     warn "Response\n" . $response if $self->debug > 1;
 
-    $response->can('get_Shipment') or die 'failed to get tracking';
+    my $shipments = $response->{trackResponse}->{shipment};
 
-    for my $activity ( @{ $response->get_Shipment()->get_Package()->get_Activity() } ) {
-      my ($city, $state, $country);
-      if ($activity->get_ActivityLocation && $activity->get_ActivityLocation()->get_Address()) {
-        $city = $activity->get_ActivityLocation()->get_Address()->get_City()->get_value();
-        $state = $activity->get_ActivityLocation()->get_Address()->get_StateProvinceCode()->get_value();
-        $country = $activity->get_ActivityLocation()->get_Address()->get_CountryCode()->get_value();
+    $shipments->[0] or die 'failed to get tracking';
+
+    my $shipment = $shipments->[0];
+
+    my @activities = ();
+    for my $package ( @{ $shipment->{package} } ) {
+      for my $activity ( @{ $package->{activity} } ) {
+
+        my ($city, $state, $country);
+
+        if ($activity->{location} && $activity->{location}->{address}) {
+          $city = $activity->{location}->{address}->{city};
+          $state = $activity->{location}->{address}->{state};
+          $country = $activity->{location}->{address}->{country};
+        }
+
+        if ($self->can('add_activity')) {
+          eval { require Shipment::Activity; };
+          use DateTime::Format::ISO8601;
+
+          $self->add_activity(
+            Shipment::Activity->new(
+              description => $activity->{status}->{description},
+              date => DateTime::Format::ISO8601->parse_datetime($activity->{date} . 'T' . $activity->{time}),
+              location => Shipment::Address->new(
+                city => ($city || ''),
+                state => ($state || ''),
+                country => ($country || '')
+              )
+            )
+          );
+        }
       }
-      $self->add_activity(
-        Shipment::Activity->new(
-          description => $activity->get_Status()->get_Description()->get_value(),
-          date => DateTime::Format::ISO8601->parse_datetime($activity->get_Date()->get_value() . 'T' . $activity->get_Time()->get_value()),
-          location => Shipment::Address->new(
-            city => ($city || ''),
-            state => ($state || ''),
-            country => ($country || ''),
-          ),
-        )
-      );
     }
-    $self->ship_date( DateTime::Format::ISO8601->parse_datetime($response->get_Shipment()->get_PickupDate->get_value()) );
-
+    return 1;
   } catch {
-      warn $_ if $self->debug;
-      try {
-        my $error = join "\n",  map {
-          $_->get_PrimaryErrorCode()->get_Code() . ' - ' . $_->get_PrimaryErrorCode()->get_Description;
-        } @{ $response->get_detail()->get_Errors()->get_ErrorDetail() };
-        warn $error if $self->debug;
-        $self->error( $error );
-      } catch {
-        warn $_ if $self->debug;
-        warn $response->get_faultstring if $self->debug;
-        $self->error( $response->get_faultstring->get_value );
-      };
+    warn $_ if $self->debug;
+    my $error = join "\n",  map {
+      $_->{code} . ' - ' . $_->{message}
+    } @{ $response->{response}->{errors} };
+    warn $error if $self->debug;
+    $self->error( $error );
   };
-
 }
 
 =head1 AUTHOR

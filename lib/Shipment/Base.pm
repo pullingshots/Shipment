@@ -56,6 +56,9 @@ use MooX::Types::MooseLike::Base qw(:all);
 use MooX::Types::MooseLike::DateTime qw( DateAndTime );
 use namespace::clean;
 
+use Exporter 'import';
+our @EXPORT_OK = qw( coerce_datetime );
+
 =head1 Class Attributes
 
 =head2 from_address, to_address

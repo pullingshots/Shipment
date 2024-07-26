@@ -4,19 +4,18 @@ use warnings;
 
 use Test::More;
 
-my ($username, $password, $key, $account, $account_third_party) = @ARGV;
+my ($client_id, $client_secret, $account, $account_third_party) = @ARGV;
 
-$username    ||= $ENV{'UPS_USERNAME'};
-$password ||= $ENV{'UPS_PASSWORD'};
-$key      ||= $ENV{'UPS_KEY'};
-$account  ||= $ENV{'UPS_ACCOUNT'};
-$account_third_party ||= $ENV{'UPS_ACCOUNT_THIRD_PARTY'};
+$client_id   = $ENV{'UPS_CLIENT_ID'};
+$client_secret = $ENV{'UPS_CLIENT_SECRET'};
+$account  = $ENV{'UPS_ACCOUNT'};
+$account_third_party = $ENV{'UPS_ACCOUNT_THIRD_PARTY'};
 
 SKIP: {
-  skip "Tests can only be run with a valid UPS Developer Username/Password/Key and Account. The following environment variables are used: UPS_USERNAME UPS_PASSWORD UPS_KEY UPS_ACCOUNT UPS_ACCOUNT_THIRD_PARTY. You can sign up for a UPS Web Services developer account at https://www.ups.com/upsdeveloperkit" unless $username && $password && $key && $account;
+  skip "Tests can only be run with a valid UPS Developer client_id, client_secret and account. The following environment variables are used: UPS_CLIENT_ID UPS_CLIENT_SECRET UPS_ACCOUNT. You can sign up for a UPS Web Services developer account at https://www.ups.com/upsdeveloperkit", 39 unless $client_id && $client_secret && $account;
 }
 
-if ($username && $password && $key && $account) {
+if ($client_id && $client_secret && $account) {
 
 use Shipment::UPS;
 use Shipment::Address;
@@ -55,9 +54,9 @@ my @packages = (
 );
 
 my $shipment = Shipment::UPS->new(
-  username => $username,
-  password => $password,
-  key => $key,
+  environment => 'cie',
+  client_id => $client_id,
+  client_secret => $client_secret,
   account => $account,
   from_address => $from,
   to_address => $to,
@@ -116,13 +115,13 @@ is( $shipment->service->cost->value, $rate, 'rate matches actual cost') if defin
 ok( defined $shipment->get_package(0)->label, 'got label' );
 is( $shipment->get_package(0)->label->content_type, 'text/ups-epl', 'label is epl') if defined $shipment->get_package(0)->label;
 
-## TODO test saving file to disk
+# TODO test saving file to disk
 #$shipment->get_package(0)->label->save;
 
   $shipment = Shipment::UPS->new(
-    username => $username,
-    password => $password,
-    key => $key,
+    environment => 'cie',
+    client_id => $client_id,
+    client_secret => $client_secret,
     account => $account,
     tracking_id => '1ZISDE016691676846',
   );
@@ -145,9 +144,9 @@ is( $shipment->get_package(0)->label->content_type, 'text/ups-epl', 'label is ep
 );
 
 $shipment = Shipment::UPS->new(
-  username => $username,
-  password => $password,
-  key => $key,
+  environment => 'cie',
+  client_id => $client_id,
+  client_secret => $client_secret,
   account => $account,
   from_address => $from,
   to_address => $to,
@@ -189,22 +188,22 @@ is( $shipment->get_package(1)->label->content_type, 'text/ups-epl', 'second labe
 #$shipment->get_package(1)->label->save;
 
   $shipment = Shipment::UPS->new(
-    username => $username,
-    password => $password,
-    key => $key,
+    environment => 'cie',
+    client_id => $client_id,
+    client_secret => $client_secret,
     account => $account,
     tracking_id => '1ZISDE016691609089',
-    packages => [ 
+    packages => [
       Shipment::Package->new(
         tracking_id => '1ZISDE016694068891',
       ),
       Shipment::Package->new(
         tracking_id => '1ZISDE016690889305',
-      ),
-    ],
+      )
+    ]
   );
 
-  is( $shipment->cancel, 'Voided', 'successfully cancelled shipment');
+  is( $shipment->cancel, '&#xD;Voided', 'successfully cancelled shipment with 2 packages');
 
 # verify that we can still ship a ground package with no phone number
 @packages = (
@@ -217,20 +216,20 @@ is( $shipment->get_package(1)->label->content_type, 'text/ups-epl', 'second labe
 );
 
 $to = Shipment::Address->new(
-  name => 'Foo Bar',
-  address1 => '2436 NW Sacagawea Ln',
-  city => 'Bend',
-  state => 'OR',
+  name => 'RITZ CAMERA CENTERS-1749',
+  company => 'Innoplex',
+  address1 => '26601 ALISO CREEK ROAD',
+  city => 'ALISO VIEJO',
+  state => 'CA',
   country => 'US',
-  zip => '97701',
-  email => 'baerg@yoursole.com',
+  zip => '92656',
 );
 
 
 $shipment = Shipment::UPS->new(
-  username => $username,
-  password => $password,
-  key => $key,
+  environment => 'cie',
+  client_id => $client_id,
+  client_secret => $client_secret,
   account => $account,
   from_address => $from,
   to_address => $to,
@@ -249,9 +248,9 @@ $rate = $shipment->service->cost->value if defined $shipment->service;
 is( $shipment->service->cost->code, 'USD', 'currency') if defined $shipment->service;
 
 $shipment = Shipment::UPS->new(
-  username => $username,
-  password => $password,
-  key => $key,
+  environment => 'cie',
+  client_id => $client_id,
+  client_secret => $client_secret,
   account => $account,
   from_address => $from,
   to_address => $to,
@@ -264,17 +263,66 @@ $shipment = Shipment::UPS->new(
 );
 
 $shipment->ship( 'ground' );
-is( $shipment->error, 'Missing bill third party address information.', 'UPS error regarding bill third party address information');
+is( $shipment->error, "9120080 - Missing bill third party address information.\n", 'UPS error regarding bill third party address information');
+
+$to = Shipment::Address->new(
+  name => 'RITZ CAMERA CENTERS-1749',
+  company => 'Innoplex',
+  address1 => '26601 ALISO CREEK ROAD',
+  city => 'ALISO VIEJO',
+  state => 'CA',
+  country => 'US',
+  zip => '92656',
+);
+
+$shipment = Shipment::UPS->new(
+  environment => 'cie',
+  client_id => $client_id,
+  client_secret => $client_secret,
+  account => $account,
+  from_address => $from,
+  to_address => $to,
+  packages => \@packages,
+  printer_type => 'thermal',
+  residential_address => 1,
+  negotiated_rates => 1,
+);
+
+is_deeply($shipment->xav, {
+  'candidate' => [
+    {
+      'province' => 'CA',
+      'address1' => [
+        '26601 ALISO CREEK RD'
+      ],
+      'postal_code' => '92656-4806',
+      'country' => 'US',
+      'city' => 'ALISO VIEJO'
+    }
+  ],
+  'result' => 'valid',
+  'classification' => undef,
+}, 'successfully validated address');
+
+$shipment = Shipment::UPS->new(
+  environment => 'cie',
+  client_id => $client_id,
+  client_secret => $client_secret,
+  account => $account,
+  tracking_id => '1Z023E2X0214323462',
+);
+
+is ($shipment->track, 1, 'successfully tracked shipment');
 
 SKIP: {
-  skip "Third Party billing tests skipped, please use environment variable UPS_ACCOUNT_THIRD_PARTY to run" unless $username && $password && $key && $account && $account_third_party;
+  skip "Third Party billing tests skipped, please use environment variable UPS_ACCOUNT_THIRD_PARTY to run" unless $client_id && $client_secret && $account && $account_third_party;
 }
 
   if ($account_third_party) {
     $shipment = Shipment::UPS->new(
-      username => $username,
-      password => $password,
-      key => $key,
+      environment => 'cie',
+      client_id => $client_id,
+      client_secret => $client_secret,
       account => $account,
       from_address => $from,
       to_address => $to,
