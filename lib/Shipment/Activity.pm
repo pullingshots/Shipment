@@ -27,7 +27,7 @@ use Scalar::Util qw/blessed/;
 use Moo;
 use MooX::Types::MooseLike::Base qw(:all);
 use MooX::Types::MooseLike::DateTime qw( DateAndTime );
-use Shipment::Base qw/coerce_datetime/;
+use Shipment::Base;
 use namespace::clean;
 
 =head1 Class Attributes
