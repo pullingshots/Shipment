@@ -264,7 +264,7 @@ $shipment = Shipment::UPS->new(
 );
 
 $shipment->ship( 'ground' );
-is( $shipment->error, 'Missing bill third party address information.', 'UPS error regarding bill third party address information');
+is( $shipment->error, '9120080 - Missing bill third party address information.', 'UPS error regarding bill third party address information');
 
 SKIP: {
   skip "Third Party billing tests skipped, please use environment variable UPS_ACCOUNT_THIRD_PARTY to run" unless $username && $password && $key && $account && $account_third_party;
