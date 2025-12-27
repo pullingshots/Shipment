@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 47;
+use Test::More tests => 54;
 
 my ($key, $password, $account) = @ARGV;
 
@@ -196,6 +196,27 @@ is( $shipment->get_package(0)->label->content_type, 'application/pdf', 'first la
 is( $shipment->get_package(1)->label->content_type, 'application/pdf', 'second label is a pdf') if defined $shipment->get_package(1)->label;
 
 is( $shipment->cancel, 'true', 'successfully cancelled shipment');
+
+$shipment = Shipment::Purolator->new(
+  key => $key,
+  password => $password,
+  account => $account,
+  from_address => $from,
+  to_address => $to,
+  packages => \@packages,
+  printer_type => 'thermal',
+  pickup_type => 'dropoff'
+);
+
+$shipment->return( 'express' );
+
+ok( defined $shipment->tracking_id, 'got tracking number' );
+ok( defined $shipment->documents, 'got documents' );
+is( $shipment->documents->content_type, 'application/pdf', 'documents are pdf') if defined $shipment->documents;
+ok( defined $shipment->get_package(0)->label, 'got first label' );
+ok( defined $shipment->get_package(1)->label, 'got second label' );
+is( $shipment->get_package(0)->label->content_type, 'application/pdf', 'first label is a pdf') if defined $shipment->get_package(0)->label;
+is( $shipment->get_package(1)->label->content_type, 'application/pdf', 'second label is a pdf') if defined $shipment->get_package(1)->label;
 
 ## TODO test saving file to disk
 #$shipment->documents->save;

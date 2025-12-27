@@ -660,6 +660,185 @@ sub ship {
 
 }
 
+=head2 return
+
+This calls CreateReturnsManagementShipment from the ReturnsManagement API
+
+It also calls fetch_documents which is a separate method since Purolator does not return the label along with the create shipment response.
+
+=cut
+
+sub return {
+    my ( $self, $service_id ) = @_;
+
+    try {
+      $service_id = $self->services->{$service_id}->id;
+    } catch {
+      warn $_ if $self->debug;
+      warn "service ($service_id) not available" if $self->debug;
+      $self->error( "service ($service_id) not available" );
+      $service_id = '';
+    };
+    return unless $service_id;
+
+    my $total_weight;
+    $total_weight += $_->weight for @{ $self->packages };
+
+    my @pieces;
+    foreach (@{ $self->packages }) {
+      if ($self->package_type eq 'custom') {
+        push @pieces,
+          {
+              Weight => {
+                Value => sprintf("%.0f", $_->weight) || 1,
+                WeightUnit => $self->weight_unit,
+              },
+              Length => {
+                Value => $_->length,
+                DimensionUnit => $self->dim_unit,
+              },
+              Width => {
+                Value => $_->width,
+                DimensionUnit => $self->dim_unit,
+              },
+              Height => {
+                Value => $_->height,
+                DimensionUnit => $self->dim_unit,
+              },
+          };
+      }
+      else {
+        push @pieces,
+          {
+              Weight => {
+                Value => sprintf("%.0f", $_->weight) || 1,
+                WeightUnit => $self->weight_unit,
+              },
+          };
+      }
+    }
+
+    use Shipment::Purolator::WSDLV2::Interfaces::ReturnsManagement::ReturnsManagementServiceEndpoint;
+    my $interface = Shipment::Purolator::WSDLV2::Interfaces::ReturnsManagement::ReturnsManagementServiceEndpoint->new(
+      {
+        proxy_domain => $self->proxy_domain,
+        key => $self->key,
+        password => $self->password,
+      }
+    );
+
+    $Shipment::SOAP::WSDL::Debug = 1 if $self->debug > 1;
+    my $response = $interface->CreateReturnsManagementShipment(
+      {
+        ReturnsManagementShipment => {
+          SenderInformation => {
+            Address => {
+              Name            => $self->from_address->name,
+              Company         => $self->from_address->company,
+              StreetNumber    => $self->from_address->address_components->{number},
+              StreetName      => $self->from_address->address_components->{street} . ' ' . $self->from_address->address_components->{direction},
+              StreetAddress2  => $self->from_address->address2,
+              City            => $self->from_address->city,
+              Province        => $self->from_address->province_code,
+              Country         => $self->from_address->country_code,
+              PostalCode      => $self->from_address->postal_code,
+              PhoneNumber => {
+                CountryCode   => $self->from_address->phone_components->{country},
+                AreaCode      => $self->from_address->phone_components->{area},
+                Phone         => $self->from_address->phone_components->{phone},
+              },
+            },
+          },
+          ReceiverInformation => {
+            Address => {
+              Name            => $self->to_address->name,
+              Company         => $self->to_address->company,
+              StreetNumber    => $self->to_address->address_components->{number},
+              StreetName      => $self->to_address->address_components->{street} . ' ' . $self->to_address->address_components->{direction},
+              StreetAddress2  => $self->to_address->address2,
+              City            => $self->to_address->city,
+              Province        => $self->to_address->province_code,
+              Country         => $self->to_address->country_code,
+              PostalCode      => $self->to_address->postal_code,
+              PhoneNumber => {
+                CountryCode   => $self->to_address->phone_components->{country},
+                AreaCode      => $self->to_address->phone_components->{area},
+                Phone         => $self->to_address->phone_components->{phone},
+              },
+            },
+          },
+          PackageInformation  => {
+            ServiceID => $service_id,
+            TotalWeight => {
+              Value => sprintf("%.0f", $total_weight) || 1,
+              WeightUnit => $self->weight_unit,
+            },
+            TotalPieces => scalar @{ $self->packages },
+            PiecesInformation => {
+                Piece =>  \@pieces,
+            },
+          },
+          PaymentInformation => {
+            PaymentType => $bill_type_map{$self->bill_type} || $self->bill_type,
+            RegisteredAccountNumber => $self->account,
+            BillingAccountNumber => $self->bill_account,
+          },
+          PickupInformation => {
+            PickupType => $pickup_type_map{$self->pickup_type} || $self->pickup_type,
+          },
+          TrackingReferenceInformation =>  {
+            Reference1 => $self->get_reference(0),
+            Reference2 => $self->get_reference(1),
+            Reference3 => $self->get_reference(2),
+            Reference4 => $self->get_reference(3),
+          },
+          OtherInformation => {
+            SpecialInstructions => $self->special_instructions,
+          },
+        },
+        PrinterType => $printer_type_map{$self->printer_type} || $self->printer_type,
+      },
+      {
+                  'Version'           =>  '2.0',
+                  'Language'          =>  'en',
+                  'GroupID'           =>  'xxx',
+                  'RequestReference'  =>  'Shipment::Purolator::return'
+      },
+    );
+
+    $Shipment::SOAP::WSDL::Debug = 0;
+    warn "Response\n" . $response if $self->debug > 1;
+
+    try {
+      $self->tracking_id( $response->get_ShipmentPIN()->get_Value()->get_value );
+      use Shipment::Label;
+      my $package_index = 0;
+      foreach (@{ $response->get_PiecePINs()->get_PIN() }) {
+        $self->get_package($package_index)->tracking_id($_->get_Value()->get_value);
+        $self->get_package($package_index)->label(
+          Shipment::Label->new(
+            {
+              tracking_id => $_->get_Value()->get_value,
+            },
+          )
+        );
+        $package_index++
+      }
+    } catch {
+      try {
+        warn $_ if $self->debug;
+        warn $response->get_ResponseInformation()->get_Errors()->get_Error()->[0]->get_Description if $self->debug;
+        $self->error( $response->get_ResponseInformation()->get_Errors()->get_Error()->[0]->get_Description->get_value );
+      } catch {
+        warn $_ if $self->debug;
+        warn $response->get_faultstring if $self->debug;
+        $self->error( $response->get_faultstring->get_value );
+      };
+    };
+
+    $self->fetch_documents();
+}
+
 =head2 fetch_documents
 
 Calls GetDocuments from the Shipping Documents API
