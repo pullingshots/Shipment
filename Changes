@@ -1,4 +1,9 @@
-3.10 2022-12-01T02:49:08
+3.11 2025-12-26T21:37:43
+ - Add support for Sendle API (Andrew Baerg)
+ - update UPS test with new error codes from API (Andrew Baerg)
+ - remove extraneous imports from Shipment::Base (Graham Knop)
+
+3.10 2022-12-01T02:49:08Z
  - https://github.com/pullingshots/Shipment/issues/45 - Use DCISType for
    PackageServiceOptions. (William Carr)
 
